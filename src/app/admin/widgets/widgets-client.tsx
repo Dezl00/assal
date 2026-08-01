@@ -61,7 +61,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   // Actions
   async function handleAddWidget(type: string) {
     setIsSubmitting(true)
-    const res = await createWidget({ type, sortOrder: widgets.length, status: true, showDesktop: true, showMobile: true, title: WIDGET_TYPES.find(w => w.id === type)?.name })
+    const res = await createWidget({ type, sortOrder: widgets.length, status: true, showDesktop: true, showTablet: true, showMobile: true, title: WIDGET_TYPES.find(w => w.id === type)?.name })
     setIsSubmitting(false)
     
     if (res.success) {
