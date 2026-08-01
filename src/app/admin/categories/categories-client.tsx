@@ -153,14 +153,49 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                   />
                 </div>
 
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">نوع القسم <span className="text-red-500">*</span></label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="categoryType" 
+                        value="main" 
+                        defaultChecked
+                        className="text-primary focus:ring-primary"
+                        onChange={(e) => {
+                          const select = document.getElementById('parentId-select') as HTMLSelectElement
+                          if(select) { select.value = ""; select.disabled = true; }
+                        }}
+                      />
+                      <span className="text-sm">قسم رئيسي</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="categoryType" 
+                        value="sub" 
+                        className="text-primary focus:ring-primary"
+                        onChange={(e) => {
+                          const select = document.getElementById('parentId-select') as HTMLSelectElement
+                          if(select) { select.disabled = false; }
+                        }}
+                      />
+                      <span className="text-sm">قسم فرعي</span>
+                    </label>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">القسم الأب (اختياري)</label>
+                  <label className="text-sm font-medium">اختر القسم الأب</label>
                   <select 
+                    id="parentId-select"
                     name="parentId"
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                    disabled
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none disabled:opacity-50 disabled:bg-muted/10"
                   >
-                    <option value="">قسم رئيسي</option>
-                    {categories.map(cat => (
+                    <option value="">اختر...</option>
+                    {categories.filter(c => !c.parentId).map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>

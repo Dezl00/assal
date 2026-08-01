@@ -2,67 +2,34 @@
 
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
-import { z } from "zod"
 
-const MenuSchema = z.object({
-  name: z.string().min(2),
-})
-
-export async function createMenu(data: z.infer<typeof MenuSchema>) {
+export async function createMenu(formData: FormData) {
   try {
-    const parsed = MenuSchema.parse(data)
-    const menu = await db.menu.create({ data: parsed })
+    const name = formData.get("name") as string
+
+    if (!name) {
+      return { success: false, error: "Name is required" }
+    }
+
+    await db.menu.create({
+      data: { name }
+    })
+
     revalidatePath("/admin/navigation")
-    return { success: true, menu }
+    return { success: true }
   } catch (error: any) {
-    return { success: false, error: error.message }
+    return { success: false, error: error.message || "Failed to create menu" }
   }
 }
 
-const MenuItemSchema = z.object({
-  menuId: z.string(),
-  label: z.string().min(1),
-  url: z.string().optional().nullable(),
-  icon: z.string().optional().nullable(),
-  sortOrder: z.number().default(0),
-  parentId: z.string().optional().nullable(),
-})
-
-export async function createMenuItem(data: z.infer<typeof MenuItemSchema>) {
+export async function deleteMenu(id: string) {
   try {
-    const parsed = MenuItemSchema.parse(data)
-    const menuItem = await db.menuItem.create({ data: parsed })
-    
-    await db.activityLog.create({
-      data: {
-        action: "Create",
-        entityType: "MenuItem",
-        entityId: menuItem.id,
-        details: { label: menuItem.label, url: menuItem.url }
-      }
+    await db.menu.delete({
+      where: { id }
     })
-    
     revalidatePath("/admin/navigation")
-    revalidatePath("/")
-    return { success: true, menuItem }
+    return { success: true }
   } catch (error: any) {
-    return { success: false, error: error.message }
-  }
-}
-
-export async function getMenu(name: string) {
-  try {
-    const menu = await db.menu.findUnique({
-      where: { name },
-      include: {
-        items: {
-          orderBy: { sortOrder: 'asc' },
-          include: { children: { orderBy: { sortOrder: 'asc' } } } // Nested inclusion
-        }
-      }
-    })
-    return { success: true, menu }
-  } catch (error: any) {
-    return { success: false, error: "Failed to fetch menu" }
+    return { success: false, error: "Failed to delete menu" }
   }
 }
