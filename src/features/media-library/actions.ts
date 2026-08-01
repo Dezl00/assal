@@ -14,7 +14,8 @@ export async function uploadMediaAction(formData: FormData) {
     }
 
     // Upload to Cloudinary
-    const uploadResult = await uploadImage(file, folder)
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const uploadResult: any = await uploadImage(buffer, folder)
 
     // Save to database
     const mediaAsset = await db.mediaAsset.create({
