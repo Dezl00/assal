@@ -39,8 +39,8 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
       {/* Split Screen Layout */}
       <div className="flex flex-col lg:flex-row items-start gap-8 relative">
         
-        {/* Main Table Column */}
-        <div className="flex-1 w-full order-2 lg:order-1">
+        {/* Main Table Column (Left in RTL) */}
+        <div className="flex-1 w-full">
           <div className="rounded-xl border border-border/50 bg-background shadow-sm">
             <div className="flex items-center border-b border-border/50 p-4">
               <div className="relative flex-1 max-w-sm">
@@ -120,8 +120,8 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
           </div>
         </div>
 
-        {/* Sticky Form Column */}
-        <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-1 lg:order-2 transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
+        {/* Sticky Form Column (Right in RTL) */}
+        <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
           <div className="rounded-xl border border-border/50 bg-background shadow-sm overflow-hidden">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5">
               <h2 className="text-lg font-semibold tracking-tight">إضافة قسم جديد</h2>
