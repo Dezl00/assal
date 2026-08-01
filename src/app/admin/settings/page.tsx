@@ -19,7 +19,6 @@ export default async function SettingsPage() {
       secondaryColor: "#FBBF24",
       borderRadius: "8px",
       buttonStyle: "solid",
-      createdAt: new Date(),
       updatedAt: new Date(),
     }
   }
