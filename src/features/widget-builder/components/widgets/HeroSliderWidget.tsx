@@ -51,9 +51,9 @@ export function HeroSliderWidget({ widget }: HeroSliderWidgetProps) {
               {slide.title && <h2 className="mb-4 text-4xl font-bold lg:text-6xl">{slide.title}</h2>}
               {slide.subtitle && <p className="mb-8 text-lg lg:text-xl">{slide.subtitle}</p>}
               {slide.buttonText && slide.buttonUrl && (
-                <Button size="lg" className="rounded-none bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-                  <a href={slide.buttonUrl}>{slide.buttonText}</a>
-                </Button>
+                <a href={slide.buttonUrl} className="inline-flex h-11 items-center justify-center rounded-none bg-primary px-8 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                  {slide.buttonText}
+                </a>
               )}
             </div>
           </div>

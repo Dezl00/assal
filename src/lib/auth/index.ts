@@ -1,6 +1,19 @@
 import NextAuth, { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { db } from "@/lib/db"
+
+declare module "next-auth" {
+  interface User {
+    role?: string
+  }
+  interface Session {
+    user: User & {
+      role?: string
+      id?: string
+    }
+  }
+}
+
 // import bcrypt from "bcrypt" // Mocked for this build context unless installed
 
 export const authConfig: NextAuthConfig = {
