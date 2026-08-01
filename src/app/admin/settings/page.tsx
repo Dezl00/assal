@@ -15,6 +15,7 @@ export default async function SettingsPage() {
       id: "default",
       storeName: "عسل طبيعي",
       storeDescription: "",
+      logoUrl: null,
       primaryColor: "#D97706",
       secondaryColor: "#FBBF24",
       borderRadius: "8px",
