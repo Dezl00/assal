@@ -26,61 +26,57 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  /* Override shadows to NONE as per enterprise requirements */
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
-  --shadow-2xl: none;
-  --shadow-inner: none;
-  --shadow: none;
-
   /* Font definitions */
   --font-sans: var(--font-agnadeen), system-ui, sans-serif;
 }
 
 @layer base {
   :root {
+    /* Base Colors - Clean White/Off-white for premium feel */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 0 0% 100%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 0 0% 100%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 0 0% 100%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 240 10% 3.9%;
+    
+    /* Primary Colors - Premium Amber/Gold (Assal/Honey theme) */
+    --primary: 38 92% 50%;
+    --primary-foreground: 48 96% 89%;
+    
+    /* Secondary - Elegant dark/charcoal */
+    --secondary: 240 5.9% 10%;
+    --secondary-foreground: 0 0% 98%;
+    
+    /* Muted & Accent */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 38 92% 50%;
+    --accent-foreground: 48 96% 89%;
+    
+    /* Utilities */
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 38 92% 50%;
     --radius: 0.5rem;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    /* Arabic RTL setup is handled in HTML dir="rtl" */
-  }
-
-  /* Explicitly prevent gradients globally if someone accidentally uses them */
-  * {
-    background-image: none !important;
-  }
-  
-  img, video {
-    background-image: none !important;
   }
 }
 
 @layer utilities {
   .rtl-flip {
     transform: scaleX(-1);
+  }
+  .glass {
+    @apply bg-background/70 backdrop-blur-md border-b border-border/50;
+  }
+  .gold-gradient {
+    background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 90% 45%));
   }
 }
