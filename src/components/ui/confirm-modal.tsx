@@ -15,7 +15,7 @@ export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
       <div className="bg-card border border-border shadow-lg rounded-xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200">
         <div className="flex items-start gap-4">
           <div className={`p-3 rounded-full shrink-0 ${isDestructive ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>

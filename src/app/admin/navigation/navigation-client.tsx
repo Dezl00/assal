@@ -8,7 +8,10 @@ import { createMenu, deleteMenu } from "@/features/navigation/actions"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 
+import { useRouter } from "next/navigation"
+
 export function NavigationClient({ menus }: { menus: any[] }) {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -106,6 +109,14 @@ export function NavigationClient({ menus }: { menus: any[] }) {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={() => router.push(`/admin/navigation/${menu.id}`)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
                             <Button 
                               variant="ghost" 
                               size="icon" 

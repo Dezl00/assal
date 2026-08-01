@@ -1,7 +1,24 @@
 import React from "react"
 import { Activity, Users, ShoppingBag, DollarSign } from "lucide-react"
+import { db } from "@/lib/db"
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const [totalSalesResult, newOrders, customers, activeProducts] = await Promise.all([
+    db.order.aggregate({
+      _sum: { totalAmount: true },
+      where: { status: { not: "CANCELLED" } }
+    }),
+    db.order.count({
+      where: { status: "PENDING" }
+    }),
+    db.user.count({
+      where: { role: "CUSTOMER" }
+    }),
+    db.product.count()
+  ])
+
+  const totalSales = totalSalesResult._sum.totalAmount || 0
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
@@ -18,7 +35,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">إجمالي المبيعات</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">0.00 ر.س</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalSales.toFixed(2)} ر.س</h3>
             </div>
           </div>
         </div>
@@ -30,7 +47,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">الطلبات الجديدة</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">0</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{newOrders}</h3>
             </div>
           </div>
         </div>
@@ -42,7 +59,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">العملاء</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">0</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{customers}</h3>
             </div>
           </div>
         </div>
@@ -54,7 +71,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">المنتجات النشطة</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">0</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{activeProducts}</h3>
             </div>
           </div>
         </div>
