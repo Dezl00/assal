@@ -159,6 +159,10 @@ model Order {
   id            String      @id @default(cuid())
   userId        String?
   user          User?       @relation(fields: [userId], references: [id])
+  customerName  String?
+  customerPhone String?
+  address       String?
+  city          String?
   status        String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
   totalAmount   Float
   items         OrderItem[]
