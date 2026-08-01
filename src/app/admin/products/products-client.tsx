@@ -8,6 +8,7 @@ import { createProduct, deleteProduct } from "@/features/products/actions"
 export function ProductsClient({ products, categories }: { products: any[], categories: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false) // For mobile toggling
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   async function handleCreate(formData: FormData) {
     setIsSubmitting(true)
@@ -16,6 +17,7 @@ export function ProductsClient({ products, categories }: { products: any[], cate
     if (res.success) {
       const form = document.getElementById("add-product-form") as HTMLFormElement
       if (form) form.reset()
+      setPreviewUrl(null)
     } else {
       alert(res.error)
     }
@@ -75,7 +77,16 @@ export function ProductsClient({ products, categories }: { products: any[], cate
                     products.map((product) => (
                       <tr key={product.id} className="transition-colors hover:bg-muted/10">
                         <td className="px-6 py-4">
-                          <div className="font-medium text-foreground">{product.name}</div>
+                          <div className="flex items-center gap-3">
+                            {product.images && product.images.length > 0 ? (
+                               <img src={product.images[0].url} alt={product.name} className="w-10 h-10 object-cover rounded-md border border-border/50" />
+                            ) : (
+                               <div className="w-10 h-10 rounded-md bg-muted/20 flex items-center justify-center border border-border/50">
+                                 <span className="text-muted-foreground text-xs">لا صورة</span>
+                               </div>
+                            )}
+                            <div className="font-medium text-foreground">{product.name}</div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-muted-foreground">{product.sku}</td>
                         <td className="px-6 py-4">
@@ -140,6 +151,40 @@ export function ProductsClient({ products, categories }: { products: any[], cate
               <form action={handleCreate} className="space-y-5" id="add-product-form">
                 
                 <div className="space-y-4">
+                  
+                  {/* Image Upload Area */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">صورة المنتج <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                    <div className="flex items-center justify-center w-full">
+                      <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 border-border/50 hover:bg-muted/10 transition-colors relative overflow-hidden">
+                        {previewUrl ? (
+                          <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <PlusCircle className="w-8 h-8 mb-2 text-muted-foreground" />
+                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">اضغط للرفع</span> أو اسحب الصورة هنا</p>
+                            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (Max: 2MB)</p>
+                          </div>
+                        )}
+                        <input 
+                          id="dropzone-file" 
+                          name="image" 
+                          type="file" 
+                          accept="image/*"
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              setPreviewUrl(URL.createObjectURL(file))
+                            } else {
+                              setPreviewUrl(null)
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium">اسم المنتج <span className="text-red-500">*</span></label>
                     <input 

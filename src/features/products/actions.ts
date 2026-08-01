@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
+import { uploadImage } from "@/lib/cloudinary"
 
 export async function createProduct(formData: FormData) {
   try {
@@ -13,11 +14,21 @@ export async function createProduct(formData: FormData) {
     const stock = parseInt(formData.get("stock") as string)
     const categoryId = formData.get("categoryId") as string
     const description = formData.get("description") as string
+    const imageFile = formData.get("image") as File | null
 
     if (!name || !slug || !sku || isNaN(price) || !categoryId) {
       return { success: false, error: "Missing required fields" }
     }
 
+    // 1. Upload image to Cloudinary if provided
+    let imageUrl = null
+    if (imageFile && imageFile.size > 0) {
+      const buffer = Buffer.from(await imageFile.arrayBuffer())
+      const result: any = await uploadImage(buffer, "assal/products")
+      imageUrl = result.secure_url
+    }
+
+    // 2. Create the Product and the ProductImage simultaneously
     await db.product.create({
       data: {
         name,
@@ -28,6 +39,14 @@ export async function createProduct(formData: FormData) {
         stock: isNaN(stock) ? 0 : stock,
         categoryId,
         description: description || null,
+        ...(imageUrl && {
+          images: {
+            create: {
+              url: imageUrl,
+              isPrimary: true
+            }
+          }
+        })
       }
     })
 

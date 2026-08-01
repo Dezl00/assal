@@ -9,6 +9,10 @@ export default async function AdminProductsPage() {
     include: {
       category: true,
       brand: true,
+      images: {
+        where: { isPrimary: true },
+        take: 1
+      }
     },
     orderBy: { createdAt: "desc" },
   })
