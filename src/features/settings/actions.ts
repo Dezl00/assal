@@ -7,6 +7,7 @@ export async function updateThemeConfig(formData: FormData) {
   try {
     const storeName = formData.get("storeName") as string
     const storeDescription = formData.get("storeDescription") as string
+    const logoUrl = formData.get("logoUrl") as string
     const primaryColor = formData.get("primaryColor") as string
     const secondaryColor = formData.get("secondaryColor") as string
 
@@ -16,6 +17,7 @@ export async function updateThemeConfig(formData: FormData) {
       update: {
         storeName,
         storeDescription,
+        logoUrl,
         primaryColor,
         secondaryColor,
       },
@@ -23,6 +25,7 @@ export async function updateThemeConfig(formData: FormData) {
         id: "default",
         storeName,
         storeDescription,
+        logoUrl,
         primaryColor,
         secondaryColor,
       }

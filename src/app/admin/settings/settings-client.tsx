@@ -4,12 +4,16 @@ import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { updateThemeConfig } from "@/features/settings/actions"
 import { toast } from "sonner"
+import { ImageUploader } from "@/components/ui/image-uploader"
 
 export function SettingsClient({ config }: { config: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [logoUrl, setLogoUrl] = useState(config?.logoUrl || "")
 
   async function handleSave(formData: FormData) {
     setIsSubmitting(true)
+    formData.set("logoUrl", logoUrl) // Add the image url to formData
+    
     const res = await updateThemeConfig(formData)
     setIsSubmitting(false)
     if (res.success) {
@@ -30,9 +34,18 @@ export function SettingsClient({ config }: { config: any }) {
 
       <form action={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
         <div className="md:col-span-2 space-y-6">
-          <div className="rounded-xl border border-border/50 bg-background shadow-sm p-6">
-            <h2 className="text-xl font-semibold mb-6">المعلومات الأساسية</h2>
-            <div className="space-y-4">
+          <div className="rounded-xl border border-border/50 bg-card p-6">
+            <h2 className="text-xl font-semibold mb-6">المعلومات الأساسية والشعار</h2>
+            <div className="space-y-6">
+              
+              <div className="w-48">
+                <ImageUploader 
+                  label="شعار المتجر (Logo)" 
+                  value={logoUrl} 
+                  onChange={setLogoUrl} 
+                />
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">اسم المتجر</label>
                 <input
@@ -55,7 +68,7 @@ export function SettingsClient({ config }: { config: any }) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/50 bg-background shadow-sm p-6">
+          <div className="rounded-xl border border-border/50 bg-card p-6">
             <h2 className="text-xl font-semibold mb-6">الألوان والهوية</h2>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -99,7 +112,7 @@ export function SettingsClient({ config }: { config: any }) {
         </div>
 
         <div className="md:col-span-1">
-          <div className="rounded-xl border border-border/50 bg-background shadow-sm p-6 sticky top-4">
+          <div className="rounded-xl border border-border/50 bg-card p-6 sticky top-4">
             <h3 className="font-semibold mb-4">إجراءات الحفظ</h3>
             <p className="text-sm text-muted-foreground mb-6">تأكد من مراجعة كافة التعديلات قبل حفظ الإعدادات، حيث ستنعكس فوراً على واجهة المتجر الرئيسية.</p>
             

@@ -20,7 +20,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCartStore()
   
   const finalPrice = product.discountPrice ?? product.price
-  const hasDiscount = product.discountPrice !== null && product.discountPrice < product.price
+  const hasDiscount = product.discountPrice != null && product.discountPrice < product.price
   const isOutOfStock = product.stock <= 0
 
   const handleQuickAdd = (e: React.MouseEvent) => {

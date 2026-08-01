@@ -2,15 +2,17 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X } from "lucide-react"
+import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem } from "@/features/widget-builder/actions"
+import { ImageUploader } from "@/components/ui/image-uploader"
 
 const WIDGET_TYPES = [
   { id: "HeroSlider", name: "سلايدر الصور", icon: ImageIcon, desc: "سلايدر متحرك للصور أعلى الصفحة" },
   { id: "FeaturedProducts", name: "المنتجات المميزة", icon: ShoppingBag, desc: "عرض مجموعة من المنتجات المختارة" },
   { id: "BannerGrid", name: "شبكة البنرات", icon: LayoutTemplate, desc: "بنرات إعلانية لعروض المتجر" },
+  { id: "BrandSlider", name: "سلايدر الماركات", icon: ImagePlus, desc: "شريط متحرك لانهائي لشعارات الماركات" },
   { id: "TextBlock", name: "نص مخصص", icon: AlignLeft, desc: "مساحة لكتابة نص ترحيبي أو معلومات" },
 ]
 
@@ -23,6 +25,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [draggedWidgetId, setDraggedWidgetId] = useState<string | null>(null)
+  const [newItemImage, setNewItemImage] = useState("")
 
   // Drag and Drop handlers
   function handleDragStart(e: React.DragEvent, id: string) {
@@ -109,6 +112,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   async function handleAddContentItem(formData: FormData) {
     if (!editingWidget) return
     setIsSubmitting(true)
+    formData.set("desktopImage", newItemImage)
+    
     const res = await createWidgetContentItem(editingWidget.id, formData)
     setIsSubmitting(false)
     if (res.success) {
@@ -116,6 +121,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       setEditingWidget(updatedWidget)
       setWidgets(widgets.map(w => w.id === editingWidget.id ? updatedWidget : w))
       toast.success("تم إضافة العنصر")
+      setNewItemImage("")
       const form: any = document.getElementById("add-item-form")
       if (form) form.reset()
     }
@@ -235,7 +241,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                     </Button>
                   </form>
 
-                  {(editingWidget.type === "HeroSlider" || editingWidget.type === "BannerGrid") && (
+                  {(editingWidget.type === "HeroSlider" || editingWidget.type === "BannerGrid" || editingWidget.type === "BrandSlider") && (
                     <div className="pt-6 border-t border-border/50 space-y-4">
                       <h4 className="font-semibold text-sm">محتوى الواجهة</h4>
                       
@@ -259,12 +265,21 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         ))}
                       </div>
 
-                      <form action={handleAddContentItem} id="add-item-form" className="p-3 rounded-lg border border-dashed border-border bg-muted/10 space-y-2.5">
+                      <form action={handleAddContentItem} id="add-item-form" className="p-4 rounded-xl border border-dashed border-border bg-muted/10 space-y-4">
                         <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">إضافة عنصر جديد</h5>
-                        <input name="desktopImage" placeholder="رابط الصورة (URL)" required dir="ltr" className="h-8 w-full rounded border border-input bg-background px-2 text-xs text-left" />
-                        <input name="title" placeholder="العنوان النصي (اختياري)" className="h-8 w-full rounded border border-input bg-background px-2 text-xs" />
-                        <input name="buttonUrl" placeholder="رابط التوجيه عند الضغط" dir="ltr" className="h-8 w-full rounded border border-input bg-background px-2 text-xs text-left" />
-                        <Button type="submit" variant="secondary" size="sm" className="w-full text-xs h-8" disabled={isSubmitting}>
+                        
+                        <ImageUploader 
+                          label="صورة العنصر" 
+                          value={newItemImage} 
+                          onChange={setNewItemImage} 
+                        />
+                        
+                        <div className="space-y-2">
+                          <input name="title" placeholder="العنوان النصي (اختياري)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                          <input name="buttonUrl" placeholder="رابط التوجيه عند الضغط" dir="ltr" className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" />
+                        </div>
+                        
+                        <Button type="submit" variant="secondary" size="sm" className="w-full text-xs h-9" disabled={isSubmitting || !newItemImage}>
                           إضافة
                         </Button>
                       </form>

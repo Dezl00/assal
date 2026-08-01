@@ -3,6 +3,7 @@ import { HeroSlider } from "./widgets/hero-slider"
 import { FeaturedProducts } from "./widgets/featured-products"
 import { BannerGrid } from "./widgets/banner-grid"
 import { TextBlock } from "./widgets/text-block"
+import { BrandSlider } from "./widgets/brand-slider"
 
 export function WidgetRenderer({ widget }: { widget: any }) {
   // Common visibility classes based on settings
@@ -33,6 +34,12 @@ export function WidgetRenderer({ widget }: { widget: any }) {
       return (
         <section className={`w-full py-16 ${visibilityClass}`}>
           <TextBlock widget={widget} />
+        </section>
+      )
+    case "BrandSlider":
+      return (
+        <section className={`w-full ${visibilityClass}`}>
+          <BrandSlider widget={widget} />
         </section>
       )
     default:

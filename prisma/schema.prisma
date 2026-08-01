@@ -207,6 +207,7 @@ model ThemeConfig {
   id            String   @id @default(cuid()) // We will only use one record, id="default"
   storeName     String   @default("عسل طبيعي")
   storeDescription String?
+  logoUrl       String?
   primaryColor  String   @default("#000000")
   secondaryColor String  @default("#ffffff")
   borderRadius  String   @default("0px")
