@@ -23,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl">
-      <body className={`${fallbackFont.variable} font-sans antialiased`}>
+    <html lang="ar" dir="rtl" className={fallbackFont.variable}>
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>
