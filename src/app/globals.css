@@ -27,7 +27,7 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   /* Font definitions */
-  --font-sans: "DG Agdin", system-ui, sans-serif;
+  --font-sans: var(--font-agnadeen), system-ui, sans-serif;
   
   /* Disable all shadows to meet user request */
   --shadow-sm: none;
@@ -45,14 +45,6 @@
     0% { transform: translateX(0); }
     100% { transform: translateX(100%); }
   }
-}
-
-@font-face {
-  font-family: 'DG Agdin';
-  src: url('/fonts/dg-agdin.woff2') format('woff2'),
-       url('/fonts/dg-agdin.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
 }
 
 @layer base {
