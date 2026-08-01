@@ -20,7 +20,7 @@ export function NavigationClient({ menus }: { menus: any[] }) {
     setIsSubmitting(false)
     if (res.success) {
       toast.success("تم إنشاء القائمة بنجاح")
-      const form = document.getElementById("add-menu-form") as HTMLFormElement
+      const form: any = document.getElementById("add-menu-form")
       if (form) form.reset()
     } else {
       toast.error(res.error || "حدث خطأ ما")

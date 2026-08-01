@@ -17,7 +17,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
 
   useEffect(() => {
     if (editingCategory) {
-      const form = document.getElementById("add-category-form") as HTMLFormElement
+      const form: any = document.getElementById("add-category-form")
       if (form) {
         form.name.value = editingCategory.name || ""
         form.slug.value = editingCategory.slug || ""
@@ -39,7 +39,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
 
   function resetForm() {
     setEditingCategory(null)
-    const form = document.getElementById("add-category-form") as HTMLFormElement
+    const form: any = document.getElementById("add-category-form")
     if (form) {
       form.reset()
       form.categoryType.value = "main"

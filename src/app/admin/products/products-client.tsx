@@ -19,7 +19,7 @@ export function ProductsClient({ products, categories }: { products: any[], cate
   // Populate form when editingProduct changes
   useEffect(() => {
     if (editingProduct) {
-      const form = document.getElementById("add-product-form") as HTMLFormElement
+      const form: any = document.getElementById("add-product-form")
       if (form) {
         form.name.value = editingProduct.name || ""
         form.slug.value = editingProduct.slug || ""
@@ -42,7 +42,7 @@ export function ProductsClient({ products, categories }: { products: any[], cate
   function resetForm() {
     setEditingProduct(null)
     setPreviewUrl(null)
-    const form = document.getElementById("add-product-form") as HTMLFormElement
+    const form: any = document.getElementById("add-product-form")
     if (form) form.reset()
   }
 
