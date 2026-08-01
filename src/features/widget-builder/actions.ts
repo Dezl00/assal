@@ -101,3 +101,60 @@ export async function deleteWidget(id: string) {
     return { success: false, error: "Failed to delete widget" }
   }
 }
+
+export async function updateWidget(id: string, data: any) {
+  try {
+    const widget = await db.widget.update({
+      where: { id },
+      data
+    })
+    
+    revalidatePath("/admin/widgets")
+    revalidatePath("/")
+    return { success: true, widget }
+  } catch (error: any) {
+    return { success: false, error: "Failed to update widget" }
+  }
+}
+
+export async function createWidgetContentItem(widgetId: string, formData: FormData) {
+  try {
+    const desktopImage = formData.get("desktopImage") as string || null
+    const mobileImage = formData.get("mobileImage") as string || null
+    const title = formData.get("title") as string || null
+    const subtitle = formData.get("subtitle") as string || null
+    const buttonText = formData.get("buttonText") as string || null
+    const buttonUrl = formData.get("buttonUrl") as string || null
+    const sortOrder = parseInt(formData.get("sortOrder") as string) || 0
+
+    const item = await db.widgetContentItem.create({
+      data: {
+        widgetId,
+        desktopImage,
+        mobileImage,
+        title,
+        subtitle,
+        buttonText,
+        buttonUrl,
+        sortOrder
+      }
+    })
+
+    revalidatePath("/admin/widgets")
+    revalidatePath("/")
+    return { success: true, item }
+  } catch (error: any) {
+    return { success: false, error: "Failed to create widget item" }
+  }
+}
+
+export async function deleteWidgetContentItem(id: string) {
+  try {
+    await db.widgetContentItem.delete({ where: { id } })
+    revalidatePath("/admin/widgets")
+    revalidatePath("/")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Failed to delete widget item" }
+  }
+}
