@@ -15,11 +15,23 @@ export function ImageUploader({ value, onChange, className, label = "اختر ص
   const [isUploading, setIsUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
-    // Validate size (e.g. 5MB)
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    const file = e.dataTransfer.files?.[0]
+    if (file && file.type.startsWith("image/")) {
+      await uploadFile(file)
+    } else {
+      toast.error("يرجى إفلات ملف صورة صالح")
+    }
+  }
+
+  const uploadFile = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast.error("حجم الصورة كبير جداً. الحد الأقصى 5 ميجابايت.")
       return
@@ -48,12 +60,22 @@ export function ImageUploader({ value, onChange, className, label = "اختر ص
       console.error(error)
     } finally {
       setIsUploading(false)
-      if (inputRef.current) inputRef.current.value = "" // reset input
+      if (inputRef.current) inputRef.current.value = ""
     }
   }
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await uploadFile(file)
+  }
+
   return (
-    <div className={cn("space-y-2", className)}>
+    <div 
+      className={cn("space-y-2", className)}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       {label && <label className="text-xs font-semibold text-foreground">{label}</label>}
       
       <div className="relative group">
@@ -100,10 +122,10 @@ export function ImageUploader({ value, onChange, className, label = "اختر ص
             {isUploading ? (
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
             ) : (
-              <UploadCloud className="w-8 h-8 mb-2" />
+              <UploadCloud className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
             )}
             <span className="text-xs font-medium">
-              {isUploading ? "جاري الرفع..." : "اضغط لرفع صورة"}
+              {isUploading ? "جاري الرفع..." : "اضغط أو اسحب الصورة هنا للرفع"}
             </span>
           </button>
         )}

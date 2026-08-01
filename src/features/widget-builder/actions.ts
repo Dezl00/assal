@@ -158,3 +158,52 @@ export async function deleteWidgetContentItem(id: string) {
     return { success: false, error: "Failed to delete widget item" }
   }
 }
+
+export async function updateWidgetContentItem(id: string, formData: FormData) {
+  try {
+    const desktopImage = formData.get("desktopImage") as string || null
+    const mobileImage = formData.get("mobileImage") as string || null
+    const title = formData.get("title") as string || null
+    const subtitle = formData.get("subtitle") as string || null
+    const buttonText = formData.get("buttonText") as string || null
+    const buttonUrl = formData.get("buttonUrl") as string || null
+
+    const dataToUpdate: any = {}
+    if (desktopImage !== null) dataToUpdate.desktopImage = desktopImage
+    if (mobileImage !== null) dataToUpdate.mobileImage = mobileImage
+    if (title !== null) dataToUpdate.title = title
+    if (subtitle !== null) dataToUpdate.subtitle = subtitle
+    if (buttonText !== null) dataToUpdate.buttonText = buttonText
+    if (buttonUrl !== null) dataToUpdate.buttonUrl = buttonUrl
+
+    const item = await db.widgetContentItem.update({
+      where: { id },
+      data: dataToUpdate
+    })
+
+    revalidatePath("/admin/widgets")
+    revalidatePath("/")
+    return { success: true, item }
+  } catch (error: any) {
+    return { success: false, error: "Failed to update widget item" }
+  }
+}
+
+export async function updateWidgetContentItemOrder(updates: { id: string, sortOrder: number }[]) {
+  try {
+    await db.$transaction(
+      updates.map((update) => 
+        db.widgetContentItem.update({
+          where: { id: update.id },
+          data: { sortOrder: update.sortOrder }
+        })
+      )
+    )
+    
+    revalidatePath("/admin/widgets")
+    revalidatePath("/")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Failed to update widget item order" }
+  }
+}

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
-import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem } from "@/features/widget-builder/actions"
+import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
 import { ImageUploader } from "@/components/ui/image-uploader"
 import { Switch } from "@/components/ui/switch"
 
@@ -26,6 +26,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [draggedWidgetId, setDraggedWidgetId] = useState<string | null>(null)
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [newItemImage, setNewItemImage] = useState("")
 
   // Drag and Drop handlers
@@ -110,22 +112,90 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     }
   }
 
+  // Item Drag and Drop handlers
+  function handleItemDragStart(e: React.DragEvent, id: string) {
+    setDraggedItemId(id)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  function handleItemDragOver(e: React.DragEvent, id: string) {
+    e.preventDefault()
+    if (draggedItemId === id || !draggedItemId || !editingWidget) return
+
+    const items = [...(editingWidget.items || [])]
+    const draggedIndex = items.findIndex(i => i.id === draggedItemId)
+    const hoverIndex = items.findIndex(i => i.id === id)
+
+    const [draggedItem] = items.splice(draggedIndex, 1)
+    items.splice(hoverIndex, 0, draggedItem)
+
+    setEditingWidget({ ...editingWidget, items })
+  }
+
+  async function handleItemDrop() {
+    setDraggedItemId(null)
+    if (!editingWidget || !editingWidget.items) return
+
+    const updates = editingWidget.items.map((i: any, index: number) => ({ id: i.id, sortOrder: index }))
+    const res = await updateWidgetContentItemOrder(updates)
+    if (!res.success) {
+      toast.error("فشل في حفظ ترتيب العناصر")
+    } else {
+      toast.success("تم تحديث الترتيب")
+      setWidgets(widgets.map(w => w.id === editingWidget.id ? editingWidget : w))
+    }
+  }
+
   async function handleAddContentItem(formData: FormData) {
     if (!editingWidget) return
     setIsSubmitting(true)
     formData.set("desktopImage", newItemImage)
     
-    const res = await createWidgetContentItem(editingWidget.id, formData)
-    setIsSubmitting(false)
-    if (res.success) {
-      const updatedWidget = { ...editingWidget, items: [...(editingWidget.items || []), res.item] }
-      setEditingWidget(updatedWidget)
-      setWidgets(widgets.map(w => w.id === editingWidget.id ? updatedWidget : w))
-      toast.success("تم إضافة العنصر")
-      setNewItemImage("")
-      const form: any = document.getElementById("add-item-form")
-      if (form) form.reset()
+    if (editingItemId) {
+      // Update existing item
+      const res = await updateWidgetContentItem(editingItemId, formData)
+      setIsSubmitting(false)
+      if (res.success) {
+        const updatedItems = editingWidget.items.map((i: any) => i.id === editingItemId ? { ...i, ...res.item } : i)
+        const updatedWidget = { ...editingWidget, items: updatedItems }
+        setEditingWidget(updatedWidget)
+        setWidgets(widgets.map(w => w.id === editingWidget.id ? updatedWidget : w))
+        toast.success("تم حفظ التعديلات")
+        cancelEditItem()
+      } else {
+        toast.error("فشل الحفظ")
+      }
+    } else {
+      // Create new item
+      const res = await createWidgetContentItem(editingWidget.id, formData)
+      setIsSubmitting(false)
+      if (res.success) {
+        const updatedWidget = { ...editingWidget, items: [...(editingWidget.items || []), res.item] }
+        setEditingWidget(updatedWidget)
+        setWidgets(widgets.map(w => w.id === editingWidget.id ? updatedWidget : w))
+        toast.success("تم إضافة العنصر")
+        cancelEditItem()
+      } else {
+        toast.error("فشل الإضافة")
+      }
     }
+  }
+
+  function startEditItem(item: any) {
+    setEditingItemId(item.id)
+    setNewItemImage(item.desktopImage || "")
+    const form: any = document.getElementById("add-item-form")
+    if (form) {
+      if (form.elements["title"]) form.elements["title"].value = item.title || ""
+      if (form.elements["buttonUrl"]) form.elements["buttonUrl"].value = item.buttonUrl || ""
+    }
+  }
+
+  function cancelEditItem() {
+    setEditingItemId(null)
+    setNewItemImage("")
+    const form: any = document.getElementById("add-item-form")
+    if (form) form.reset()
   }
 
   async function handleDeleteItem(itemId: string) {
@@ -251,8 +321,26 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                       
                       <div className="space-y-2">
                         {editingWidget.items?.map((item: any) => (
-                          <div key={item.id} className="flex items-center justify-between p-2 rounded-md border border-border/50 bg-background text-xs">
+                          <div 
+                            key={item.id} 
+                            draggable
+                            onDragStart={(e) => handleItemDragStart(e, item.id)}
+                            onDragOver={(e) => handleItemDragOver(e, item.id)}
+                            onDrop={handleItemDrop}
+                            onDragEnd={() => setDraggedItemId(null)}
+                            onClick={() => startEditItem(item)}
+                            className={`flex items-center justify-between p-2 rounded-md border transition-all cursor-pointer ${
+                              draggedItemId === item.id 
+                                ? 'opacity-50 border-dashed border-border'
+                                : editingItemId === item.id
+                                  ? 'border-primary bg-primary/5'
+                                  : 'border-border/50 bg-background hover:border-primary/30'
+                            } text-xs`}
+                          >
                             <div className="flex items-center gap-2 truncate">
+                              <div className="cursor-grab text-muted-foreground hover:text-foreground">
+                                <GripVertical className="h-4 w-4" />
+                              </div>
                               {item.desktopImage ? (
                                 <img src={item.desktopImage} className="w-8 h-8 object-cover rounded bg-muted shrink-0" />
                               ) : (
@@ -262,15 +350,24 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                               )}
                               <span className="truncate max-w-[120px] font-medium">{item.title || "بدون عنوان"}</span>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteItem(item.id)}>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10" onClick={(e) => { e.stopPropagation(); handleDeleteItem(item.id); }}>
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
                         ))}
                       </div>
 
-                      <form action={handleAddContentItem} id="add-item-form" className="p-4 rounded-xl border border-dashed border-border bg-muted/10 space-y-4">
-                        <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">إضافة عنصر جديد</h5>
+                      <form action={handleAddContentItem} id="add-item-form" className={`p-4 rounded-xl border ${editingItemId ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : 'border-dashed border-border bg-muted/10'} space-y-4 transition-colors`}>
+                        <div className="flex items-center justify-between">
+                          <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                            {editingItemId ? "تعديل العنصر" : "إضافة عنصر جديد"}
+                          </h5>
+                          {editingItemId && (
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={cancelEditItem}>
+                              <X className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
                         
                         <ImageUploader 
                           label="صورة العنصر" 
@@ -283,8 +380,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                           <input name="buttonUrl" placeholder="رابط التوجيه عند الضغط" dir="ltr" className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" />
                         </div>
                         
-                        <Button type="submit" variant="secondary" size="sm" className="w-full text-xs h-9" disabled={isSubmitting || !newItemImage}>
-                          إضافة
+                        <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9" disabled={isSubmitting || !newItemImage}>
+                          {editingItemId ? "حفظ التعديلات" : "إضافة"}
                         </Button>
                       </form>
                     </div>
