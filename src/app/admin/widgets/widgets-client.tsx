@@ -325,11 +325,11 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       )}
 
       <ConfirmModal 
-        isOpen={deleteModalOpen}
+        isOpen={!!widgetToDelete}
         title="حذف الواجهة"
         description="هل أنت متأكد من حذف هذه الواجهة نهائياً من الصفحة الرئيسية؟"
         onConfirm={confirmDelete}
-        onCancel={() => setDeleteModalOpen(false)}
+        onCancel={() => setWidgetToDelete(null)}
       />
     </div>
   )
