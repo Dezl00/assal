@@ -23,4 +23,16 @@ export async function uploadImage(fileBuffer: Buffer, folder: string = "assal/pr
   })
 }
 
+export async function deleteImage(publicId: string) {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.destroy(publicId, (error, result) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
+
 export { cloudinary }

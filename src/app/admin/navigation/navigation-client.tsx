@@ -160,6 +160,7 @@ export function NavigationClient({ menus }: { menus: any[] }) {
             </div>
           </div>
         </div>
+      </div>
 
       <ConfirmModal 
         isOpen={deleteModalOpen}
