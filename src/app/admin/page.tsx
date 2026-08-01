@@ -3,68 +3,68 @@ import { Activity, Users, ShoppingBag, DollarSign } from "lucide-react"
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
-        <h1 className="text-3xl font-bold">لوحة التحكم الرئيسية</h1>
-        <p className="mt-2 text-muted-foreground">أهلاً بك في نظام إدارة منصة عسل.</p>
+        <h1 className="text-3xl font-bold tracking-tight">الرئيسية</h1>
+        <p className="mt-2 text-muted-foreground">نظرة عامة على أداء المتجر والمبيعات.</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-primary/20">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-primary/10 p-3 text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">إجمالي المبيعات</p>
-              <h3 className="text-2xl font-bold">0.00 ر.س</h3>
+              <p className="text-sm font-medium text-muted-foreground">إجمالي المبيعات</p>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">0.00 ر.س</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-blue-500/20">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-blue-500/10 p-3 text-blue-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
               <ShoppingBag className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">الطلبات الجديدة</p>
-              <h3 className="text-2xl font-bold">0</h3>
+              <p className="text-sm font-medium text-muted-foreground">الطلبات الجديدة</p>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">0</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-orange-500/20">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-orange-500/10 p-3 text-orange-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">العملاء</p>
-              <h3 className="text-2xl font-bold">0</h3>
+              <p className="text-sm font-medium text-muted-foreground">العملاء</p>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">0</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-green-500/20">
           <div className="flex items-center gap-4">
-            <div className="rounded-lg bg-green-500/10 p-3 text-green-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
               <Activity className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">المنتجات النشطة</p>
-              <h3 className="text-2xl font-bold">0</h3>
+              <p className="text-sm font-medium text-muted-foreground">المنتجات النشطة</p>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">0</h3>
             </div>
           </div>
         </div>
       </div>
 
       {/* Recent Activity Placeholder */}
-      <div className="rounded-xl border bg-card p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold">الأنشطة الأخيرة</h3>
-        <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-          لا توجد أنشطة مسجلة حتى الآن.
+      <div className="rounded-xl border border-border/50 bg-card p-8 shadow-sm">
+        <h3 className="mb-6 text-lg font-semibold tracking-tight">الأنشطة الأخيرة</h3>
+        <div className="flex h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/30">
+          <p className="text-sm text-muted-foreground">لا توجد أنشطة مسجلة حتى الآن.</p>
         </div>
       </div>
     </div>
