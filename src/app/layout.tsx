@@ -1,31 +1,11 @@
 import type { Metadata } from "next";
 // import localFont from "next/font/local";
-import { Cairo } from "next/font/google"; // Temporary fallback until DG Agnadeen is uploaded
+import { IBM_Plex_Sans_Arabic } from "next/font/google"; // Requested font by user
 import "./globals.css";
 
-/* 
-// UNCOMMENT THIS WHEN FONTS ARE UPLOADED TO src/fonts/
-const agnadeenFont = localFont({
-  src: [
-    {
-      path: "../fonts/DGAgnadeen-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../fonts/DGAgnadeen-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    }
-  ],
-  variable: "--font-agnadeen",
-  display: "swap",
-});
-*/
-
-const fallbackFont = Cairo({
+const fallbackFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-agnadeen",
   display: "swap",
 });
