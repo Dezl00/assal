@@ -1,6 +1,7 @@
 import React from "react"
 import { db } from "@/lib/db"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { PlusCircle, Search, Edit, Trash2, Folder } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -24,10 +25,12 @@ export default async function AdminCategoriesPage() {
           <p className="text-muted-foreground mt-1">إدارة تصنيفات المنتجات والأقسام الفرعية.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="gap-2">
-            <PlusCircle className="h-4 w-4" />
-            إضافة قسم
-          </Button>
+          <Link href="/admin/categories/new">
+            <Button className="gap-2">
+              <PlusCircle className="h-4 w-4" />
+              إضافة قسم
+            </Button>
+          </Link>
         </div>
       </div>
 

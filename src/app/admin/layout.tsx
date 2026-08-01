@@ -18,7 +18,7 @@ export default function AdminLayout({
   ]
 
   return (
-    <div className="flex min-h-screen bg-muted/20">
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
       <aside className="w-72 border-l border-border bg-background/80 backdrop-blur-md transition-all">
         <div className="flex h-16 items-center px-6 border-b border-border">

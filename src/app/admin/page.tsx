@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
       {/* Recent Activity Placeholder */}
       <div className="rounded-xl border border-border/50 bg-card p-8 shadow-sm">
         <h3 className="mb-6 text-lg font-semibold tracking-tight">الأنشطة الأخيرة</h3>
-        <div className="flex h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/30">
+        <div className="flex h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
           <p className="text-sm text-muted-foreground">لا توجد أنشطة مسجلة حتى الآن.</p>
         </div>
       </div>

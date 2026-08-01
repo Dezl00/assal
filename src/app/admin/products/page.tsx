@@ -1,6 +1,7 @@
 import React from "react"
 import { db } from "@/lib/db"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { PlusCircle, Search, Edit, Trash2 } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -22,10 +23,12 @@ export default async function AdminProductsPage() {
           <p className="text-muted-foreground mt-1">إدارة منتجات المتجر، المخزون، والأسعار.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button className="gap-2">
-            <PlusCircle className="h-4 w-4" />
-            إضافة منتج
-          </Button>
+          <Link href="/admin/products/new">
+            <Button className="gap-2">
+              <PlusCircle className="h-4 w-4" />
+              إضافة منتج
+            </Button>
+          </Link>
         </div>
       </div>
 
