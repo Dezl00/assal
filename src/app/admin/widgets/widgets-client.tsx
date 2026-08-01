@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem } from "@/features/widget-builder/actions"
 import { ImageUploader } from "@/components/ui/image-uploader"
+import { Switch } from "@/components/ui/switch"
 
 const WIDGET_TYPES = [
   { id: "HeroSlider", name: "سلايدر الصور", icon: ImageIcon, desc: "سلايدر متحرك للصور أعلى الصفحة" },
@@ -220,20 +221,23 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                       />
                     </div>
                     
-                    <div className="space-y-2 pt-2 bg-muted/20 p-3 rounded-lg border border-border/50">
+                    <div className="space-y-3 pt-2 bg-muted/20 p-4 rounded-xl border border-border/50">
                       <h4 className="text-xs font-semibold mb-2">إعدادات العرض:</h4>
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input type="checkbox" name="status" defaultChecked={editingWidget.status} className="rounded border-input text-primary accent-primary" />
-                        مفعل (يظهر للزوار)
-                      </label>
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input type="checkbox" name="showDesktop" defaultChecked={editingWidget.showDesktop} className="rounded border-input text-primary accent-primary" />
-                        عرض على أجهزة الحاسوب
-                      </label>
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input type="checkbox" name="showMobile" defaultChecked={editingWidget.showMobile} className="rounded border-input text-primary accent-primary" />
-                        عرض على أجهزة الجوال
-                      </label>
+                      
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium cursor-pointer">مفعل (يظهر للزوار)</label>
+                        <Switch name="status" defaultChecked={editingWidget.status} />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium cursor-pointer">عرض على أجهزة الحاسوب</label>
+                        <Switch name="showDesktop" defaultChecked={editingWidget.showDesktop} />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium cursor-pointer">عرض على أجهزة الجوال</label>
+                        <Switch name="showMobile" defaultChecked={editingWidget.showMobile} />
+                      </div>
                     </div>
                     
                     <Button type="submit" disabled={isSubmitting} size="sm" className="w-full">
