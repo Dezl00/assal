@@ -15,15 +15,23 @@ export async function FeaturedProducts({ widget }: { widget: any }) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex items-end justify-between mb-10">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">{widget.title || "أحدث المنتجات"}</h2>
-          {widget.subtitle && <p className="text-muted-foreground mt-2">{widget.subtitle}</p>}
+      {widget.title && widget.title !== "" ? (
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">{widget.title}</h2>
+            {widget.subtitle && <p className="text-muted-foreground mt-2">{widget.subtitle}</p>}
+          </div>
+          <Link href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
+            عرض الكل
+          </Link>
         </div>
-        <Link href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
-          عرض الكل
-        </Link>
-      </div>
+      ) : (
+        <div className="flex justify-end mb-6">
+          <Link href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
+            عرض الكل
+          </Link>
+        </div>
+      )}
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => (
