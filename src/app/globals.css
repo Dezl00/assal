@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  /* Override shadows to NONE as per enterprise requirements */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
+  --shadow-inner: none;
+  --shadow: none;
+
+  /* Font definitions (DG Agnadeen via Next.js local font will inject into --font-agnadeen) */
+  --font-sans: var(--font-agnadeen), system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+    --primary: #000000;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --border: #e4e4e7;
+    --ring: #000000;
+    --radius: 0px; /* From Theme Config, default 0px */
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    /* Arabic RTL setup is handled in HTML dir="rtl" */
+  }
+
+  /* Explicitly prevent gradients globally if someone accidentally uses them */
+  * {
+    background-image: none !important;
+  }
+  
+  img, video {
+    background-image: none !important;
+  }
+}
+
+@layer utilities {
+  .rtl-flip {
+    transform: scaleX(-1);
+  }
+}

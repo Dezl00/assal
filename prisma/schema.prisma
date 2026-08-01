@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  passwordHash  String?
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+  activityLogs  ActivityLog[]
+}
+
+model Widget {
+  id          String   @id @default(cuid())
+  type        String   // HeroSlider, BannerGrid, FeaturedProducts, etc.
+  title       String?
+  subtitle    String?
+  status      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  
+  // Visibility
+  showDesktop Boolean  @default(true)
+  showTablet  Boolean  @default(true)
+  showMobile  Boolean  @default(true)
+  
+  // Styling JSON (Padding, Margin, Width, BgColor, Animation, CssClass)
+  settings    Json?    
+  
+  // Data Source JSON (e.g. { source: "Category", categoryId: "123", sort: "Newest", limit: 10 })
+  dataSource  Json?    
+  
+  // Display Options JSON (Columns, Rows, Spacing, ImageRatio, ShowPrice, etc.)
+  display     Json?    
+
+  // Content (Slides for Hero, Banners, etc.)
+  items       WidgetContentItem[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WidgetContentItem {
+  id           String  @id @default(cuid())
+  widgetId     String
+  widget       Widget  @relation(fields: [widgetId], references: [id], onDelete: Cascade)
+  
+  desktopImage String?
+  mobileImage  String?
+  title        String?
+  subtitle     String?
+  buttonText   String?
+  buttonUrl    String?
+  sortOrder    Int     @default(0)
+  status       Boolean @default(true)
+  
+  // For specific redirects (Brand, Category, Product)
+  redirectType String?
+  redirectId   String?
+}
+
+model MediaAsset {
+  id           String   @id @default(cuid())
+  publicId     String   @unique
+  url          String
+  format       String
+  width        Int?
+  height       Int?
+  bytes        Int?
+  folder       String?
+  createdAt    DateTime @default(now())
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Brand {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  logoUrl     String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Collection {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  products    Product[] @relation("CollectionProducts")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id             String       @id @default(cuid())
+  name           String
+  slug           String       @unique
+  sku            String       @unique
+  barcode        String?
+  description    String?
+  price          Float
+  discountPrice  Float?
+  stock          Int          @default(0)
+  
+  categoryId     String
+  category       Category     @relation(fields: [categoryId], references: [id])
+  
+  brandId        String?
+  brand          Brand?       @relation(fields: [brandId], references: [id])
+  
+  collections    Collection[] @relation("CollectionProducts")
+  
+  images         ProductImage[]
+  
+  // Product Recommendation overrides (Optional)
+  recommendationMode String @default("Automatic") // Automatic, Manual, Disabled
+  
+  orders         OrderItem[]
+  
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model ProductImage {
+  id         String   @id @default(cuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url        String
+  isPrimary  Boolean  @default(false)
+  sortOrder  Int      @default(0)
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id])
+  status        String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
+  totalAmount   Float
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  price      Float
+}
+
+model Menu {
+  id          String     @id @default(cuid())
+  name        String     @unique // e.g., 'header-menu', 'footer-menu'
+  items       MenuItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model MenuItem {
+  id          String     @id @default(cuid())
+  menuId      String
+  menu        Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  label       String
+  url         String?
+  icon        String?
+  sortOrder   Int        @default(0)
+  parentId    String?
+  parent      MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id])
+  children    MenuItem[] @relation("MenuHierarchy")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model ThemeConfig {
+  id            String   @id @default(cuid()) // We will only use one record, id="default"
+  primaryColor  String   @default("#000000")
+  secondaryColor String  @default("#ffffff")
+  borderRadius  String   @default("0px")
+  buttonStyle   String   @default("solid") // solid, outline
+  
+  updatedAt     DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  action      String   // Create, Update, Delete, Login
+  entityType  String   // Product, Widget, etc.
+  entityId    String?
+  details     Json?
+  ipAddress   String?
+  browser     String?
+  createdAt   DateTime @default(now())
+}
