@@ -1,28 +1,88 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Edit, Trash2, Folder, PlusCircle } from "lucide-react"
-import { createCategory, deleteCategory } from "@/features/categories/actions"
+import { Search, Edit, Trash2, Folder, PlusCircle, X } from "lucide-react"
+import { createCategory, deleteCategory, updateCategory } from "@/features/categories/actions"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 
 export function CategoriesClient({ categories }: { categories: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isFormVisible, setIsFormVisible] = useState(false) // toggle for mobile view, but always visible on desktop if split screen
+  const [isFormVisible, setIsFormVisible] = useState(false)
+  
+  const [editingCategory, setEditingCategory] = useState<any | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
 
-  async function handleCreate(formData: FormData) {
-    setIsSubmitting(true)
-    const res = await createCategory(formData)
-    setIsSubmitting(false)
-    if (res.success) {
+  useEffect(() => {
+    if (editingCategory) {
       const form = document.getElementById("add-category-form") as HTMLFormElement
-      if (form) form.reset()
-    } else {
-      alert(res.error)
+      if (form) {
+        form.name.value = editingCategory.name || ""
+        form.slug.value = editingCategory.slug || ""
+        form.description.value = editingCategory.description || ""
+        
+        // Handle radio buttons and parent selection
+        const isSub = !!editingCategory.parentId
+        form.categoryType.value = isSub ? "sub" : "main"
+        
+        const select = document.getElementById('parentId-select') as HTMLSelectElement
+        if (select) {
+          select.disabled = !isSub
+          select.value = editingCategory.parentId || ""
+        }
+      }
+      setIsFormVisible(true)
+    }
+  }, [editingCategory])
+
+  function resetForm() {
+    setEditingCategory(null)
+    const form = document.getElementById("add-category-form") as HTMLFormElement
+    if (form) {
+      form.reset()
+      form.categoryType.value = "main"
+      const select = document.getElementById('parentId-select') as HTMLSelectElement
+      if (select) {
+        select.disabled = true
+        select.value = ""
+      }
     }
   }
 
+  async function handleSubmit(formData: FormData) {
+    setIsSubmitting(true)
+    let res;
+    if (editingCategory) {
+      res = await updateCategory(editingCategory.id, formData)
+    } else {
+      res = await createCategory(formData)
+    }
+    setIsSubmitting(false)
+    
+    if (res.success) {
+      toast.success(editingCategory ? "تم تعديل القسم بنجاح" : "تم إنشاء القسم بنجاح")
+      resetForm()
+    } else {
+      toast.error(res.error || "حدث خطأ ما")
+    }
+  }
+
+  async function confirmDelete() {
+    if (!categoryToDelete) return
+    const res = await deleteCategory(categoryToDelete)
+    if (res.success) {
+      toast.success("تم الحذف بنجاح")
+    } else {
+      toast.error(res.error || "حدث خطأ أثناء الحذف")
+    }
+    setDeleteModalOpen(false)
+    setCategoryToDelete(null)
+  }
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">الأقسام</h1>
@@ -89,22 +149,26 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                         </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                            {category._count.products}
+                            {category._count?.products || 0}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={() => setEditingCategory(category)}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button 
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={async () => {
-                                if(confirm("هل أنت متأكد من حذف هذا القسم؟")) {
-                                  await deleteCategory(category.id)
-                                }
+                              onClick={() => {
+                                setCategoryToDelete(category.id)
+                                setDeleteModalOpen(true)
                               }}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -123,13 +187,20 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
         {/* Sticky Form Column (Right in RTL) */}
         <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
           <div className="rounded-xl border border-border/50 bg-background shadow-sm overflow-hidden">
-            <div className="border-b border-border/50 px-6 py-4 bg-muted/5">
-              <h2 className="text-lg font-semibold tracking-tight">إضافة قسم جديد</h2>
-              <p className="text-xs text-muted-foreground mt-1">تعبئة البيانات للإضافة السريعة.</p>
+            <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">{editingCategory ? "تعديل القسم" : "إضافة قسم جديد"}</h2>
+                <p className="text-xs text-muted-foreground mt-1">{editingCategory ? "تعديل بيانات القسم المحدد" : "تعبئة البيانات للإضافة السريعة."}</p>
+              </div>
+              {editingCategory && (
+                <Button variant="ghost" size="icon" onClick={resetForm} className="h-8 w-8 shrink-0 text-muted-foreground">
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
             </div>
             
             <div className="p-6">
-              <form action={handleCreate} className="space-y-6" id="add-category-form">
+              <form action={handleSubmit} className="space-y-6" id="add-category-form">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">اسم القسم <span className="text-red-500">*</span></label>
                   <input 
@@ -195,7 +266,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none disabled:opacity-50 disabled:bg-muted/10"
                   >
                     <option value="">اختر...</option>
-                    {categories.filter(c => !c.parentId).map(cat => (
+                    {categories.filter(c => !c.parentId && c.id !== editingCategory?.id).map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
                   </select>
@@ -212,7 +283,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full h-10">
-                  {isSubmitting ? "جاري الحفظ..." : "حفظ القسم"}
+                  {isSubmitting ? "جاري الحفظ..." : (editingCategory ? "تحديث القسم" : "حفظ القسم")}
                 </Button>
               </form>
             </div>
@@ -220,6 +291,14 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
         </div>
 
       </div>
+
+      <ConfirmModal 
+        isOpen={deleteModalOpen}
+        title="حذف القسم"
+        description="هل أنت متأكد من حذف هذا القسم؟ إذا كان يحتوي على منتجات قد تتأثر بذلك."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModalOpen(false)}
+      />
     </div>
   )
 }

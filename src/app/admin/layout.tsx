@@ -1,6 +1,7 @@
 import React from "react"
 import Link from "next/link"
 import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree } from "lucide-react"
+import { Toaster } from "sonner"
 
 export default function AdminLayout({
   children,
@@ -53,6 +54,12 @@ export default function AdminLayout({
           {children}
         </div>
       </main>
+      <Toaster 
+        position="bottom-left" 
+        toastOptions={{
+          className: 'bg-green-100/90 text-green-800 border-none shadow-none font-medium',
+        }} 
+      />
     </div>
   )
 }

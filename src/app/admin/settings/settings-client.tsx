@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { updateThemeConfig } from "@/features/settings/actions"
+import { toast } from "sonner"
 
 export function SettingsClient({ config }: { config: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -12,9 +13,9 @@ export function SettingsClient({ config }: { config: any }) {
     const res = await updateThemeConfig(formData)
     setIsSubmitting(false)
     if (res.success) {
-      alert("تم حفظ الإعدادات بنجاح!")
+      toast.success("تم حفظ الإعدادات بنجاح!")
     } else {
-      alert(res.error)
+      toast.error(res.error || "حدث خطأ ما")
     }
   }
 

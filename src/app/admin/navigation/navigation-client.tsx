@@ -5,24 +5,42 @@ import { Button } from "@/components/ui/button"
 import { Search, Edit, Trash2, List, PlusCircle } from "lucide-react"
 import { createMenu, deleteMenu } from "@/features/navigation/actions"
 
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
+
 export function NavigationClient({ menus }: { menus: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [menuToDelete, setMenuToDelete] = useState<string | null>(null)
 
   async function handleCreate(formData: FormData) {
     setIsSubmitting(true)
     const res = await createMenu(formData)
     setIsSubmitting(false)
     if (res.success) {
+      toast.success("تم إنشاء القائمة بنجاح")
       const form = document.getElementById("add-menu-form") as HTMLFormElement
       if (form) form.reset()
     } else {
-      alert(res.error)
+      toast.error(res.error || "حدث خطأ ما")
     }
   }
 
+  async function confirmDelete() {
+    if (!menuToDelete) return
+    const res = await deleteMenu(menuToDelete)
+    if (res.success) {
+      toast.success("تم الحذف بنجاح")
+    } else {
+      toast.error(res.error || "حدث خطأ أثناء الحذف")
+    }
+    setDeleteModalOpen(false)
+    setMenuToDelete(null)
+  }
+
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">القوائم والروابط</h1>
@@ -88,17 +106,13 @@ export function NavigationClient({ menus }: { menus: any[] }) {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                              <Edit className="h-4 w-4" />
-                            </Button>
                             <Button 
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={async () => {
-                                if(confirm("هل أنت متأكد من حذف هذه القائمة؟")) {
-                                  await deleteMenu(menu.id)
-                                }
+                              onClick={() => {
+                                setMenuToDelete(menu.id)
+                                setDeleteModalOpen(true)
                               }}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -147,7 +161,13 @@ export function NavigationClient({ menus }: { menus: any[] }) {
           </div>
         </div>
 
-      </div>
+      <ConfirmModal 
+        isOpen={deleteModalOpen}
+        title="حذف القائمة"
+        description="هل أنت متأكد من حذف هذه القائمة وجميع الروابط بداخلها؟"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModalOpen(false)}
+      />
     </div>
   )
 }
