@@ -1,15 +1,22 @@
 import React from "react"
 import Link from "next/link"
 
-export function StorefrontFooter({ menuItems }: { menuItems: any[] }) {
+export function StorefrontFooter({ menuItems, themeConfig }: { menuItems: any[], themeConfig?: any }) {
   return (
     <footer className="bg-secondary text-secondary-foreground pt-16 pb-8 border-t border-border/10">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="md:col-span-1">
-            <Link href="/" className="text-2xl font-bold tracking-tight text-white mb-4 block">عسل</Link>
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              {themeConfig?.logoUrl && (
+                <img src={themeConfig.logoUrl} alt={themeConfig?.storeName || "عسل"} className="h-10 w-auto object-contain brightness-0 invert" />
+              )}
+              {(!themeConfig?.logoUrl || themeConfig?.storeName) && (
+                <span className="text-2xl font-bold tracking-tight text-white">{themeConfig?.storeName || "عسل"}</span>
+              )}
+            </Link>
             <p className="text-sm text-secondary-foreground/70 leading-relaxed">
-              متجرك الأول للحصول على أرقى المنتجات بأعلى جودة. نسعى دائماً لتقديم الأفضل لعملائنا.
+              {themeConfig?.storeDescription || "متجرك الأول للحصول على أرقى المنتجات بأعلى جودة. نسعى دائماً لتقديم الأفضل لعملائنا."}
             </p>
           </div>
           

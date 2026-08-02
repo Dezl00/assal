@@ -5,7 +5,7 @@ import { Search, ShoppingBag, User, Menu as MenuIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cart-store"
 
-export function StorefrontHeader({ menuItems }: { menuItems: any[] }) {
+export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[], themeConfig?: any }) {
   const { getTotals, setIsOpen } = useCartStore()
   const { count } = getTotals()
   const [mounted, setMounted] = useState(false)
@@ -21,9 +21,17 @@ export function StorefrontHeader({ menuItems }: { menuItems: any[] }) {
           
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full gold-gradient flex items-center justify-center text-white text-lg shadow-lg shadow-primary/20">ع</span>
-              عسل
+            <Link href="/" className="flex items-center gap-2">
+              {themeConfig?.logoUrl ? (
+                <img src={themeConfig.logoUrl} alt={themeConfig?.storeName || "عسل"} className="h-10 w-auto object-contain" />
+              ) : (
+                <span className="w-8 h-8 rounded-full gold-gradient flex items-center justify-center text-white text-lg shadow-lg shadow-primary/20">ع</span>
+              )}
+              {(!themeConfig?.logoUrl || themeConfig?.storeName) && (
+                <span className="text-2xl font-bold tracking-tight text-primary">
+                  {themeConfig?.storeName || "عسل"}
+                </span>
+              )}
             </Link>
           </div>
 

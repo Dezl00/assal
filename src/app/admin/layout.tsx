@@ -18,8 +18,9 @@ export default function AdminLayout({
     { name: "الرئيسية", href: "/admin", icon: LayoutDashboard },
     { name: "الطلبات", href: "/admin/orders", icon: ShoppingBag },
     { name: "العملاء", href: "/admin/customers", icon: FolderTree },
-    { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate },
+    { name: "الأقسام", href: "/admin/categories", icon: ListTree },
     { name: "المنتجات", href: "/admin/products", icon: ShoppingBag },
+    { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate },
     { name: "الإعدادات", href: "/admin/settings", icon: Settings },
   ]
 

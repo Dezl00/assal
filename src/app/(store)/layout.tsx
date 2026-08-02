@@ -22,17 +22,22 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     include: { items: { orderBy: { sortOrder: 'asc' } } }
   })
 
+  // Fetch Theme Config
+  const themeConfig = await db.themeConfig.findUnique({
+    where: { id: "default" }
+  })
+
   const topNavItems = headerMenu?.items || fallbackMenu?.items || []
   const footerItems = footerMenu?.items || fallbackMenu?.items || []
 
   return (
     <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20">
-      <StorefrontHeader menuItems={topNavItems} />
+      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} />
       <CartDrawer />
       <main className="flex-1">
         {children}
       </main>
-      <StorefrontFooter menuItems={footerItems} />
+      <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} />
     </div>
   )
 }
