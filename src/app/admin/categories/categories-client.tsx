@@ -64,8 +64,10 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
     }
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
     formData.set("imageUrl", imageUrl)
     let res;
     if (editingCategory) {
@@ -218,7 +220,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
             </div>
             
             <div className="p-6">
-              <form action={handleSubmit} className="space-y-6" id="add-category-form">
+              <form onSubmit={handleSubmit} className="space-y-6" id="add-category-form">
                 
                 <div className="flex justify-center mb-4">
                   <div className="w-32">

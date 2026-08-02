@@ -17,8 +17,10 @@ export function NavigationClient({ menus }: { menus: any[] }) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [menuToDelete, setMenuToDelete] = useState<string | null>(null)
 
-  async function handleCreate(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
     const res = await createMenu(formData)
     setIsSubmitting(false)
     if (res.success) {
@@ -148,7 +150,7 @@ export function NavigationClient({ menus }: { menus: any[] }) {
             </div>
             
             <div className="p-6">
-              <form action={handleCreate} className="space-y-6" id="add-menu-form">
+              <form onSubmit={handleSubmit} className="space-y-6" id="add-menu-form">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">اسم القائمة (المعرف) <span className="text-red-500">*</span></label>
                   <input 

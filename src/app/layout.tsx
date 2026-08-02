@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-// import localFont from "next/font/local";
-import { IBM_Plex_Sans_Arabic } from "next/font/google"; // Requested font by user
+import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "sonner";
+import { db } from "@/lib/db";
 
 const fallbackFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -9,9 +10,6 @@ const fallbackFont = IBM_Plex_Sans_Arabic({
   variable: "--font-agnadeen",
   display: "swap",
 });
-
-
-import { db } from "@/lib/db";
 
 export async function generateMetadata(): Promise<Metadata> {
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
@@ -34,6 +32,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={fallbackFont.variable}>
       <body className="font-sans antialiased">
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

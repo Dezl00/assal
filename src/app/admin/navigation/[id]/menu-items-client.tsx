@@ -18,13 +18,14 @@ export function MenuItemsClient({ menu }: { menu: any }) {
 
   function resetForm() {
     setEditingItem(null)
-    const form: any = document.getElementById("add-menu-item-form")
+    const form: any = document.getElementById("add-item-form")
     if (form) form.reset()
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setIsSubmitting(true)
-    
+    const formData = new FormData(e.currentTarget)
     let res;
     if (editingItem) {
       res = await updateMenuItem(editingItem.id, menu.id, formData)
@@ -57,7 +58,7 @@ export function MenuItemsClient({ menu }: { menu: any }) {
   // Populate form when editingItem changes
   React.useEffect(() => {
     if (editingItem) {
-      const form: any = document.getElementById("add-menu-item-form")
+      const form: any = document.getElementById("add-item-form")
       if (form) {
         form.label.value = editingItem.label || ""
         form.url.value = editingItem.url || ""
@@ -173,7 +174,7 @@ export function MenuItemsClient({ menu }: { menu: any }) {
             </div>
             
             <div className="p-6">
-              <form action={handleSubmit} className="space-y-6" id="add-menu-item-form">
+              <form onSubmit={handleSubmit} className="space-y-5" id="add-item-form">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">العنوان <span className="text-red-500">*</span></label>
                   <input 

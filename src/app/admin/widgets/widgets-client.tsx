@@ -93,9 +93,11 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     setWidgetToDelete(null)
   }
 
-  async function saveWidgetSettings(formData: FormData) {
+  async function saveWidgetSettings(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     if (!editingWidget) return
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
     
     const data = {
       title: formData.get("title") as string,
@@ -147,9 +149,11 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     }
   }
 
-  async function handleAddContentItem(formData: FormData) {
+  async function handleAddContentItem(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     if (!editingWidget) return
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
     formData.set("desktopImage", newItemImage)
     
     if (editingItemId) {
@@ -282,7 +286,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                     </div>
                   </div>
 
-                  <form action={saveWidgetSettings} className="space-y-4">
+                  <form onSubmit={saveWidgetSettings} className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold">العنوان (يظهر فوق الواجهة)</label>
                       <input 
@@ -358,7 +362,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         ))}
                       </div>
 
-                      <form action={handleAddContentItem} id="add-item-form" className={`p-4 rounded-xl border ${editingItemId ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : 'border-dashed border-border bg-muted/10'} space-y-4 transition-colors`}>
+                      <form onSubmit={handleAddContentItem} id="add-item-form" className={`p-4 rounded-xl border ${editingItemId ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : 'border-dashed border-border bg-muted/10'} space-y-4 transition-colors`}>
                         <div className="flex items-center justify-between">
                           <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                             {editingItemId ? "تعديل العنصر" : "إضافة عنصر جديد"}

@@ -12,8 +12,10 @@ export function SettingsClient({ config }: { config: any }) {
   const [logoUrl, setLogoUrl] = useState(config?.logoUrl || "")
   const [faviconUrl, setFaviconUrl] = useState(config?.faviconUrl || "")
 
-  async function handleSave(formData: FormData) {
+  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
     formData.set("logoUrl", logoUrl) // Add the image url to formData
     formData.set("faviconUrl", faviconUrl) 
     
@@ -35,7 +37,7 @@ export function SettingsClient({ config }: { config: any }) {
         </div>
       </div>
 
-      <form action={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+      <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
         <div className="md:col-span-2 space-y-6">
           <div className="rounded-xl border border-border/50 bg-card p-6">
             <h2 className="text-xl font-semibold mb-6">المعلومات الأساسية والشعار</h2>

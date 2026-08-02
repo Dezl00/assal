@@ -50,8 +50,10 @@ export function ProductsClient({ products, categories, brands = [] }: { products
     if (form) form.reset()
   }
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
     
     let res;
     if (editingProduct) {
@@ -218,7 +220,7 @@ export function ProductsClient({ products, categories, brands = [] }: { products
             </div>
             
             <div className="p-6 overflow-y-auto">
-              <form action={handleSubmit} className="space-y-5" id="add-product-form">
+              <form onSubmit={handleSubmit} className="space-y-6" id="add-product-form">
                 
                 <div className="space-y-4">
                   
