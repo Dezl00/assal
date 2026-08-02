@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Edit, Trash2, PlusCircle, X } from "lucide-react"
+import { Search, Edit, Trash2, PlusCircle, X, Loader2 } from "lucide-react"
 import { createProduct, deleteProduct, updateProduct } from "@/features/products/actions"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
@@ -340,7 +340,8 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                 </div>
 
                 <div className="pt-4 border-t border-border/50">
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm">
+                  <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm flex items-center justify-center gap-2">
+                    {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
                     {isSubmitting ? "جاري الحفظ..." : (editingProduct ? "تحديث المنتج" : "حفظ المنتج")}
                   </Button>
                 </div>

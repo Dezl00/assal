@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus } from "lucide-react"
+import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
@@ -311,7 +311,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                       </div>
                     </div>
                     
-                    <Button type="submit" disabled={isSubmitting} size="sm" className="w-full">
+                    <Button type="submit" disabled={isSubmitting} size="sm" className="w-full flex items-center justify-center gap-2">
+                      {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                       {isSubmitting ? "جاري الحفظ..." : "حفظ إعدادات الواجهة"}
                     </Button>
                   </form>
@@ -381,8 +382,9 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                           <input name="buttonUrl" placeholder="رابط التوجيه عند الضغط" dir="ltr" className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" />
                         </div>
                         
-                        <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9" disabled={isSubmitting || !newItemImage}>
-                          {editingItemId ? "حفظ التعديلات" : "إضافة"}
+                        <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || !newItemImage}>
+                          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {isSubmitting ? "جاري..." : (editingItemId ? "تحديث الشريحة" : "إضافة الشريحة")}
                         </Button>
                       </form>
                     </div>

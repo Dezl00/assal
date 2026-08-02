@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Edit, Trash2, List, PlusCircle } from "lucide-react"
+import { Search, Edit, Trash2, List, PlusCircle, Loader2 } from "lucide-react"
 import { createMenu, deleteMenu } from "@/features/navigation/actions"
 
 import { toast } from "sonner"
@@ -163,9 +163,10 @@ export function NavigationClient({ menus }: { menus: any[] }) {
                 </div>
 
                 <div className="pt-2">
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-10 shadow-sm">
-                    {isSubmitting ? "جاري الإنشاء..." : "إنشاء القائمة"}
-                  </Button>
+                <Button type="submit" disabled={isSubmitting} className="w-full h-10 shadow-sm flex items-center justify-center gap-2">
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isSubmitting ? "جاري الإنشاء..." : "إنشاء القائمة"}
+                </Button>
                 </div>
               </form>
             </div>

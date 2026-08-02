@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Palette, CheckCircle, Save, Loader2 } from "lucide-react"
 import { updateThemeConfig } from "@/features/settings/actions"
 import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"
@@ -127,9 +128,12 @@ export function SettingsClient({ config }: { config: any }) {
             <h3 className="font-semibold mb-4">إجراءات الحفظ</h3>
             <p className="text-sm text-muted-foreground mb-6">تأكد من مراجعة كافة التعديلات قبل حفظ الإعدادات، حيث ستنعكس فوراً على واجهة المتجر الرئيسية.</p>
             
-            <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm">
-               {isSubmitting ? "جاري الحفظ..." : "حفظ التغييرات"}
-            </Button>
+            <div className="flex justify-end pt-6 border-t border-border/50">
+              <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm flex items-center justify-center gap-2">
+                 {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                 {isSubmitting ? "جاري الحفظ..." : "حفظ التغييرات"}
+              </Button>
+            </div>
           </div>
         </div>
       </form>

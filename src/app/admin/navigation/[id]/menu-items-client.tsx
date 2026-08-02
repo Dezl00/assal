@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Edit, Trash2, ArrowRight, Link as LinkIcon, PlusCircle, X, GripVertical } from "lucide-react"
+import { Search, Edit, Trash2, PlusCircle, X, ExternalLink, Link as LinkIcon, MoveUp, MoveDown, Loader2, ArrowRight, GripVertical } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createMenuItem, updateMenuItem, deleteMenuItem } from "@/features/navigation/actions"
@@ -209,9 +209,10 @@ export function MenuItemsClient({ menu }: { menu: any }) {
                 </div>
 
                 <div className="pt-2">
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-10 shadow-sm">
-                    {isSubmitting ? "جاري الحفظ..." : (editingItem ? "تحديث الرابط" : "إضافة الرابط")}
-                  </Button>
+                <Button type="submit" disabled={isSubmitting} className="w-full h-10 shadow-sm flex items-center justify-center gap-2">
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {isSubmitting ? "جاري الحفظ..." : (editingItem ? "تحديث الرابط" : "إضافة الرابط")}
+                </Button>
                 </div>
               </form>
             </div>

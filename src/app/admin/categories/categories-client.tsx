@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Edit, Trash2, Folder, PlusCircle, X } from "lucide-react"
+import { Search, Edit, Trash2, Folder, PlusCircle, X, Loader2 } from "lucide-react"
 import { createCategory, deleteCategory, updateCategory } from "@/features/categories/actions"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
@@ -311,7 +311,8 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                   />
                 </div>
 
-                <Button type="submit" disabled={isSubmitting} className="w-full h-10">
+                <Button type="submit" disabled={isSubmitting} className="w-full h-10 flex items-center justify-center gap-2">
+                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isSubmitting ? "جاري الحفظ..." : (editingCategory ? "تحديث القسم" : "حفظ القسم")}
                 </Button>
               </form>
