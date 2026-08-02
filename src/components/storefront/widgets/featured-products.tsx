@@ -53,7 +53,7 @@ export async function FeaturedProducts({ widget }: { widget: any }) {
                 {product.name}
               </Link>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} ر.س</span>
+                <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} ج.م</span>
                 <button className="h-9 w-9 rounded-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0">
                   <ShoppingCart className="w-4 h-4" />
                 </button>

@@ -35,7 +35,7 @@ export default async function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">إجمالي المبيعات</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalSales.toFixed(2)} ر.س</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalSales.toFixed(2)} ج.م</h3>
             </div>
           </div>
         </div>

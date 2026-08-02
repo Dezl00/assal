@@ -93,7 +93,7 @@ export function CartDrawer() {
                           <Plus className="w-3 h-3" />
                         </button>
                       </div>
-                      <span className="font-bold text-primary">{(item.price * item.quantity).toFixed(2)} ر.س</span>
+                      <span className="font-bold text-primary">{(item.price * item.quantity).toFixed(2)} ج.م</span>
                     </div>
                   </div>
                 </div>
@@ -106,7 +106,7 @@ export function CartDrawer() {
           <div className="p-6 border-t border-border/50 bg-muted/20">
             <div className="flex justify-between items-center mb-6">
               <span className="font-medium text-muted-foreground">الإجمالي:</span>
-              <span className="text-xl font-bold text-foreground">{total.toFixed(2)} ر.س</span>
+              <span className="text-xl font-bold text-foreground">{total.toFixed(2)} ج.م</span>
             </div>
             <Link href="/checkout" onClick={() => setIsOpen(false)}>
               <Button className="w-full h-12 gold-gradient text-white text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5">

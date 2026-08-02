@@ -167,7 +167,7 @@ export default function CheckoutPage() {
                     <p className="text-xs text-muted-foreground mt-1">الكمية: {item.quantity}</p>
                   </div>
                   <div className="font-bold text-sm">
-                    {(item.price * item.quantity).toFixed(2)} ر.س
+                    {(item.price * item.quantity).toFixed(2)} ج.م
                   </div>
                 </div>
               ))}
@@ -176,7 +176,7 @@ export default function CheckoutPage() {
             <div className="border-t border-border/50 pt-6 space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">المجموع الفرعي</span>
-                <span className="font-semibold">{total.toFixed(2)} ر.س</span>
+                <span className="font-semibold">{total.toFixed(2)} ج.م</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
@@ -185,7 +185,7 @@ export default function CheckoutPage() {
               <div className="h-px bg-border/50 my-2" />
               <div className="flex justify-between items-end">
                 <span className="text-lg font-bold">الإجمالي</span>
-                <span className="text-2xl font-black text-primary">{total.toFixed(2)} ر.س</span>
+                <span className="text-2xl font-black text-primary">{total.toFixed(2)} ج.م</span>
               </div>
             </div>
 

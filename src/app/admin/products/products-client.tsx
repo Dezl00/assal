@@ -7,10 +7,12 @@ import { createProduct, deleteProduct, updateProduct } from "@/features/products
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 
-export function ProductsClient({ products, categories }: { products: any[], categories: any[] }) {
+import { MultiImageUploader } from "@/components/ui/multi-image-uploader"
+
+export function ProductsClient({ products, categories, brands = [] }: { products: any[], categories: any[], brands?: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isFormVisible, setIsFormVisible] = useState(false) // For mobile toggling
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [isFormVisible, setIsFormVisible] = useState(false)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
   
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -29,11 +31,13 @@ export function ProductsClient({ products, categories }: { products: any[], cate
         form.stock.value = editingProduct.stock || 0
         form.categoryId.value = editingProduct.categoryId || ""
         form.description.value = editingProduct.description || ""
+        form.description.value = editingProduct.description || ""
+        form.brandId.value = editingProduct.brandId || ""
       }
       if (editingProduct.images && editingProduct.images.length > 0) {
-        setPreviewUrl(editingProduct.images[0].url)
+        setImageUrls(editingProduct.images.map((img: any) => img.url))
       } else {
-        setPreviewUrl(null)
+        setImageUrls([])
       }
       setIsFormVisible(true) // Ensure form is visible on mobile when editing
     }
@@ -41,7 +45,7 @@ export function ProductsClient({ products, categories }: { products: any[], cate
 
   function resetForm() {
     setEditingProduct(null)
-    setPreviewUrl(null)
+    setImageUrls([])
     const form: any = document.getElementById("add-product-form")
     if (form) form.reset()
   }
@@ -152,16 +156,16 @@ export function ProductsClient({ products, categories }: { products: any[], cate
                         <td className="px-6 py-4 font-medium">
                           {product.discountPrice ? (
                             <div className="flex flex-col">
-                              <span className="text-red-500">{product.discountPrice} ر.س</span>
-                              <span className="text-xs text-muted-foreground line-through">{product.price} ر.س</span>
+                              <span className="text-red-500">{product.discountPrice} ج.م</span>
+                              <span className="text-xs text-muted-foreground line-through">{product.price} ج.م</span>
                             </div>
                           ) : (
-                            <span>{product.price} ر.س</span>
+                            <span>{product.price} ج.م</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
                           {product.stock > 0 ? (
-                            <span className="text-green-600 font-medium">{product.stock} حبة</span>
+                            <span className="text-green-600 font-medium">{product.stock}</span>
                           ) : (
                             <span className="text-red-500 font-medium">نفذت الكمية</span>
                           )}
@@ -220,35 +224,8 @@ export function ProductsClient({ products, categories }: { products: any[], cate
                   
                   {/* Image Upload Area */}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">صورة المنتج <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
-                    <div className="flex items-center justify-center w-full">
-                      <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/5 border-border/50 hover:bg-muted/10 transition-colors relative overflow-hidden">
-                        {previewUrl ? (
-                          <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
-                        ) : (
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                            <PlusCircle className="w-8 h-8 mb-2 text-muted-foreground" />
-                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">اضغط للرفع</span> أو اسحب الصورة هنا</p>
-                            <p className="text-xs text-muted-foreground">PNG, JPG, WEBP (Max: 2MB)</p>
-                          </div>
-                        )}
-                        <input 
-                          id="dropzone-file" 
-                          name="image" 
-                          type="file" 
-                          accept="image/*"
-                          className="hidden" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) {
-                              setPreviewUrl(URL.createObjectURL(file))
-                            } else {
-                              setPreviewUrl(null)
-                            }
-                          }}
-                        />
-                      </label>
-                    </div>
+                    <MultiImageUploader value={imageUrls} onChange={setImageUrls} />
+                    <input type="hidden" name="images" value={JSON.stringify(imageUrls)} />
                   </div>
 
                   <div className="space-y-2">
@@ -290,7 +267,32 @@ export function ProductsClient({ products, categories }: { products: any[], cate
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">السعر (ر.س) <span className="text-red-500">*</span></label>
+                      <label className="text-sm font-medium">الماركة <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                      <select 
+                        name="brandId"
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                      >
+                        <option value="">بدون ماركة</option>
+                        {brands.map(brand => (
+                          <option key={brand.id} value={brand.id}>{brand.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">الرمز (SKU) <span className="text-red-500">*</span></label>
+                      <input 
+                        name="sku"
+                        type="text" 
+                        required
+                        dir="ltr"
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">السعر (ج.م) <span className="text-red-500">*</span></label>
                       <input 
                         name="price"
                         type="number"
@@ -312,27 +314,15 @@ export function ProductsClient({ products, categories }: { products: any[], cate
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">الرمز (SKU) <span className="text-red-500">*</span></label>
-                      <input 
-                        name="sku"
-                        type="text" 
-                        required
-                        dir="ltr"
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">المخزون</label>
-                      <input 
-                        name="stock"
-                        type="number"
-                        defaultValue={0}
-                        dir="ltr"
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">المخزون</label>
+                    <input 
+                      name="stock"
+                      type="number"
+                      defaultValue={0}
+                      dir="ltr"
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
+                    />
                   </div>
 
                   <div className="space-y-2">

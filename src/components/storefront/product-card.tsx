@@ -93,10 +93,10 @@ export function ProductCard({ product }: ProductCardProps) {
         
         <div className="flex items-center justify-between mt-auto">
           <div className="flex flex-col">
-            <span className="font-bold text-lg text-primary">{finalPrice.toFixed(2)} ر.س</span>
+            <span className="font-bold text-lg text-primary">{finalPrice.toFixed(2)} ج.م</span>
             {hasDiscount && (
               <span className="text-xs text-muted-foreground line-through">
-                {product.price.toFixed(2)} ر.س
+                {product.price.toFixed(2)} ج.م
               </span>
             )}
           </div>

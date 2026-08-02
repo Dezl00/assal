@@ -104,7 +104,7 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                       {new Date(order.createdAt).toLocaleDateString('ar-EG')}
                     </td>
                     <td className="px-6 py-4 font-medium">
-                      {order.totalAmount.toFixed(2)} ر.س
+                      {order.totalAmount.toFixed(2)} ج.م
                     </td>
                     <td className="px-6 py-4">
                       <select

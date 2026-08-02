@@ -37,7 +37,7 @@ export default async function CheckoutSuccessPage(props: { params: Promise<{ id:
           <p className="text-sm mb-2"><span className="text-muted-foreground">الاسم:</span> {order.customerName}</p>
           <p className="text-sm mb-2"><span className="text-muted-foreground">الجوال:</span> <span dir="ltr">{order.customerPhone}</span></p>
           <p className="text-sm mb-2"><span className="text-muted-foreground">العنوان:</span> {order.city} - {order.address}</p>
-          <p className="text-sm font-bold text-primary mt-4">الإجمالي المدفوع: {order.totalAmount.toFixed(2)} ر.س (الدفع عند الاستلام)</p>
+          <p className="text-sm font-bold text-primary mt-4">الإجمالي المدفوع: {order.totalAmount.toFixed(2)} ج.م (الدفع عند الاستلام)</p>
         </div>
 
         <Link href="/">

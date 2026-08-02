@@ -2,7 +2,6 @@
 
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
-import { uploadImage } from "@/lib/cloudinary"
 
 export async function createProduct(formData: FormData) {
   try {
@@ -13,22 +12,20 @@ export async function createProduct(formData: FormData) {
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null
     const stock = parseInt(formData.get("stock") as string)
     const categoryId = formData.get("categoryId") as string
+    const brandId = formData.get("brandId") as string || null
     const description = formData.get("description") as string
-    const imageFile = formData.get("image") as File | null
+    
+    // Parse images array from hidden input
+    let images: string[] = []
+    try {
+      images = JSON.parse(formData.get("images") as string || "[]")
+    } catch (e) {}
 
     if (!name || !slug || !sku || isNaN(price) || !categoryId) {
       return { success: false, error: "Missing required fields" }
     }
 
-    // 1. Upload image to Cloudinary if provided
-    let imageUrl = null
-    if (imageFile && imageFile.size > 0) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer())
-      const result: any = await uploadImage(buffer, "assal/products")
-      imageUrl = result.secure_url
-    }
-
-    // 2. Create the Product and the ProductImage simultaneously
+    // 2. Create the Product and the ProductImages
     await db.product.create({
       data: {
         name,
@@ -38,13 +35,15 @@ export async function createProduct(formData: FormData) {
         discountPrice,
         stock: isNaN(stock) ? 0 : stock,
         categoryId,
+        brandId,
         description: description || null,
-        ...(imageUrl && {
+        ...(images.length > 0 && {
           images: {
-            create: {
-              url: imageUrl,
-              isPrimary: true
-            }
+            create: images.map((url, idx) => ({
+              url,
+              isPrimary: idx === 0,
+              sortOrder: idx
+            }))
           }
         })
       }
@@ -78,19 +77,22 @@ export async function updateProduct(id: string, formData: FormData) {
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null
     const stock = parseInt(formData.get("stock") as string)
     const categoryId = formData.get("categoryId") as string
+    const brandId = formData.get("brandId") as string || null
     const description = formData.get("description") as string
-    const imageFile = formData.get("image") as File | null
+    
+    let images: string[] = []
+    try {
+      images = JSON.parse(formData.get("images") as string || "[]")
+    } catch (e) {}
 
     if (!name || !slug || !sku || isNaN(price) || !categoryId) {
       return { success: false, error: "Missing required fields" }
     }
 
-    let imageUrl = null
-    if (imageFile && imageFile.size > 0) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer())
-      const result: any = await uploadImage(buffer, "assal/products")
-      imageUrl = result.secure_url
-    }
+    // Delete old images first to replace them with the new ordered array
+    await db.productImage.deleteMany({
+      where: { productId: id }
+    })
 
     await db.product.update({
       where: { id },
@@ -102,13 +104,15 @@ export async function updateProduct(id: string, formData: FormData) {
         discountPrice,
         stock: isNaN(stock) ? 0 : stock,
         categoryId,
+        brandId,
         description: description || null,
-        ...(imageUrl && {
+        ...(images.length > 0 && {
           images: {
-            create: {
-              url: imageUrl,
-              isPrimary: true
-            }
+            create: images.map((url, idx) => ({
+              url,
+              isPrimary: idx === 0,
+              sortOrder: idx
+            }))
           }
         })
       }

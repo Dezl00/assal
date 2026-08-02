@@ -13,7 +13,7 @@ export interface CartItem {
 interface CartState {
   items: CartItem[]
   isOpen: boolean
-  addItem: (item: Omit<CartItem, 'id'>) => void
+  addItem: (item: Omit<CartItem, 'id'>, openDrawer?: boolean) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
@@ -26,7 +26,7 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
-      addItem: (newItem) => {
+      addItem: (newItem, openDrawer = true) => {
         set((state) => {
           const existingItemIndex = state.items.findIndex(
             (item) => item.productId === newItem.productId
@@ -35,12 +35,12 @@ export const useCartStore = create<CartState>()(
           if (existingItemIndex > -1) {
             const newItems = [...state.items]
             newItems[existingItemIndex].quantity += newItem.quantity
-            return { items: newItems, isOpen: true }
+            return { items: newItems, ...(openDrawer && { isOpen: true }) }
           }
 
           return {
             items: [...state.items, { ...newItem, id: Math.random().toString(36).substring(7) }],
-            isOpen: true
+            ...(openDrawer && { isOpen: true })
           }
         })
       },
