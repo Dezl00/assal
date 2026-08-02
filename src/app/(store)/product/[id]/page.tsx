@@ -7,6 +7,7 @@ import { ProductGallery } from "@/components/storefront/product-gallery"
 import { AddToCartForm } from "@/components/storefront/add-to-cart-form"
 import { ShareButton } from "@/components/storefront/share-button"
 import { ProductTabs } from "@/components/storefront/product-tabs"
+import { ProductFeatures } from "@/components/storefront/product-features"
 
 // Generate metadata for SEO
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
@@ -114,46 +115,14 @@ export default async function ProductDetailsPage(props: { params: Promise<{ id: 
 
           {/* Add to Cart Actions */}
           <AddToCartForm product={product as any} />
-          
-          {/* Features/Trust badges (Scrollable on mobile) */}
-          <div className="mt-8 -mx-4 px-4 sm:mx-0 sm:px-0">
-            <div className="flex sm:grid sm:grid-cols-3 gap-4 overflow-x-auto pb-4 sm:pb-0 snap-x snap-mandatory hide-scrollbar">
-              
-              <div className="flex items-center gap-3 min-w-[200px] sm:min-w-0 snap-start border border-border/50 rounded-2xl p-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <Truck className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">شحن سريع</p>
-                  <p className="text-xs text-muted-foreground">لجميع المدن</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 min-w-[200px] sm:min-w-0 snap-start border border-border/50 rounded-2xl p-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">ضمان الجودة</p>
-                  <p className="text-xs text-muted-foreground">أصلية 100%</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 min-w-[200px] sm:min-w-0 snap-start border border-border/50 rounded-2xl p-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <Tag className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">أفضل الأسعار</p>
-                  <p className="text-xs text-muted-foreground">قيمة ممتازة</p>
-                </div>
-              </div>
-              
-            </div>
-          </div>
 
           {/* Product Tabs (Description & Shipping) */}
-          <ProductTabs description={product.description} />
+          <div className="mt-8">
+            <ProductTabs description={product.description} />
+          </div>
+
+          {/* Features Slider */}
+          <ProductFeatures />
         </div>
       </div>
 
