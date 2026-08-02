@@ -9,18 +9,38 @@ import { ShareButton } from "@/components/storefront/share-button"
 import { ProductTabs } from "@/components/storefront/product-tabs"
 import { ProductFeatures } from "@/components/storefront/product-features"
 
+import type { Metadata } from "next"
+
 // Generate metadata for SEO
-export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params;
   const product = await db.product.findUnique({
     where: { id: params.id },
+    include: { images: { orderBy: { sortOrder: 'asc' } } }
   })
   
-  if (!product) return { title: "Product Not Found" }
+  if (!product) return { title: "المنتج غير موجود" }
   
+  const ogImages = product.images.length > 0 
+    ? product.images.map(img => ({ url: img.url, width: 800, height: 800, alt: product.name }))
+    : [];
+
   return {
-    title: `${product.name} | متجر عسل`,
+    title: product.name,
     description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      url: `/product/${product.id}`,
+      type: 'website',
+      images: ogImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description: product.description,
+      images: ogImages.map(img => img.url),
+    },
   }
 }
 

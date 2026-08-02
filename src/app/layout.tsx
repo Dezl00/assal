@@ -14,12 +14,44 @@ const fallbackFont = IBM_Plex_Sans_Arabic({
 export async function generateMetadata(): Promise<Metadata> {
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
   
+  const storeName = theme?.storeName || "عسل";
+  const storeDescription = theme?.storeDescription || "أفضل المنتجات وأعلاها جودة";
+  const logo = theme?.logoUrl || "/favicon.ico";
+  const favicon = theme?.faviconUrl || "/favicon.ico";
+
   return {
-    title: theme?.storeName || "عسل",
-    description: theme?.storeDescription || "أفضل المنتجات وأعلاها جودة",
+    metadataBase: new URL("https://assal1.vercel.app"), // Base URL for OG images
+    title: {
+      default: storeName,
+      template: `%s | ${storeName}`,
+    },
+    description: storeDescription,
     icons: {
-      icon: theme?.faviconUrl || "/favicon.ico",
-    }
+      icon: favicon,
+      apple: favicon,
+    },
+    openGraph: {
+      title: storeName,
+      description: storeDescription,
+      url: '/',
+      siteName: storeName,
+      images: [
+        {
+          url: logo,
+          width: 800,
+          height: 600,
+          alt: storeName,
+        },
+      ],
+      locale: 'ar_EG',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: storeName,
+      description: storeDescription,
+      images: [logo],
+    },
   };
 }
 

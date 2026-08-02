@@ -4,9 +4,30 @@ import { ProductGrid } from "@/components/storefront/product-grid"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
-export const metadata = {
-  title: "جميع المنتجات | متجر عسل",
-  description: "تصفح جميع منتجات متجر عسل",
+import type { Metadata } from "next"
+
+export async function generateMetadata(): Promise<Metadata> {
+  const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  const storeName = theme?.storeName || "عسل";
+  const logo = theme?.logoUrl || "/favicon.ico";
+  
+  return {
+    title: "جميع المنتجات",
+    description: `تصفح جميع منتجات ${storeName}`,
+    openGraph: {
+      title: `جميع المنتجات | ${storeName}`,
+      description: `تصفح جميع منتجات ${storeName}`,
+      url: `/products`,
+      type: 'website',
+      images: [{ url: logo, width: 800, height: 600, alt: storeName }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `جميع المنتجات | ${storeName}`,
+      description: `تصفح جميع منتجات ${storeName}`,
+      images: [logo],
+    },
+  }
 }
 
 export default async function AllProductsPage() {

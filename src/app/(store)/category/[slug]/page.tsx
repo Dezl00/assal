@@ -5,12 +5,34 @@ import { ProductGrid } from "@/components/storefront/product-grid"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
-export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+import type { Metadata } from "next"
+
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const category = await db.category.findUnique({ where: { slug: params.slug } })
-  if (!category) return { title: "Category Not Found" }
+  
+  if (!category) return { title: "القسم غير موجود" }
+  
+  const ogImages = category.imageUrl 
+    ? [{ url: category.imageUrl, width: 800, height: 600, alt: category.name }]
+    : [];
+
   return {
-    title: `${category.name} | متجر عسل`,
+    title: category.name,
+    description: category.description || `تصفح منتجات قسم ${category.name} في متجر عسل`,
+    openGraph: {
+      title: category.name,
+      description: category.description || `تصفح منتجات قسم ${category.name} في متجر عسل`,
+      url: `/category/${category.slug}`,
+      type: 'website',
+      images: ogImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: category.name,
+      description: category.description || `تصفح منتجات قسم ${category.name} في متجر عسل`,
+      images: ogImages.map(img => img.url),
+    },
   }
 }
 
