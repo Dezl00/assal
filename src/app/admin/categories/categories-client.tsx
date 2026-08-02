@@ -312,8 +312,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full h-10 flex items-center justify-center gap-2">
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isSubmitting ? "جاري الحفظ..." : (editingCategory ? "تحديث القسم" : "حفظ القسم")}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingCategory ? "تحديث القسم" : "حفظ القسم")}
                 </Button>
               </form>
             </div>

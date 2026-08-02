@@ -341,8 +341,7 @@ export function ProductsClient({ products, categories, brands = [] }: { products
 
                 <div className="pt-4 border-t border-border/50">
                   <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm flex items-center justify-center gap-2">
-                    {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                    {isSubmitting ? "جاري الحفظ..." : (editingProduct ? "تحديث المنتج" : "حفظ المنتج")}
+                    {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : (editingProduct ? "تحديث المنتج" : "حفظ المنتج")}
                   </Button>
                 </div>
               </form>

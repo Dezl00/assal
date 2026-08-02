@@ -130,8 +130,7 @@ export function SettingsClient({ config }: { config: any }) {
             
             <div className="flex justify-end pt-6 border-t border-border/50">
               <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm flex items-center justify-center gap-2">
-                 {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                 {isSubmitting ? "جاري الحفظ..." : "حفظ التغييرات"}
+                 {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "حفظ التغييرات"}
               </Button>
             </div>
           </div>

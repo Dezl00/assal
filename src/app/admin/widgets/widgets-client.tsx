@@ -312,8 +312,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                     </div>
                     
                     <Button type="submit" disabled={isSubmitting} size="sm" className="w-full flex items-center justify-center gap-2">
-                      {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                      {isSubmitting ? "جاري الحفظ..." : "حفظ إعدادات الواجهة"}
+                      {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "حفظ إعدادات الواجهة"}
                     </Button>
                   </form>
 
@@ -383,8 +382,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         </div>
                         
                         <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || !newItemImage}>
-                          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                          {isSubmitting ? "جاري..." : (editingItemId ? "تحديث الشريحة" : "إضافة الشريحة")}
+                          {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث الشريحة" : "إضافة الشريحة")}
                         </Button>
                       </form>
                     </div>

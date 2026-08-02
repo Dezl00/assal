@@ -210,8 +210,7 @@ export function MenuItemsClient({ menu }: { menu: any }) {
 
                 <div className="pt-2">
                 <Button type="submit" disabled={isSubmitting} className="w-full h-10 shadow-sm flex items-center justify-center gap-2">
-                  {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {isSubmitting ? "جاري الحفظ..." : (editingItem ? "تحديث الرابط" : "إضافة الرابط")}
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItem ? "تحديث الرابط" : "إضافة الرابط")}
                 </Button>
                 </div>
               </form>
