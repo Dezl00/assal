@@ -14,30 +14,35 @@ import type { Metadata } from "next"
 // Generate metadata for SEO
 export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const params = await props.params;
-  const product = await db.product.findUnique({
-    where: { id: params.id },
-    include: { images: { orderBy: { sortOrder: 'asc' } } }
-  })
+  const [product, theme] = await Promise.all([
+    db.product.findUnique({
+      where: { id: params.id },
+      include: { images: { orderBy: { sortOrder: 'asc' } } }
+    }),
+    db.themeConfig.findUnique({ where: { id: "default" } })
+  ])
   
   if (!product) return { title: "المنتج غير موجود" }
   
+  const storeName = theme?.storeName || "عسل";
   const ogImages = product.images.length > 0 
     ? product.images.map(img => ({ url: img.url, width: 800, height: 800, alt: product.name }))
     : [];
 
   return {
-    title: product.name,
+    title: product.name, // Next.js layout template will automatically append | storeName to the <title> tag
     description: product.description || undefined,
     openGraph: {
-      title: product.name,
+      title: `${product.name} | ${storeName}`,
       description: product.description || undefined,
       url: `/product/${product.id}`,
       type: 'website',
+      siteName: storeName,
       images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
-      title: product.name,
+      title: `${product.name} | ${storeName}`,
       description: product.description || undefined,
       images: ogImages.map(img => img.url),
     },

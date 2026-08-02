@@ -9,28 +9,33 @@ import type { Metadata } from "next"
 
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
-  const category = await db.category.findUnique({ where: { slug: params.slug } })
+  const [category, theme] = await Promise.all([
+    db.category.findUnique({ where: { slug: params.slug } }),
+    db.themeConfig.findUnique({ where: { id: "default" } })
+  ])
   
   if (!category) return { title: "القسم غير موجود" }
   
+  const storeName = theme?.storeName || "عسل";
   const ogImages = category.imageUrl 
     ? [{ url: category.imageUrl, width: 800, height: 600, alt: category.name }]
     : [];
 
   return {
-    title: category.name,
-    description: category.description || `تصفح منتجات قسم ${category.name} في متجر عسل`,
+    title: category.name, // Next.js layout template will automatically append | storeName to the <title> tag
+    description: category.description || `تصفح منتجات قسم ${category.name} في ${storeName}`,
     openGraph: {
-      title: category.name,
-      description: category.description || `تصفح منتجات قسم ${category.name} في متجر عسل`,
+      title: `${category.name} | ${storeName}`,
+      description: category.description || `تصفح منتجات قسم ${category.name} في ${storeName}`,
       url: `/category/${category.slug}`,
       type: 'website',
+      siteName: storeName,
       images: ogImages,
     },
     twitter: {
       card: 'summary_large_image',
-      title: category.name,
-      description: category.description || `تصفح منتجات قسم ${category.name} في متجر عسل`,
+      title: `${category.name} | ${storeName}`,
+      description: category.description || `تصفح منتجات قسم ${category.name} في ${storeName}`,
       images: ogImages.map(img => img.url),
     },
   }
