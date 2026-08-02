@@ -19,6 +19,10 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
   const category = await db.category.findUnique({
     where: { slug: params.slug },
     include: {
+      parent: true,
+      children: {
+        orderBy: { createdAt: "asc" }
+      },
       products: {
         orderBy: { createdAt: "desc" },
         include: {
@@ -32,6 +36,8 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
   if (!category) {
     notFound()
   }
+
+  const isMainCategory = !category.parentId
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,14 +55,69 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
             <Link href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <Link href="/products" className="hover:text-primary transition-colors">المنتجات</Link>
+            
+            {category.parent && (
+              <>
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+                <Link href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors">
+                  {category.parent.name}
+                </Link>
+              </>
+            )}
+
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <span className="text-foreground font-medium">{category.name}</span>
           </nav>
         </div>
       </div>
 
-      {/* Products */}
-      <ProductGrid products={category.products} />
+      {isMainCategory ? (
+        /* Show Subcategories */
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {category.children.length === 0 ? (
+            <div className="col-span-full text-center text-muted-foreground py-12 bg-secondary/20 rounded-2xl border border-border/50">
+              لا توجد أقسام فرعية في هذا القسم حالياً.
+            </div>
+          ) : (
+            category.children.map((child) => (
+              <Link 
+                key={child.id} 
+                href={`/category/${child.slug}`}
+                className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border/50 bg-card p-6 transition-all hover:border-primary/50 hover:shadow-md"
+              >
+                <div className="relative h-24 w-24 md:h-32 md:w-32 overflow-hidden rounded-full bg-muted/30 p-2 transition-transform group-hover:scale-105">
+                  {child.imageUrl ? (
+                    <img 
+                      src={child.imageUrl} 
+                      alt={child.name}
+                      className="h-full w-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <span className="text-3xl font-bold">{child.name.charAt(0)}</span>
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold text-center group-hover:text-primary transition-colors">{child.name}</h3>
+                {child.description && (
+                  <p className="text-sm text-muted-foreground text-center line-clamp-2">{child.description}</p>
+                )}
+              </Link>
+            ))
+          )}
+        </div>
+      ) : (
+        /* Show Products */
+        <>
+          {category.products.length === 0 ? (
+            <div className="text-center text-muted-foreground py-12 bg-secondary/20 rounded-2xl border border-border/50">
+              لا توجد منتجات في هذا القسم الفرعي حالياً.
+            </div>
+          ) : (
+            <ProductGrid products={category.products} />
+          )}
+        </>
+      )}
     </div>
   )
 }

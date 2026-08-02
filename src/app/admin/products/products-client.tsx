@@ -246,9 +246,13 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                         required
                         className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
                       >
-                        <option value="">اختيار...</option>
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        <option value="">اختيار القسم الفرعي...</option>
+                        {categories.filter(c => !c.parentId).map(mainCat => (
+                          <optgroup key={mainCat.id} label={mainCat.name}>
+                            {categories.filter(c => c.parentId === mainCat.id).map(subCat => (
+                              <option key={subCat.id} value={subCat.id}>{subCat.name}</option>
+                            ))}
+                          </optgroup>
                         ))}
                       </select>
                     </div>
