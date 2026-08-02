@@ -8,7 +8,9 @@ export async function createCategory(formData: FormData) {
     const name = formData.get("name") as string
     const slug = formData.get("slug") as string
     const description = formData.get("description") as string
-    const parentId = formData.get("parentId") as string
+    const categoryType = formData.get("categoryType") as string
+    const imageUrl = formData.get("imageUrl") as string
+    const parentId = categoryType === "sub" ? (formData.get("parentId") as string) : null
 
     if (!name || !slug) {
       return { success: false, error: "Name and Slug are required" }
@@ -19,6 +21,7 @@ export async function createCategory(formData: FormData) {
         name,
         slug,
         description: description || null,
+        imageUrl: imageUrl || null,
         parentId: parentId || null,
       }
     })
@@ -48,6 +51,7 @@ export async function updateCategory(id: string, formData: FormData) {
     const slug = formData.get("slug") as string
     const description = formData.get("description") as string
     const categoryType = formData.get("categoryType") as string
+    const imageUrl = formData.get("imageUrl") as string
     const parentId = categoryType === "sub" ? (formData.get("parentId") as string) : null
 
     if (!name || !slug) {
@@ -59,7 +63,8 @@ export async function updateCategory(id: string, formData: FormData) {
       data: {
         name,
         slug,
-        description,
+        description: description || null,
+        imageUrl: imageUrl || null,
         parentId: parentId || null
       }
     })

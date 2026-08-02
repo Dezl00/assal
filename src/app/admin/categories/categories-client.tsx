@@ -6,6 +6,7 @@ import { Search, Edit, Trash2, Folder, PlusCircle, X } from "lucide-react"
 import { createCategory, deleteCategory, updateCategory } from "@/features/categories/actions"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
+import { ImageUploader } from "@/components/ui/image-uploader"
 
 export function CategoriesClient({ categories }: { categories: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -14,6 +15,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
   const [editingCategory, setEditingCategory] = useState<any | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState("")
 
   useEffect(() => {
     if (editingCategory) {
@@ -22,6 +24,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
         form.name.value = editingCategory.name || ""
         form.slug.value = editingCategory.slug || ""
         form.description.value = editingCategory.description || ""
+        setImageUrl(editingCategory.imageUrl || "")
         
         // Handle radio buttons and parent selection
         const isSub = !!editingCategory.parentId
@@ -39,6 +42,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
 
   function resetForm() {
     setEditingCategory(null)
+    setImageUrl("")
     const form: any = document.getElementById("add-category-form")
     if (form) {
       form.reset()
@@ -51,8 +55,18 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
     }
   }
 
+  function handleAddCategoryClick() {
+    if (isFormVisible && !editingCategory) {
+      setIsFormVisible(false)
+    } else {
+      resetForm()
+      setIsFormVisible(true)
+    }
+  }
+
   async function handleSubmit(formData: FormData) {
     setIsSubmitting(true)
+    formData.set("imageUrl", imageUrl)
     let res;
     if (editingCategory) {
       res = await updateCategory(editingCategory.id, formData)
@@ -89,7 +103,7 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
           <p className="text-muted-foreground mt-1">إدارة تصنيفات المنتجات والأقسام الفرعية.</p>
         </div>
         <div className="flex items-center gap-3 lg:hidden">
-           <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2">
+           <Button onClick={handleAddCategoryClick} className="gap-2">
              <PlusCircle className="h-4 w-4" />
              {isFormVisible ? "إخفاء النموذج" : "إضافة قسم"}
            </Button>
@@ -135,7 +149,11 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                       <tr key={category.id} className="transition-colors hover:bg-muted/10">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <Folder className="h-5 w-5 text-primary/60" />
+                            {category.imageUrl ? (
+                              <img src={category.imageUrl} alt={category.name} className="h-8 w-8 rounded object-cover border border-border" />
+                            ) : (
+                              <Folder className="h-5 w-5 text-primary/60" />
+                            )}
                             <span className="font-medium text-foreground">{category.name}</span>
                           </div>
                         </td>
@@ -201,6 +219,17 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
             
             <div className="p-6">
               <form action={handleSubmit} className="space-y-6" id="add-category-form">
+                
+                <div className="flex justify-center mb-4">
+                  <div className="w-32">
+                    <ImageUploader 
+                      label="صورة القسم" 
+                      value={imageUrl} 
+                      onChange={setImageUrl} 
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">اسم القسم <span className="text-red-500">*</span></label>
                   <input 

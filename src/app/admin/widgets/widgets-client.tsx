@@ -14,6 +14,7 @@ const WIDGET_TYPES = [
   { id: "FeaturedProducts", name: "المنتجات المميزة", icon: ShoppingBag, desc: "عرض مجموعة من المنتجات المختارة" },
   { id: "BannerGrid", name: "شبكة البنرات", icon: LayoutTemplate, desc: "بنرات إعلانية لعروض المتجر" },
   { id: "BrandSlider", name: "سلايدر الماركات", icon: ImagePlus, desc: "شريط متحرك لانهائي لشعارات الماركات" },
+  { id: "CategoryGrid", name: "شبكة الأقسام", icon: LayoutTemplate, desc: "عرض الأقسام الرئيسية كشبكة صور" },
   { id: "TextBlock", name: "نص مخصص", icon: AlignLeft, desc: "مساحة لكتابة نص ترحيبي أو معلومات" },
 ]
 

@@ -4,6 +4,7 @@ import { FeaturedProducts } from "./widgets/featured-products"
 import { BannerGrid } from "./widgets/banner-grid"
 import { TextBlock } from "./widgets/text-block"
 import { BrandSlider } from "./widgets/brand-slider"
+import { CategoryGrid } from "./widgets/category-grid"
 
 export function WidgetRenderer({ widget }: { widget: any }) {
   // Common visibility classes based on settings
@@ -12,6 +13,12 @@ export function WidgetRenderer({ widget }: { widget: any }) {
   if (!widget.showMobile) visibilityClass += " hidden md:block"
 
   switch (widget.type) {
+    case "CategoryGrid":
+      return (
+        <section className={`w-full py-12 ${visibilityClass}`}>
+          <CategoryGrid widget={widget} />
+        </section>
+      )
     case "HeroSlider":
       return (
         <section className={`w-full ${visibilityClass}`}>
