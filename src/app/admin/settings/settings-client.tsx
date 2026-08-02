@@ -9,10 +9,12 @@ import { ImageUploader } from "@/components/ui/image-uploader"
 export function SettingsClient({ config }: { config: any }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [logoUrl, setLogoUrl] = useState(config?.logoUrl || "")
+  const [faviconUrl, setFaviconUrl] = useState(config?.faviconUrl || "")
 
   async function handleSave(formData: FormData) {
     setIsSubmitting(true)
     formData.set("logoUrl", logoUrl) // Add the image url to formData
+    formData.set("faviconUrl", faviconUrl) 
     
     const res = await updateThemeConfig(formData)
     setIsSubmitting(false)
@@ -38,12 +40,21 @@ export function SettingsClient({ config }: { config: any }) {
             <h2 className="text-xl font-semibold mb-6">المعلومات الأساسية والشعار</h2>
             <div className="space-y-6">
               
-              <div className="w-48">
-                <ImageUploader 
-                  label="شعار المتجر (Logo)" 
-                  value={logoUrl} 
-                  onChange={setLogoUrl} 
-                />
+              <div className="flex flex-wrap gap-8">
+                <div className="w-48">
+                  <ImageUploader 
+                    label="شعار المتجر (Logo)" 
+                    value={logoUrl} 
+                    onChange={setLogoUrl} 
+                  />
+                </div>
+                <div className="w-32">
+                  <ImageUploader 
+                    label="أيقونة المتجر (Favicon)" 
+                    value={faviconUrl} 
+                    onChange={setFaviconUrl} 
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

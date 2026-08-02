@@ -23,14 +23,9 @@ export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[],
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="flex items-center gap-2">
               {themeConfig?.logoUrl ? (
-                <img src={themeConfig.logoUrl} alt={themeConfig?.storeName || "عسل"} className="h-10 w-auto object-contain" />
+                <img src={themeConfig.logoUrl} alt="Store Logo" className="h-10 w-auto object-contain" />
               ) : (
                 <span className="w-8 h-8 rounded-full gold-gradient flex items-center justify-center text-white text-lg shadow-lg shadow-primary/20">ع</span>
-              )}
-              {(!themeConfig?.logoUrl || themeConfig?.storeName) && (
-                <span className="text-2xl font-bold tracking-tight text-primary">
-                  {themeConfig?.storeName || "عسل"}
-                </span>
               )}
             </Link>
           </div>

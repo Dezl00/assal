@@ -11,11 +11,19 @@ const fallbackFont = IBM_Plex_Sans_Arabic({
 });
 
 
-export const metadata: Metadata = {
-  title: "Assal | Enterprise E-Commerce",
-  description: "Premium enterprise e-commerce platform.",
-  // Next.js will auto-generate other tags in specialized files later
-};
+import { db } from "@/lib/db";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  
+  return {
+    title: theme?.storeName || "عسل",
+    description: theme?.storeDescription || "أفضل المنتجات وأعلاها جودة",
+    icons: {
+      icon: theme?.faviconUrl || "/favicon.ico",
+    }
+  };
+}
 
 export default function RootLayout({
   children,

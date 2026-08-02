@@ -208,6 +208,7 @@ model ThemeConfig {
   storeName     String   @default("عسل طبيعي")
   storeDescription String?
   logoUrl       String?
+  faviconUrl    String?
   primaryColor  String   @default("#000000")
   secondaryColor String  @default("#ffffff")
   borderRadius  String   @default("0px")
