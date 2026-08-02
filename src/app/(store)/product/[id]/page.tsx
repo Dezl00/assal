@@ -27,10 +27,10 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
 
   return {
     title: product.name,
-    description: product.description,
+    description: product.description || undefined,
     openGraph: {
       title: product.name,
-      description: product.description,
+      description: product.description || undefined,
       url: `/product/${product.id}`,
       type: 'website',
       images: ogImages,
@@ -38,7 +38,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     twitter: {
       card: 'summary_large_image',
       title: product.name,
-      description: product.description,
+      description: product.description || undefined,
       images: ogImages.map(img => img.url),
     },
   }
