@@ -7,23 +7,28 @@ import { ProductGallery } from "@/components/storefront/product-gallery"
 import { AddToCartForm } from "@/components/storefront/add-to-cart-form"
 
 // Generate metadata for SEO
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  const product = await db.product.findUnique({ where: { id: params.id } })
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const product = await db.product.findUnique({
+    where: { id: params.id },
+  })
+  
   if (!product) return { title: "Product Not Found" }
   
   return {
     title: `${product.name} | متجر عسل`,
-    description: product.description?.substring(0, 160) || "تسوق أفضل المنتجات",
+    description: product.description,
   }
 }
 
-export default async function ProductDetailsPage({ params }: { params: { id: string } }) {
+export default async function ProductDetailsPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const product = await db.product.findUnique({
     where: { id: params.id },
     include: {
       images: { orderBy: { sortOrder: 'asc' } },
       category: true,
-      brand: true
+      brand: true,
     }
   })
 

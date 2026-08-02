@@ -4,7 +4,8 @@ import Link from "next/link"
 import { CheckCircle2, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export default async function CheckoutSuccessPage({ params }: { params: { id: string } }) {
+export default async function CheckoutSuccessPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const order = await db.order.findUnique({
     where: { id: params.id },
     include: { items: { include: { product: true } } }
