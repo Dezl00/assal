@@ -83,9 +83,8 @@ export function ProductFeatures() {
               className="flex flex-col items-center justify-center gap-3 py-6 px-2"
               style={{ width: `${100 / displayFeatures.length}%` }} // Each item takes its exact fraction
             >
-              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                {/* Slightly smaller icons for mobile to fit 2 neatly */}
-                {React.cloneElement(feature.icon as React.ReactElement, { className: "w-6 h-6" })}
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 [&>svg]:w-6 [&>svg]:h-6">
+                {feature.icon}
               </div>
               <div className="text-center">
                 <p className="font-bold text-sm mb-0.5 whitespace-nowrap">{feature.title}</p>
