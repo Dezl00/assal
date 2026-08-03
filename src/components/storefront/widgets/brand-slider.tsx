@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { ChevronRight, ChevronLeft } from "lucide-react"
+import { getValidLink } from "@/lib/utils"
 
 export function BrandSlider({ widget }: { widget: any }) {
   const originalItems = widget.items || []
@@ -134,7 +135,7 @@ export function BrandSlider({ widget }: { widget: any }) {
                 {pageItems.map((item: any, index: number) => (
                   <div key={`${item.id}-${index}`} className="flex justify-center px-2" style={{ width: `${100 / itemsPerPage}%` }}>
                     {item.buttonUrl ? (
-                      <Link href={item.buttonUrl} className="block transition-transform hover:scale-110">
+                      <Link href={getValidLink(item.buttonUrl)} className="block transition-transform hover:scale-110">
                         <img 
                           src={item.desktopImage} 
                           alt={item.title || "Brand Logo"} 

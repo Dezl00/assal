@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, ChevronLeft } from "lucide-react"
+import { getValidLink } from "@/lib/utils"
 
 export function HeroSlider({ widget }: { widget: any }) {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -55,7 +56,7 @@ export function HeroSlider({ widget }: { widget: any }) {
                   )}
                   {slide.buttonUrl && (
                     <div className="animate-in slide-in-from-bottom-12 duration-700 delay-150">
-                      <Link href={slide.buttonUrl}>
+                      <Link href={getValidLink(slide.buttonUrl)}>
                         <Button size="lg" className="gold-gradient text-white border-0 px-8 text-lg hover:scale-105 transition-transform shadow-md">
                           تسوق الآن
                         </Button>

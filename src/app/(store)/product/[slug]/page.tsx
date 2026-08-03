@@ -17,7 +17,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const params = await props.params;
   const [product, theme] = await Promise.all([
     db.product.findUnique({
-      where: { slug: params.slug },
+      where: { slug: decodeURIComponent(params.slug) },
       include: { images: { orderBy: { sortOrder: 'asc' } } }
     }),
     db.themeConfig.findUnique({ where: { id: "default" } })
@@ -52,8 +52,9 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
 
 export default async function ProductDetailsPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
+  const productSlug = decodeURIComponent(params.slug);
   const product = await db.product.findUnique({
-    where: { slug: params.slug },
+    where: { slug: productSlug },
     include: {
       images: { orderBy: { sortOrder: 'asc' } },
       category: true,

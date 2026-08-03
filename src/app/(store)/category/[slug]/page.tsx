@@ -20,7 +20,7 @@ type Props = {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const [category, theme] = await Promise.all([
-    db.category.findUnique({ where: { slug: params.slug } }),
+    db.category.findUnique({ where: { slug: decodeURIComponent(params.slug) } }),
     db.themeConfig.findUnique({ where: { id: "default" } })
   ])
   
@@ -55,8 +55,9 @@ export default async function CategoryPage(props: Props) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   
+  const categorySlug = decodeURIComponent(params.slug);
   const category = await db.category.findUnique({
-    where: { slug: params.slug },
+    where: { slug: categorySlug },
     include: {
       parent: true,
       children: { orderBy: { createdAt: "asc" } },

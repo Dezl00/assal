@@ -1,6 +1,7 @@
 "use client"
 import React from "react"
 import Link from "next/link"
+import { getValidLink } from "@/lib/utils"
 
 export function BannerGrid({ widget }: { widget: any }) {
   const items = widget.items || []
@@ -22,7 +23,7 @@ export function BannerGrid({ widget }: { widget: any }) {
       <div className={`grid gap-6 ${gridCols}`}>
         {items.slice(0, 3).map((item: any) => (
           <Link 
-            href={item.buttonUrl || "#"} 
+            href={getValidLink(item.buttonUrl)} 
             key={item.id}
             className="group relative h-[300px] md:h-[400px] overflow-hidden rounded-2xl block"
           >

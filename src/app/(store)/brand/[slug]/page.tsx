@@ -16,7 +16,8 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
-  const brand = await db.brand.findUnique({ where: { slug: params.slug } })
+  const brandSlug = decodeURIComponent(params.slug);
+  const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } })
   
   if (!brand) return { title: "الماركة غير موجودة" }
@@ -48,7 +49,8 @@ export default async function BrandPage(props: Props) {
   const params = await props.params;
   const searchParams = await props.searchParams;
   
-  const brand = await db.brand.findUnique({ where: { slug: params.slug } })
+  const brandSlug = decodeURIComponent(params.slug);
+  const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
   if (!brand) notFound()
 
   const categorySlug = searchParams?.category as string
