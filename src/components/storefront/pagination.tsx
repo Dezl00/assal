@@ -23,7 +23,7 @@ export function StorePagination({
   if (totalPages <= 1) return null
 
   // Generate page numbers
-  const pages = []
+  const pages: (number | string)[] = []
   for (let i = 1; i <= totalPages; i++) {
     if (
       i === 1 || 
