@@ -5,12 +5,14 @@ import { Search, ShoppingBag, User, Menu as MenuIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
+import { useRouter } from "next/navigation"
 
-export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[], themeConfig?: any }) {
+export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: any[], themeConfig?: any, user?: any }) {
   const { getTotals, setIsOpen } = useCartStore()
   const { count } = getTotals()
   const [mounted, setMounted] = useState(false)
   const { setAuthModalOpen, setMobileMenuOpen } = useUIStore()
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -51,7 +53,18 @@ export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[],
               <Search className="w-6 h-6" />
             </Button>
             
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" onClick={() => setAuthModalOpen(true)}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-muted-foreground hover:text-foreground" 
+              onClick={() => {
+                if (user) {
+                  router.push("/account")
+                } else {
+                  setAuthModalOpen(true)
+                }
+              }}
+            >
               <User className="w-6 h-6" />
             </Button>
 

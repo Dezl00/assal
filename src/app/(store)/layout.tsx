@@ -6,8 +6,12 @@ import { CartDrawer } from "@/components/storefront/cart-drawer"
 import { AuthModal } from "@/components/auth/auth-modal"
 import { MobileSidebar } from "@/components/storefront/mobile-sidebar"
 import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav"
+import { auth } from "@/lib/auth"
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth()
+  const user = session?.user || null
+
   // Fetch header menu (assuming 'header-menu' is a common name/identifier we use)
   const headerMenu = await db.menu.findFirst({
     where: { name: { contains: "header", mode: "insensitive" } },
@@ -35,7 +39,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen flex flex-col font-sans pb-16 md:pb-0 selection:bg-primary/20">
-      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} />
+      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} />
       <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} />
       <CartDrawer />
       <AuthModal themeConfig={themeConfig} />
@@ -43,7 +47,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         {children}
       </main>
       <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} />
-      <MobileBottomNav />
+      <MobileBottomNav user={user} />
     </div>
   )
 }
