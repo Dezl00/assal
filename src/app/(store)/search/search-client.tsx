@@ -85,8 +85,8 @@ export function SearchClient({ initialQuery, initialResults }: { initialQuery: s
           <div className="space-y-6">
             <h2 className="text-xl font-bold">نتائج البحث عن "{query}" ({results.length})</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {results.map(product => (
-                <ProductCard key={product.id} product={product} />
+              {results.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
               ))}
             </div>
           </div>

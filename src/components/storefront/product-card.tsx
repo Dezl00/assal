@@ -1,9 +1,8 @@
 "use client"
-import React from "react"
+import React, { useRef, useEffect, useState } from "react"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
 import { useCartStore } from "@/store/cart-store"
-import { motion } from "framer-motion"
 
 interface ProductCardProps {
   product: {
@@ -17,14 +16,34 @@ interface ProductCardProps {
     category?: { name: string; slug: string }
   }
   disableAnimation?: boolean
+  index?: number
 }
 
-export function ProductCard({ product, disableAnimation = false }: ProductCardProps) {
+export function ProductCard({ product, disableAnimation = false, index = 0 }: ProductCardProps) {
   const { addItem } = useCartStore()
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(disableAnimation)
   
   const finalPrice = product.discountPrice ?? product.price
   const hasDiscount = product.discountPrice != null && product.discountPrice < product.price
   const isOutOfStock = product.stock <= 0
+
+  useEffect(() => {
+    if (disableAnimation) return
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.1, rootMargin: "50px" }
+    )
+    
+    if (cardRef.current) observer.observe(cardRef.current)
+    return () => observer.disconnect()
+  }, [disableAnimation])
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -41,17 +60,18 @@ export function ProductCard({ product, disableAnimation = false }: ProductCardPr
     })
   }
 
-  const CardWrapper = disableAnimation ? "div" : motion.div
+  // Stagger delay: each card gets a small delay based on its index (max 0.4s)
+  const staggerDelay = disableAnimation ? 0 : Math.min(index * 0.08, 0.4)
 
   return (
-    <CardWrapper 
-      {...(!disableAnimation ? {
-        initial: { opacity: 0, y: 30 },
-        whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true, margin: "-50px" },
-        transition: { type: "spring", stiffness: 100, damping: 15 }
-      } : {})}
-      className="group relative rounded-2xl bg-card p-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full"
+    <div 
+      ref={cardRef}
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(24px)',
+        transition: `opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${staggerDelay}s, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${staggerDelay}s`,
+      }}
+      className="group relative rounded-2xl bg-card p-4 transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full"
     >
       
       {/* Badges */}
@@ -73,6 +93,7 @@ export function ProductCard({ product, disableAnimation = false }: ProductCardPr
           <img 
             src={product.images[0].url} 
             alt={product.name}
+            loading="lazy"
             className="object-contain w-full h-full p-2 transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
@@ -108,13 +129,11 @@ export function ProductCard({ product, disableAnimation = false }: ProductCardPr
           <div className="flex flex-col items-center">
             <span className="font-bold text-lg text-primary">{finalPrice.toFixed(2)} ج.م</span>
             {hasDiscount && (
-              <span className="text-xs text-muted-foreground line-through">
-                {product.price.toFixed(2)} ج.م
-              </span>
+              <span className="text-xs text-muted-foreground line-through">{product.price.toFixed(2)} ج.م</span>
             )}
           </div>
         </div>
       </div>
-    </CardWrapper>
+    </div>
   )
 }
