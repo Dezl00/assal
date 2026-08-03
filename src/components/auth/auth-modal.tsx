@@ -2,16 +2,92 @@
 
 import React, { useState } from "react"
 import { useUIStore } from "@/store/ui-store"
-import { X } from "lucide-react"
+import { X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { registerUser } from "@/app/actions/auth"
 
 export function AuthModal({ themeConfig }: { themeConfig?: any }) {
   const { isAuthModalOpen, setAuthModalOpen } = useUIStore()
   const [tab, setTab] = useState<"login" | "register">("login")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   if (!isAuthModalOpen) return null
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+    
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      })
+
+      if (result?.error) {
+        setError("البريد الإلكتروني أو كلمة المرور غير صحيحة")
+      } else {
+        setAuthModalOpen(false)
+        router.push("/account")
+        router.refresh()
+      }
+    } catch (err) {
+      setError("حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+
+    try {
+      const result = await registerUser(formData)
+
+      if (result.error) {
+        setError(result.error)
+        setLoading(false)
+        return
+      }
+
+      if (result.success) {
+        // Auto login after successful registration
+        const signInResult = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })
+
+        if (signInResult?.error) {
+          setError("تم إنشاء الحساب بنجاح، ولكن حدث خطأ أثناء تسجيل الدخول التلقائي")
+        } else {
+          setAuthModalOpen(false)
+          router.push("/account")
+          router.refresh()
+        }
+      }
+    } catch (err) {
+      setError("حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
@@ -46,9 +122,9 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
           </div>
 
           {/* Tabs */}
-          <div className="flex rounded-lg bg-muted p-1 mb-8">
+          <div className="flex rounded-lg bg-muted p-1 mb-6">
             <button
-              onClick={() => setTab("login")}
+              onClick={() => { setTab("login"); setError(""); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 tab === "login" 
                   ? "bg-card text-foreground shadow-sm" 
@@ -58,7 +134,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
               تسجيل الدخول
             </button>
             <button
-              onClick={() => setTab("register")}
+              onClick={() => { setTab("register"); setError(""); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 tab === "register" 
                   ? "bg-card text-foreground shadow-sm" 
@@ -69,48 +145,47 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
             </button>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20 text-center">
+              {error}
+            </div>
+          )}
+
           {/* Forms */}
           {tab === "login" ? (
-            <form 
-              className="space-y-4"
-              onSubmit={async (e) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                await signIn("credentials", {
-                  email: formData.get("email"),
-                  password: formData.get("password"),
-                  redirectTo: "/account"
-                })
-              }}
-            >
+            <form className="space-y-4" onSubmit={handleLogin}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">البريد الإلكتروني</label>
-                <Input type="email" name="email" required placeholder="name@example.com" className="h-12" />
+                <Input type="email" name="email" required placeholder="name@example.com" className="h-12" dir="ltr" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">كلمة المرور</label>
-                <Input type="password" name="password" required className="h-12" />
+                <Input type="password" name="password" required className="h-12" dir="ltr" />
               </div>
               <div className="flex justify-end">
                 <button type="button" className="text-sm text-primary hover:underline">نسيت كلمة المرور؟</button>
               </div>
-              <Button type="submit" className="w-full h-12 text-lg">دخول</Button>
+              <Button type="submit" className="w-full h-12 text-lg" disabled={loading}>
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "دخول"}
+              </Button>
             </form>
           ) : (
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleRegister}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">الاسم الكامل</label>
                 <Input type="text" name="name" required placeholder="أحمد محمد" className="h-12" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">البريد الإلكتروني</label>
-                <Input type="email" name="email" required placeholder="name@example.com" className="h-12" />
+                <Input type="email" name="email" required placeholder="name@example.com" className="h-12" dir="ltr" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">كلمة المرور</label>
-                <Input type="password" name="password" required className="h-12" />
+                <Input type="password" name="password" required className="h-12" dir="ltr" />
               </div>
-              <Button type="submit" className="w-full h-12 text-lg">إنشاء حساب جديد</Button>
+              <Button type="submit" className="w-full h-12 text-lg" disabled={loading}>
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "إنشاء حساب جديد"}
+              </Button>
             </form>
           )}
         </div>
