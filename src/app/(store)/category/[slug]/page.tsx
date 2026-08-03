@@ -69,31 +69,31 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Category Header */}
-      <div className="mb-12 relative overflow-hidden rounded-3xl bg-secondary/30 border border-border/50 p-10 sm:p-16 text-center">
+      <div className="mb-12 relative overflow-hidden rounded-3xl bg-primary p-10 sm:p-16 text-center shadow-lg shadow-primary/20">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         
         <div className="relative z-10 flex flex-col items-center">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground mb-4">{category.name}</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">{category.name}</h1>
           
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-4 bg-background/50 backdrop-blur-sm px-4 py-2 rounded-full border border-border/50">
-            <Link href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 mb-4 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
-            <Link href="/products" className="hover:text-primary transition-colors">المنتجات</Link>
+            <Link href="/products" className="hover:text-white transition-colors">المنتجات</Link>
             
             {category.parent && (
               <>
                 <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
-                <Link href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors">
+                <Link href={`/category/${category.parent.slug}`} className="hover:text-white transition-colors">
                   {category.parent.name}
                 </Link>
               </>
             )}
 
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
-            <span className="text-foreground font-medium">{category.name}</span>
+            <span className="text-white font-medium">{category.name}</span>
           </nav>
         </div>
       </div>
