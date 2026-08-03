@@ -46,7 +46,7 @@ export function StorefrontFooter({ menuItems, themeConfig }: { menuItems: any[],
                 placeholder="البريد الإلكتروني" 
                 className="h-10 w-full rounded-r-md bg-white/10 px-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-primary"
               />
-              <button className="h-10 px-4 rounded-l-md gold-gradient text-white font-medium text-sm hover:opacity-90 transition-opacity">
+              <button className="h-10 px-4 rounded-l-md bg-primary text-primary-foreground font-medium text-sm hover:bg-primary/90 transition-colors">
                 اشترك
               </button>
             </div>

@@ -84,7 +84,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
         <h1 className="text-3xl font-bold mb-4">سلة المشتريات فارغة</h1>
         <p className="text-muted-foreground mb-8 text-lg">لم تقم بإضافة أي منتجات للسلة بعد.</p>
         <Link href="/products">
-          <Button size="lg" className="gold-gradient text-white rounded-2xl px-8 h-14 text-lg">
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl px-8 h-14 text-lg">
             تصفح المنتجات
           </Button>
         </Link>
@@ -111,7 +111,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
               <User className="w-16 h-16 text-muted-foreground mb-4" />
               <h2 className="text-2xl font-bold mb-2">تسجيل الدخول مطلوب</h2>
               <p className="text-muted-foreground mb-8">يجب عليك تسجيل الدخول أو إنشاء حساب جديد لإتمام طلبك.</p>
-              <Button type="button" size="lg" className="gold-gradient text-white rounded-xl px-8" onClick={() => setAuthModalOpen(true)}>
+              <Button type="button" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-8" onClick={() => setAuthModalOpen(true)}>
                 تسجيل الدخول / إنشاء حساب
               </Button>
             </div>
@@ -266,7 +266,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
                   e.preventDefault()
                   setAuthModalOpen(true)
                 }}
-                className="w-full h-14 mt-8 rounded-2xl bg-secondary text-secondary-foreground text-lg font-bold hover:bg-secondary/80 transition-all"
+                className="w-full h-14 mt-8 rounded-2xl bg-primary text-primary-foreground text-lg font-bold hover:bg-primary/90 transition-all"
               >
                 تسجيل الدخول لإتمام الطلب
               </Button>
@@ -274,7 +274,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full h-14 mt-8 rounded-2xl gold-gradient text-white text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5"
+                className="w-full h-14 mt-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
               >
                 {isSubmitting ? (
                   <>

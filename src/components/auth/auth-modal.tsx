@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useUIStore } from "@/store/ui-store"
 import { X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,15 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
   const [translateY, setTranslateY] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [startY, setStartY] = useState(0)
+
+  useEffect(() => {
+    if (isAuthModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isAuthModalOpen])
 
   if (!isAuthModalOpen) return null
 
@@ -198,7 +207,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
               onClick={() => { setTab("login"); setError(""); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 tab === "login" 
-                  ? "bg-card text-foreground shadow-sm" 
+                  ? "bg-primary text-primary-foreground shadow-md" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -208,7 +217,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
               onClick={() => { setTab("register"); setError(""); }}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 tab === "register" 
-                  ? "bg-card text-foreground shadow-sm" 
+                  ? "bg-primary text-primary-foreground shadow-md" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

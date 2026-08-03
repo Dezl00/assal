@@ -41,8 +41,8 @@ export default async function CheckoutSuccessPage(props: { params: Promise<{ id:
         </div>
 
         <Link href="/">
-          <Button size="lg" className="gold-gradient text-white rounded-2xl px-8 h-14 text-lg w-full sm:w-auto">
-            العودة للصفحة الرئيسية
+          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl px-8 h-14 text-lg w-full sm:w-auto">
+            متابعة التسوق
           </Button>
         </Link>
       </div>

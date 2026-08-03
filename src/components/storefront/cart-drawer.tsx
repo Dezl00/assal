@@ -109,7 +109,7 @@ export function CartDrawer() {
               <span className="text-xl font-bold text-foreground">{total.toFixed(2)} ج.م</span>
             </div>
             <Link href="/checkout" onClick={() => setIsOpen(false)}>
-              <Button className="w-full h-12 gold-gradient text-white text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-0.5">
+              <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5">
                 إتمام الطلب
               </Button>
             </Link>
