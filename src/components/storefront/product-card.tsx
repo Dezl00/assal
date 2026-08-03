@@ -39,7 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <div className="group relative rounded-2xl border border-border/50 bg-card p-4 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full">
+    <div className="group relative rounded-2xl bg-card p-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full">
       
       {/* Badges */}
       <div className="absolute top-6 right-6 z-10 flex flex-col gap-2">
@@ -81,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </Link>
       
-      <div className="flex flex-col flex-1 justify-between">
+      <div className="flex flex-col flex-1 justify-between text-center">
         <div className="space-y-1 mb-4">
           {product.category && (
             <p className="text-xs text-muted-foreground">{product.category.name}</p>
@@ -91,8 +91,8 @@ export function ProductCard({ product }: ProductCardProps) {
           </Link>
         </div>
         
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex flex-col">
+        <div className="flex items-center justify-center mt-auto">
+          <div className="flex flex-col items-center">
             <span className="font-bold text-lg text-primary">{finalPrice.toFixed(2)} ج.م</span>
             {hasDiscount && (
               <span className="text-xs text-muted-foreground line-through">
@@ -100,14 +100,6 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             )}
           </div>
-          
-          <button 
-            onClick={handleQuickAdd}
-            disabled={isOutOfStock}
-            className="h-10 w-10 rounded-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ShoppingBag className="w-4 h-4" />
-          </button>
         </div>
       </div>
     </div>
