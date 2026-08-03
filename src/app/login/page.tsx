@@ -18,18 +18,24 @@ export default function LoginPage() {
     setLoading(true)
     setError("")
 
-    const result = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    })
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      })
 
-    if (result?.error) {
-      setError("بيانات الدخول غير صحيحة")
+      if (result?.error) {
+        setError("بيانات الدخول غير صحيحة")
+        setLoading(false)
+      } else {
+        router.push("/admin")
+        router.refresh()
+      }
+    } catch (err) {
+      console.error(err)
+      setError("حدث خطأ في الاتصال بالخادم، يرجى المحاولة لاحقاً")
       setLoading(false)
-    } else {
-      router.push("/admin")
-      router.refresh()
     }
   }
 

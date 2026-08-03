@@ -17,6 +17,7 @@ declare module "next-auth" {
 // import bcrypt from "bcrypt" // Mocked for this build context unless installed
 
 export const authConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET || "fallback-secret-assal-2026-very-secure",
   providers: [
     CredentialsProvider({
       name: "Credentials",
