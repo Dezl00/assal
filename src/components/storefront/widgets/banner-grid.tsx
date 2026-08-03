@@ -2,6 +2,7 @@
 import React from "react"
 import Link from "next/link"
 import { getValidLink } from "@/lib/utils"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export function BannerGrid({ widget }: { widget: any }) {
   const items = widget.items || []
@@ -11,33 +12,44 @@ export function BannerGrid({ widget }: { widget: any }) {
   // If 1 item, full width. If 2, half. If 3+, grid.
   const gridCols = items.length === 1 ? 'grid-cols-1' : items.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'
 
+  // Different animation variants for variety
+  const bannerVariants = ["fade-right", "fade-up", "fade-left"] as const
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       {widget.title && (
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">{widget.title}</h2>
-          {widget.subtitle && <p className="text-muted-foreground mt-2">{widget.subtitle}</p>}
-        </div>
+        <ScrollReveal variant="fade-up" duration={0.5}>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">{widget.title}</h2>
+            {widget.subtitle && <p className="text-muted-foreground mt-2">{widget.subtitle}</p>}
+          </div>
+        </ScrollReveal>
       )}
       
       <div className={`grid gap-6 ${gridCols}`}>
-        {items.slice(0, 3).map((item: any) => (
-          <Link 
-            href={getValidLink(item.buttonUrl)} 
-            key={item.id}
-            className="group relative h-[300px] md:h-[400px] overflow-hidden rounded-2xl block"
+        {items.slice(0, 3).map((item: any, index: number) => (
+          <ScrollReveal 
+            key={item.id} 
+            variant={bannerVariants[index % 3] as any}
+            delay={index * 0.12}
+            duration={0.7}
           >
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-              style={{ backgroundImage: `url(${item.desktopImage})` }}
-            />
-            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
-            <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-              <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
-                {item.title}
-              </h3>
-            </div>
-          </Link>
+            <Link 
+              href={getValidLink(item.buttonUrl)} 
+              className="group relative h-[300px] md:h-[400px] overflow-hidden rounded-2xl block"
+            >
+              <div 
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                style={{ backgroundImage: `url(${item.desktopImage})` }}
+              />
+              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
+              <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
+                <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
+                  {item.title}
+                </h3>
+              </div>
+            </Link>
+          </ScrollReveal>
         ))}
       </div>
     </div>

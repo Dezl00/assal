@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { ChevronRight, ChevronLeft } from "lucide-react"
 import { getValidLink } from "@/lib/utils"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export function BrandSlider({ widget }: { widget: any }) {
   const originalItems = widget.items || []
@@ -108,9 +109,11 @@ export function BrandSlider({ widget }: { widget: any }) {
   return (
     <div className="w-full bg-background py-10 border-y border-border/50">
       {widget.title && widget.title !== "" && (
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold tracking-tight">{widget.title}</h2>
-        </div>
+        <ScrollReveal variant="fade-up" duration={0.5}>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold tracking-tight">{widget.title}</h2>
+          </div>
+        </ScrollReveal>
       )}
       
       <div 
