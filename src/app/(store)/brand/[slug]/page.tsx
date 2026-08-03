@@ -89,7 +89,16 @@ export default async function BrandPage(props: Props) {
         category: true,
       }
     }),
-    db.category.findMany({ select: { id: true, name: true, slug: true } }),
+    db.category.findMany({ 
+      where: {
+        products: {
+          some: {
+            brandId: brand.id
+          }
+        }
+      },
+      select: { id: true, name: true, slug: true } 
+    }),
   ])
 
   const totalPages = Math.ceil(totalProducts / limit)
