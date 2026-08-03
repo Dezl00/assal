@@ -5,7 +5,7 @@ import { submitOrder } from "@/features/checkout/actions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useUIStore } from "@/store/ui-store"
-import { ChevronDown, ShoppingBag, ChevronRight, User } from "lucide-react"
+import { ChevronDown, ShoppingBag, ChevronRight, User, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
