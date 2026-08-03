@@ -99,6 +99,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
               </Button>
             </div>
           ) : (
+          <>
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold mb-6">بيانات التوصيل</h2>
             
@@ -159,7 +160,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
               <span className="font-semibold">الدفع عند الاستلام (Cash on Delivery)</span>
             </div>
           </div>
-          </div>
+          </>
           )}
         </div>
         {/* Order Summary */}
