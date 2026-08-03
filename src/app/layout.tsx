@@ -63,16 +63,37 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+
   return (
     <html lang="ar" dir="rtl" className={fallbackFont.variable}>
+      <head>
+        <style dangerouslySetInnerHTML={{__html: `
+          :root {
+            ${theme?.primaryColor ? `--color-primary: ${theme.primaryColor}; --color-ring: ${theme.primaryColor};` : ''}
+            ${theme?.secondaryColor ? `--color-secondary: ${theme.secondaryColor};` : ''}
+          }
+        `}} />
+      </head>
       <body className="font-sans antialiased">
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster 
+          position="top-center" 
+          richColors 
+          toastOptions={{
+            style: {
+              boxShadow: 'none',
+              border: 'none',
+              fontFamily: 'inherit',
+            },
+            className: 'bg-background/90 backdrop-blur-md border-none shadow-none font-sans',
+          }}
+        />
       </body>
     </html>
   );

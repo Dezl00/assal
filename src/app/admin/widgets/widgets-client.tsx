@@ -123,14 +123,21 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
 
   async function handleToggleWidget(widget: any) {
     const newStatus = !widget.status;
+    // Optimistic update
+    setWidgets(widgets.map(w => w.id === widget.id ? { ...w, status: newStatus } : w));
+    if (editingWidget?.id === widget.id) {
+      setEditingWidget({ ...editingWidget, status: newStatus });
+    }
+    
     const res = await updateWidget(widget.id, { status: newStatus });
     if (res.success) {
-      setWidgets(widgets.map(w => w.id === widget.id ? { ...w, status: newStatus } : w));
       toast.success(newStatus ? "تم تفعيل الواجهة" : "تم إلغاء تفعيل الواجهة");
-      if (editingWidget?.id === widget.id) {
-        setEditingWidget({ ...editingWidget, status: newStatus });
-      }
     } else {
+      // Revert if error
+      setWidgets(widgets.map(w => w.id === widget.id ? { ...w, status: !newStatus } : w));
+      if (editingWidget?.id === widget.id) {
+        setEditingWidget({ ...editingWidget, status: !newStatus });
+      }
       toast.error("حدث خطأ أثناء تغيير حالة الواجهة");
     }
   }

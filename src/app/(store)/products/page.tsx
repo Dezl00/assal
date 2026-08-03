@@ -4,6 +4,8 @@ import { ProductGrid } from "@/components/storefront/product-grid"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 import type { Metadata } from "next"
 
 type Props = {

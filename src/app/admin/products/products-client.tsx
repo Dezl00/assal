@@ -21,6 +21,7 @@ export function ProductsClient({ products, categories, brands = [] }: { products
   const [brandSearch, setBrandSearch] = useState("")
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false)
   const [selectedBrandId, setSelectedBrandId] = useState("")
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   // Populate form when editingProduct changes
   useEffect(() => {
@@ -63,6 +64,10 @@ export function ProductsClient({ products, categories, brands = [] }: { products
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set("brandId", selectedBrandId)
+    
+    if (!formData.get("slug")) {
+      formData.set("slug", `product-${Date.now()}`)
+    }
     
     let res;
     if (editingProduct) {
@@ -251,97 +256,72 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">القسم <span className="text-red-500">*</span></label>
-                      <select 
-                        name="categoryId"
-                        required
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
-                      >
-                        <option value="">اختيار القسم الفرعي...</option>
-                        {categories.filter(c => !c.parentId).map(mainCat => (
-                          <optgroup key={mainCat.id} label={mainCat.name}>
-                            {categories.filter(c => c.parentId === mainCat.id).map(subCat => (
-                              <option key={subCat.id} value={subCat.id}>{subCat.name}</option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">الرابط (Slug) <span className="text-red-500">*</span></label>
-                      <input 
-                        name="slug"
-                        type="text" 
-                        required
-                        dir="ltr"
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">القسم <span className="text-red-500">*</span></label>
+                    <select 
+                      name="categoryId"
+                      required
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                    >
+                      <option value="">اختيار القسم الفرعي...</option>
+                      {categories.filter(c => !c.parentId).map(mainCat => (
+                        <optgroup key={mainCat.id} label={mainCat.name}>
+                          {categories.filter(c => c.parentId === mainCat.id).map(subCat => (
+                            <option key={subCat.id} value={subCat.id}>{subCat.name}</option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 relative">
-                    <div className="space-y-2 relative">
-                      <label className="text-sm font-medium">الماركة <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={brandSearch}
-                          onChange={(e) => {
-                            setBrandSearch(e.target.value)
-                            setIsBrandDropdownOpen(true)
-                            if (e.target.value === "") setSelectedBrandId("")
-                          }}
-                          onFocus={() => setIsBrandDropdownOpen(true)}
-                          onBlur={() => setTimeout(() => setIsBrandDropdownOpen(false), 200)}
-                          placeholder="ابحث عن ماركة..."
-                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                        />
-                        {isBrandDropdownOpen && (
-                          <div className="absolute top-full left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50">
+                  <div className="space-y-2 relative">
+                    <label className="text-sm font-medium">الماركة <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={brandSearch}
+                        onChange={(e) => {
+                          setBrandSearch(e.target.value)
+                          setIsBrandDropdownOpen(true)
+                          if (e.target.value === "") setSelectedBrandId("")
+                        }}
+                        onFocus={() => setIsBrandDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setIsBrandDropdownOpen(false), 200)}
+                        placeholder="ابحث عن ماركة..."
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                      />
+                      {isBrandDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50">
+                          <div
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
+                            onClick={() => {
+                              setSelectedBrandId("")
+                              setBrandSearch("")
+                              setIsBrandDropdownOpen(false)
+                            }}
+                          >
+                            بدون ماركة
+                          </div>
+                          {filteredBrands.map((brand: any) => (
                             <div
+                              key={brand.id}
                               className="px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
                               onClick={() => {
-                                setSelectedBrandId("")
-                                setBrandSearch("")
+                                setSelectedBrandId(brand.id)
+                                setBrandSearch(brand.name)
                                 setIsBrandDropdownOpen(false)
                               }}
                             >
-                              بدون ماركة
+                              {brand.name}
                             </div>
-                            {filteredBrands.map((brand: any) => (
-                              <div
-                                key={brand.id}
-                                className="px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
-                                onClick={() => {
-                                  setSelectedBrandId(brand.id)
-                                  setBrandSearch(brand.name)
-                                  setIsBrandDropdownOpen(false)
-                                }}
-                              >
-                                {brand.name}
-                              </div>
-                            ))}
-                            {filteredBrands.length === 0 && (
-                              <div className="px-3 py-2 text-sm text-muted-foreground text-center">لا توجد نتائج</div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <input type="hidden" name="brandId" value={selectedBrandId} />
+                          ))}
+                          {filteredBrands.length === 0 && (
+                            <div className="px-3 py-2 text-sm text-muted-foreground text-center">لا توجد نتائج</div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">الرمز (SKU) <span className="text-red-500">*</span></label>
-                      <input 
-                        name="sku"
-                        type="text" 
-                        required
-                        dir="ltr"
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                      />
-                    </div>
+                    <input type="hidden" name="brandId" value={selectedBrandId} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -386,6 +366,43 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                       rows={3}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                     />
+                  </div>
+
+                  {/* Advanced Settings */}
+                  <div className="pt-2 border-t border-border/50">
+                    <button 
+                      type="button" 
+                      onClick={() => setShowAdvanced(!showAdvanced)} 
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <span className="font-medium">إعدادات إضافية</span>
+                      <svg className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {showAdvanced && (
+                      <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">الرابط (Slug) <span className="text-muted-foreground text-xs font-normal">(يُولد تلقائياً)</span></label>
+                          <input 
+                            name="slug"
+                            type="text" 
+                            dir="ltr"
+                            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">الرمز (SKU) <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                          <input 
+                            name="sku"
+                            type="text" 
+                            dir="ltr"
+                            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 

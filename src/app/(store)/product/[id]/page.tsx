@@ -122,19 +122,20 @@ export default async function ProductDetailsPage(props: { params: Promise<{ id: 
           </div>
 
           {/* SKU and Brand */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-8 pb-8 border-b border-border/50">
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-foreground">الرمز (SKU):</span>
-              <span className="font-mono">{product.sku}</span>
-            </div>
+          <div className="flex flex-col gap-3 text-sm text-muted-foreground mb-8 pb-8 border-b border-border/50">
+            {product.sku && (
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-foreground">الرمز (SKU):</span>
+                <span className="font-mono">{product.sku}</span>
+              </div>
+            )}
             {product.brand && (
-              <>
-                <span className="w-1 h-1 rounded-full bg-border"></span>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-foreground">الماركة:</span>
-                  <span className="text-primary font-bold">{product.brand.name}</span>
-                </div>
-              </>
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-foreground">الماركة:</span>
+                <Link href={`/products?brand=${product.brand.slug}`} className="text-primary font-bold hover:underline">
+                  {product.brand.name}
+                </Link>
+              </div>
             )}
           </div>
 
