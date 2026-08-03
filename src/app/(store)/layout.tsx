@@ -3,6 +3,9 @@ import { db } from "@/lib/db"
 import { StorefrontHeader } from "@/components/storefront/header"
 import { StorefrontFooter } from "@/components/storefront/footer"
 import { CartDrawer } from "@/components/storefront/cart-drawer"
+import { AuthModal } from "@/components/auth/auth-modal"
+import { MobileSidebar } from "@/components/storefront/mobile-sidebar"
+import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav"
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   // Fetch header menu (assuming 'header-menu' is a common name/identifier we use)
@@ -31,13 +34,16 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   const footerItems = footerMenu?.items || fallbackMenu?.items || []
 
   return (
-    <div className="flex min-h-screen flex-col bg-background selection:bg-primary/20">
+    <div className="min-h-screen flex flex-col font-sans pb-16 md:pb-0 selection:bg-primary/20">
       <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} />
+      <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} />
       <CartDrawer />
+      <AuthModal themeConfig={themeConfig} />
       <main className="flex-1">
         {children}
       </main>
       <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} />
+      <MobileBottomNav />
     </div>
   )
 }

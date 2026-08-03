@@ -4,11 +4,13 @@ import Link from "next/link"
 import { Search, ShoppingBag, User, Menu as MenuIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cart-store"
+import { useUIStore } from "@/store/ui-store"
 
 export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[], themeConfig?: any }) {
   const { getTotals, setIsOpen } = useCartStore()
   const { count } = getTotals()
   const [mounted, setMounted] = useState(false)
+  const { setAuthModalOpen, setMobileMenuOpen } = useUIStore()
 
   useEffect(() => {
     setMounted(true)
@@ -46,14 +48,12 @@ export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[],
           {/* Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden sm:flex">
-              <Search className="w-5 h-5" />
+              <Search className="w-6 h-6" />
             </Button>
             
-            <Link href="/login">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <User className="w-5 h-5" />
-              </Button>
-            </Link>
+            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground" onClick={() => setAuthModalOpen(true)}>
+              <User className="w-6 h-6" />
+            </Button>
 
             <Button 
               variant="ghost" 
@@ -61,7 +61,7 @@ export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[],
               className="text-muted-foreground hover:text-primary relative group"
               onClick={() => setIsOpen(true)}
             >
-              <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <ShoppingBag className="w-6 h-6 group-hover:scale-110 transition-transform" />
               {mounted && count > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground animate-in zoom-in duration-300">
                   {count}
@@ -69,8 +69,8 @@ export function StorefrontHeader({ menuItems, themeConfig }: { menuItems: any[],
               )}
             </Button>
 
-            <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground">
-              <MenuIcon className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground" onClick={() => setMobileMenuOpen(true)}>
+              <MenuIcon className="w-6 h-6" />
             </Button>
           </div>
         </div>

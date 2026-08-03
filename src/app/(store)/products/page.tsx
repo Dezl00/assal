@@ -3,6 +3,9 @@ import { db } from "@/lib/db"
 import { ProductGrid } from "@/components/storefront/product-grid"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
+import { FilterSidebar } from "@/components/storefront/filter-sidebar"
+import { StoreToolbar } from "@/components/storefront/store-toolbar"
+import { StorePagination } from "@/components/storefront/pagination"
 
 export const dynamic = 'force-dynamic'
 
@@ -47,9 +50,17 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function AllProductsPage({ searchParams }: Props) {
   const resolvedParams = await searchParams;
   const brandSlug = resolvedParams?.brand as string
+  const categorySlug = resolvedParams?.category as string
+  const minPrice = resolvedParams?.minPrice ? parseFloat(resolvedParams.minPrice as string) : undefined
+  const maxPrice = resolvedParams?.maxPrice ? parseFloat(resolvedParams.maxPrice as string) : undefined
+  const sort = (resolvedParams?.sort as string) || "newest"
+  const page = resolvedParams?.page ? parseInt(resolvedParams.page as string) : 1
+  const limit = 20
+
   let brand = null
   let whereClause: any = {}
 
+  // Apply filters
   if (brandSlug) {
     brand = await db.brand.findUnique({ where: { slug: brandSlug } })
     if (brand) {
@@ -57,28 +68,58 @@ export default async function AllProductsPage({ searchParams }: Props) {
     }
   }
 
-  const products = await db.product.findMany({
-    where: whereClause,
-    orderBy: { createdAt: "desc" },
-    include: {
-      images: { orderBy: { sortOrder: 'asc' } },
-      category: true,
+  if (categorySlug) {
+    const category = await db.category.findUnique({ where: { slug: categorySlug } })
+    if (category) {
+      whereClause.categoryId = category.id
     }
-  })
+  }
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    whereClause.price = {}
+    if (minPrice !== undefined) whereClause.price.gte = minPrice
+    if (maxPrice !== undefined) whereClause.price.lte = maxPrice
+  }
+
+  // Apply sorting
+  let orderByClause: any = { createdAt: "desc" }
+  if (sort === "price_asc") {
+    orderByClause = { price: "asc" }
+  } else if (sort === "price_desc") {
+    orderByClause = { price: "desc" }
+  }
+
+  // Fetch count and products
+  const [totalProducts, products, categories, brands] = await Promise.all([
+    db.product.count({ where: whereClause }),
+    db.product.findMany({
+      where: whereClause,
+      orderBy: orderByClause,
+      take: limit,
+      skip: (page - 1) * limit,
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        category: true,
+      }
+    }),
+    db.category.findMany({ select: { id: true, name: true, slug: true } }),
+    db.brand.findMany({ select: { id: true, name: true, slug: true } })
+  ])
+
+  const totalPages = Math.ceil(totalProducts / limit)
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Page Header */}
-      <div className="mb-12 relative overflow-hidden rounded-3xl bg-primary p-10 sm:p-16 text-center shadow-lg shadow-primary/20">
-        {/* Decorative elements */}
+      <div className="mb-8 sm:mb-12 relative overflow-hidden rounded-3xl bg-primary p-8 sm:p-16 text-center shadow-lg shadow-primary/20">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         
         <div className="relative z-10 flex flex-col items-center">
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">
             {brand ? `منتجات ${brand.name}` : "جميع المنتجات"}
           </h1>
-          <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">
+          <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">
             {brand ? `تصفح منتجات ماركة ${brand.name} الفاخرة` : "تصفح تشكيلتنا الكاملة من المنتجات الفاخرة"}
           </p>
           
@@ -91,7 +132,30 @@ export default async function AllProductsPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <ProductGrid products={products} />
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Sidebar */}
+        <FilterSidebar categories={categories} brands={brands} />
+
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
+          <StoreToolbar totalProducts={totalProducts} />
+          
+          {products.length > 0 ? (
+            <>
+              <ProductGrid products={products} />
+              <StorePagination totalPages={totalPages} currentPage={page} />
+            </>
+          ) : (
+            <div className="text-center py-20 bg-card rounded-2xl border border-border/50">
+              <h2 className="text-2xl font-bold text-foreground mb-2">لا توجد منتجات</h2>
+              <p className="text-muted-foreground">لم يتم العثور على منتجات تطابق معايير البحث الخاصة بك.</p>
+              <Link href="/products" className="inline-block mt-6 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-medium">
+                مسح الفلاتر
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

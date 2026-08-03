@@ -4,10 +4,20 @@ import { notFound } from "next/navigation"
 import { ProductGrid } from "@/components/storefront/product-grid"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
+import { FilterSidebar } from "@/components/storefront/filter-sidebar"
+import { StoreToolbar } from "@/components/storefront/store-toolbar"
+import { StorePagination } from "@/components/storefront/pagination"
 
 import type { Metadata } from "next"
 
-export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export const dynamic = 'force-dynamic'
+
+type Props = {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const [category, theme] = await Promise.all([
     db.category.findUnique({ where: { slug: params.slug } }),
@@ -22,7 +32,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
     : [];
 
   return {
-    title: category.name, // Next.js layout template will automatically append | storeName to the <title> tag
+    title: category.name,
     description: category.description || `تصفح منتجات قسم ${category.name} في ${storeName}`,
     openGraph: {
       title: `${category.name} | ${storeName}`,
@@ -41,43 +51,73 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   }
 }
 
-export default async function CategoryPage(props: { params: Promise<{ slug: string }> }) {
+export default async function CategoryPage(props: Props) {
   const params = await props.params;
+  const searchParams = await props.searchParams;
+  
   const category = await db.category.findUnique({
     where: { slug: params.slug },
     include: {
       parent: true,
-      children: {
-        orderBy: { createdAt: "asc" }
-      },
-      products: {
-        orderBy: { createdAt: "desc" },
-        include: {
-          images: { orderBy: { sortOrder: 'asc' } },
-          category: true,
-        }
-      }
+      children: { orderBy: { createdAt: "asc" } },
     }
   })
 
-  if (!category) {
-    notFound()
+  if (!category) notFound()
+
+  // Build filter where clause
+  const brandSlug = searchParams?.brand as string
+  const minPrice = searchParams?.minPrice ? parseFloat(searchParams.minPrice as string) : undefined
+  const maxPrice = searchParams?.maxPrice ? parseFloat(searchParams.maxPrice as string) : undefined
+  const sort = (searchParams?.sort as string) || "newest"
+  const page = searchParams?.page ? parseInt(searchParams.page as string) : 1
+  const limit = 20
+
+  let whereClause: any = { categoryId: category.id }
+
+  if (brandSlug) {
+    const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
+    if (brand) whereClause.brandId = brand.id
   }
 
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    whereClause.price = {}
+    if (minPrice !== undefined) whereClause.price.gte = minPrice
+    if (maxPrice !== undefined) whereClause.price.lte = maxPrice
+  }
+
+  let orderByClause: any = { createdAt: "desc" }
+  if (sort === "price_asc") orderByClause = { price: "asc" }
+  else if (sort === "price_desc") orderByClause = { price: "desc" }
+
+  const [totalProducts, products, brands] = await Promise.all([
+    db.product.count({ where: whereClause }),
+    db.product.findMany({
+      where: whereClause,
+      orderBy: orderByClause,
+      take: limit,
+      skip: (page - 1) * limit,
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        category: true,
+      }
+    }),
+    db.brand.findMany({ select: { id: true, name: true, slug: true } })
+  ])
+
+  const totalPages = Math.ceil(totalProducts / limit)
   const isMainCategory = !category.parentId
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Category Header */}
       <div className="mb-12 relative overflow-hidden rounded-3xl bg-primary p-10 sm:p-16 text-center shadow-lg shadow-primary/20">
-        {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         
         <div className="relative z-10 flex flex-col items-center">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">{category.name}</h1>
           
-          {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 mb-4 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
             <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
@@ -98,53 +138,47 @@ export default async function CategoryPage(props: { params: Promise<{ slug: stri
         </div>
       </div>
 
-      {isMainCategory ? (
-        /* Show Subcategories */
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {category.children.length === 0 ? (
-            <div className="col-span-full text-center text-muted-foreground py-12 bg-secondary/20 rounded-2xl border border-border/50">
-              لا توجد أقسام فرعية في هذا القسم حالياً.
-            </div>
-          ) : (
-            category.children.map((child) => (
+      {isMainCategory && category.children.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">الأقسام الفرعية</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {category.children.map(child => (
               <Link 
                 key={child.id} 
                 href={`/category/${child.slug}`}
-                className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border/50 bg-card p-6 transition-all hover:border-primary/50 hover:shadow-md"
+                className="group relative rounded-2xl border border-border/50 bg-card p-4 text-center transition-all hover:border-primary/50 hover:shadow-lg"
               >
-                <div className="relative h-24 w-24 md:h-32 md:w-32 overflow-hidden rounded-full bg-muted/30 p-2 transition-transform group-hover:scale-105">
-                  {child.imageUrl ? (
-                    <img 
-                      src={child.imageUrl} 
-                      alt={child.name}
-                      className="h-full w-full object-cover rounded-full"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <span className="text-3xl font-bold">{child.name.charAt(0)}</span>
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-lg font-semibold text-center group-hover:text-primary transition-colors">{child.name}</h3>
-                {child.description && (
-                  <p className="text-sm text-muted-foreground text-center line-clamp-2">{child.description}</p>
+                {child.imageUrl && (
+                  <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border border-border/50 bg-muted flex items-center justify-center p-4">
+                    <img src={child.imageUrl} alt={child.name} className="h-full w-full object-contain transition-transform group-hover:scale-110" />
+                  </div>
                 )}
+                <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">{child.name}</h3>
               </Link>
-            ))
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-8">
+        <FilterSidebar categories={[]} brands={brands} />
+        
+        <div className="flex-1 min-w-0">
+          <StoreToolbar totalProducts={totalProducts} />
+          
+          {products.length > 0 ? (
+            <>
+              <ProductGrid products={products} />
+              <StorePagination totalPages={totalPages} currentPage={page} />
+            </>
+          ) : (
+            <div className="text-center py-20 bg-card rounded-2xl border border-border/50">
+              <h2 className="text-2xl font-bold text-foreground mb-2">لا توجد منتجات</h2>
+              <p className="text-muted-foreground">لم يتم العثور على منتجات تطابق معايير البحث.</p>
+            </div>
           )}
         </div>
-      ) : (
-        /* Show Products */
-        <>
-          {category.products.length === 0 ? (
-            <div className="text-center text-muted-foreground py-12 bg-secondary/20 rounded-2xl border border-border/50">
-              لا توجد منتجات في هذا القسم الفرعي حالياً.
-            </div>
-          ) : (
-            <ProductGrid products={category.products} />
-          )}
-        </>
-      )}
+      </div>
     </div>
   )
 }
