@@ -381,28 +381,26 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                       </svg>
                     </button>
                     
-                    {showAdvanced && (
-                      <div className="grid grid-cols-2 gap-3 mt-4 animate-in fade-in slide-in-from-top-2">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">الرابط (Slug) <span className="text-muted-foreground text-xs font-normal">(يُولد تلقائياً)</span></label>
-                          <input 
-                            name="slug"
-                            type="text" 
-                            dir="ltr"
-                            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">الرمز (SKU) <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
-                          <input 
-                            name="sku"
-                            type="text" 
-                            dir="ltr"
-                            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                          />
-                        </div>
+                    <div className={`grid grid-cols-2 gap-3 mt-4 animate-in fade-in slide-in-from-top-2 ${!showAdvanced ? 'hidden' : ''}`}>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">الرابط (Slug) <span className="text-muted-foreground text-xs font-normal">(يُولد تلقائياً)</span></label>
+                        <input 
+                          name="slug"
+                          type="text" 
+                          dir="ltr"
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
+                        />
                       </div>
-                    )}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">الرمز (SKU) <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                        <input 
+                          name="sku"
+                          type="text" 
+                          dir="ltr"
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 

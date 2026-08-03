@@ -9,16 +9,17 @@ export const dynamic = 'force-dynamic'
 import type { Metadata } from "next"
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const resolvedParams = await searchParams;
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
   const storeName = theme?.storeName || "عسل";
   const logo = theme?.logoUrl || "/favicon.ico";
   
   let title = "جميع المنتجات"
-  const brandSlug = searchParams?.brand as string
+  const brandSlug = resolvedParams?.brand as string
   if (brandSlug) {
     const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
     if (brand) title = `منتجات ${brand.name}`
@@ -44,7 +45,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default async function AllProductsPage({ searchParams }: Props) {
-  const brandSlug = searchParams?.brand as string
+  const resolvedParams = await searchParams;
+  const brandSlug = resolvedParams?.brand as string
   let brand = null
   let whereClause: any = {}
 
