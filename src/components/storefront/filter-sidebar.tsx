@@ -21,6 +21,7 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
   // Initialize state from URL params
   const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "")
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "")
+  const [sliderMaxPrice, setSliderMaxPrice] = useState(searchParams.get("maxPrice") || "")
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
   
   const initialBrands = searchParams.get("brand") ? searchParams.get("brand")!.split(",") : []
@@ -29,11 +30,22 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
   // Update state if URL changes externally
   useEffect(() => {
     setMinPrice(searchParams.get("minPrice") || "")
-    setMaxPrice(searchParams.get("maxPrice") || "")
+    const mPrice = searchParams.get("maxPrice") || ""
+    setMaxPrice(mPrice)
+    setSliderMaxPrice(mPrice)
     setSelectedCategory(searchParams.get("category") || "")
     const b = searchParams.get("brand")
     setSelectedBrands(b ? b.split(",") : [])
   }, [searchParams])
+
+  useEffect(() => {
+    if (isFilterSidebarOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isFilterSidebarOpen])
 
   const toggleBrand = (slug: string) => {
     setSelectedBrands(prev => 
@@ -58,7 +70,7 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
     if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","))
     else params.delete("brand")
 
-    router.push(`${pathname}?${params.toString()}`)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
     setFilterSidebarOpen(false)
   }
 
@@ -75,7 +87,7 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
     params.delete("brand")
     params.set("page", "1")
     
-    router.push(`${pathname}?${params.toString()}`)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
     setFilterSidebarOpen(false)
   }
 
@@ -107,8 +119,11 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
                 max={globalMaxPrice}
                 placeholder={globalMaxPrice.toString()}
                 className="w-full h-10 px-3 rounded-md border border-input bg-transparent text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
+                value={sliderMaxPrice || maxPrice}
+                onChange={(e) => {
+                  setMaxPrice(e.target.value)
+                  setSliderMaxPrice(e.target.value)
+                }}
               />
             </div>
           </div>
@@ -117,9 +132,11 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
               type="range"
               min={globalMinPrice}
               max={globalMaxPrice}
-              value={maxPrice || globalMaxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              className="w-full accent-primary"
+              value={sliderMaxPrice || maxPrice || globalMaxPrice}
+              onChange={(e) => setSliderMaxPrice(e.target.value)}
+              onMouseUp={() => setMaxPrice(sliderMaxPrice)}
+              onTouchEnd={() => setMaxPrice(sliderMaxPrice)}
+              className="w-full accent-primary cursor-pointer"
             />
             <div className="flex justify-between text-xs text-muted-foreground mt-1">
               <span>{globalMinPrice}</span>
@@ -217,31 +234,29 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
       </div>
 
       {/* Mobile Sidebar (Drawer) */}
-      {isFilterSidebarOpen && (
-        <div className="fixed inset-0 z-[100] lg:hidden flex">
-          <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-            onClick={() => setFilterSidebarOpen(false)}
-          />
-          <div className="w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 animate-in slide-in-from-right duration-300 flex flex-col mr-auto">
-            <div className="flex items-center justify-between p-4 border-b border-border/50">
-              <span className="font-bold text-foreground flex items-center gap-2">
-                <Filter className="w-5 h-5 text-primary" />
-                تصفية المنتجات
-              </span>
-              <button 
-                onClick={() => setFilterSidebarOpen(false)}
-                className="p-2 bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 relative">
-              <SidebarContent />
-            </div>
+      <div className={`fixed inset-0 z-[100] lg:hidden transition-all duration-300 ${isFilterSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div 
+          className="absolute inset-0 bg-black/50 transition-opacity duration-300"
+          onClick={() => setFilterSidebarOpen(false)}
+        />
+        <div className={`w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 flex flex-col mr-auto transition-transform duration-300 ease-out ${isFilterSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between p-4 border-b border-border/50">
+            <span className="font-bold text-foreground flex items-center gap-2">
+              <Filter className="w-5 h-5 text-primary" />
+              تصفية المنتجات
+            </span>
+            <button 
+              onClick={() => setFilterSidebarOpen(false)}
+              className="p-2 bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-6 relative">
+            <SidebarContent />
           </div>
         </div>
-      )}
+      </div>
     </>
   )
 }

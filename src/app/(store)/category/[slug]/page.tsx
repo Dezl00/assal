@@ -104,7 +104,10 @@ export default async function CategoryPage(props: Props) {
         category: true,
       }
     }),
-    db.brand.findMany({ select: { id: true, name: true, slug: true } }),
+    db.brand.findMany({ 
+      where: { products: { some: { categoryId: category.id } } },
+      select: { id: true, name: true, slug: true } 
+    }),
     db.product.aggregate({
       where: { categoryId: category.id },
       _min: { price: true },
