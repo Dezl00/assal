@@ -28,15 +28,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: storeDescription,
     icons: {
-      icon: [
-        { url: favicon, href: favicon }
-      ],
-      apple: [
-        { url: favicon, href: favicon }
-      ],
-      shortcut: [
-        { url: favicon, href: favicon }
-      ]
+      icon: favicon,
+      apple: favicon,
+      shortcut: favicon,
     },
     openGraph: {
       title: storeName,

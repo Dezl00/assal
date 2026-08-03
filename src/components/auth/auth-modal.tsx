@@ -16,7 +16,42 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  // Touch drag state
+  const [translateY, setTranslateY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startY, setStartY] = useState(0)
+
   if (!isAuthModalOpen) return null
+
+  // Touch handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartY(e.touches[0].clientY)
+    setIsDragging(true)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return
+    const currentY = e.touches[0].clientY
+    const deltaY = currentY - startY
+    
+    // Only allow dragging down
+    if (deltaY > 0) {
+      setTranslateY(deltaY)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    setIsDragging(false)
+    if (translateY > 100) {
+      // Close modal if dragged down more than 100px
+      setAuthModalOpen(false)
+      // Reset translation after animation
+      setTimeout(() => setTranslateY(0), 300)
+    } else {
+      // Snap back
+      setTranslateY(0)
+    }
+  }
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -93,22 +128,35 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/60 transition-opacity"
         onClick={() => setAuthModalOpen(false)}
       />
 
       {/* Modal */}
-      <div className="bg-card w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl shadow-2xl relative z-10 animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+      <div 
+        className="bg-card w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl shadow-2xl relative z-10 sm:animate-in sm:zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto flex flex-col"
+        style={{ 
+          transform: translateY > 0 ? `translateY(${translateY}px)` : undefined, 
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out' 
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Drag Handle (Mobile Only) */}
+        <div className="w-full flex justify-center pt-3 pb-1 sm:hidden shrink-0">
+          <div className="w-12 h-1.5 bg-border rounded-full" />
+        </div>
         
         {/* Close Button */}
         <button 
           onClick={() => setAuthModalOpen(false)}
-          className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute top-4 right-4 p-2 bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors z-20"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <div className="p-6 sm:p-8">
+        <div className="p-6 sm:p-8 pt-2 sm:pt-8 flex-1">
           {/* Logo */}
           <div className="flex flex-col items-center justify-center mb-8">
             {themeConfig?.logoUrl ? (
