@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useRef } from "react"
 import Link from "next/link"
 import { ChevronRight, ChevronLeft } from "lucide-react"
 
@@ -10,7 +10,7 @@ export function BrandSlider({ widget }: { widget: any }) {
   const [isHovered, setIsHovered] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(true)
 
-  // Touch states
+  const isAnimatingRef = useRef(false)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
 
@@ -35,22 +35,14 @@ export function BrandSlider({ widget }: { widget: any }) {
     if (items.length === 0 || totalActualPages <= 1 || isHovered) return
 
     const timer = setInterval(() => {
+      if (isAnimatingRef.current) return
+      isAnimatingRef.current = true
       setIsTransitioning(true)
       setCurrentIndex((prev) => prev + 1)
     }, 3000)
 
     return () => clearInterval(timer)
   }, [items.length, totalActualPages, isHovered])
-
-  useEffect(() => {
-    if (currentIndex === totalActualPages) {
-      const timeout = setTimeout(() => {
-        setIsTransitioning(false)
-        setCurrentIndex(0)
-      }, 700)
-      return () => clearTimeout(timeout)
-    }
-  }, [currentIndex, totalActualPages])
 
   if (originalItems.length === 0) return null
 
@@ -62,13 +54,25 @@ export function BrandSlider({ widget }: { widget: any }) {
   const translateValue = `translateX(-${currentIndex * 100}%)`
 
   const handleNext = () => {
+    if (isAnimatingRef.current) return
+    isAnimatingRef.current = true
     setIsTransitioning(true)
     setCurrentIndex(prev => prev + 1)
   }
 
   const handlePrev = () => {
+    if (isAnimatingRef.current) return
+    isAnimatingRef.current = true
     setIsTransitioning(true)
     setCurrentIndex(prev => prev === 0 ? totalActualPages - 1 : prev - 1)
+  }
+
+  const handleTransitionEnd = () => {
+    isAnimatingRef.current = false
+    if (currentIndex >= totalActualPages) {
+      setIsTransitioning(false)
+      setCurrentIndex(0)
+    }
   }
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -86,8 +90,8 @@ export function BrandSlider({ widget }: { widget: any }) {
       return
     }
     const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > 50
-    const isRightSwipe = distance < -50
+    const isLeftSwipe = distance > 30 // Reduced for smoother triggering
+    const isRightSwipe = distance < -30
 
     if (isLeftSwipe) {
       handleNext()
@@ -121,8 +125,9 @@ export function BrandSlider({ widget }: { widget: any }) {
             className="flex"
             style={{ 
               transform: translateValue,
-              transition: isTransitioning ? 'transform 700ms ease-in-out' : 'none'
+              transition: isTransitioning ? 'transform 600ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
             }}
+            onTransitionEnd={handleTransitionEnd}
           >
             {displayPages.map((pageItems, pageIndex) => (
               <div key={pageIndex} className="flex-shrink-0 w-full flex items-center justify-around">
@@ -174,6 +179,7 @@ export function BrandSlider({ widget }: { widget: any }) {
                 <button
                   key={idx}
                   onClick={() => {
+                    if (isAnimatingRef.current) return
                     setIsTransitioning(true)
                     setCurrentIndex(idx)
                   }}

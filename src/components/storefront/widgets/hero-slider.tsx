@@ -19,7 +19,7 @@ export function HeroSlider({ widget }: { widget: any }) {
   if (slides.length === 0) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="w-full h-[60vh] rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground">
+        <div className="w-full h-[50vh] md:h-[70vh] rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground">
           لم يتم إضافة صور للسلايدر
         </div>
       </div>
@@ -28,7 +28,7 @@ export function HeroSlider({ widget }: { widget: any }) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-black rounded-2xl shadow-lg">
+      <div className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden bg-black rounded-2xl">
         {slides.map((slide: any, index: number) => (
           <div 
             key={slide.id}
