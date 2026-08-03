@@ -3,9 +3,34 @@
 import React, { useState } from "react"
 import { Package, User, MapPin, LogOut } from "lucide-react"
 import { signOut } from "next-auth/react"
+import { toast } from "sonner"
+import { updateUserAccount } from "@/app/actions/user"
+import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
 
 export function AccountClient({ user }: { user: any }) {
   const [activeTab, setActiveTab] = useState<"orders" | "settings">("orders")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const result = await updateUserAccount(formData)
+    
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success("تم حفظ التعديلات بنجاح")
+      // Clear password fields
+      const form = e.target as HTMLFormElement
+      const pwField = form.elements.namedItem('password') as HTMLInputElement
+      const newPwField = form.elements.namedItem('newPassword') as HTMLInputElement
+      if (pwField) pwField.value = ''
+      if (newPwField) newPwField.value = ''
+    }
+    setIsSubmitting(false)
+  }
 
   return (
     <div className="flex flex-col md:flex-row gap-8">
@@ -89,22 +114,53 @@ export function AccountClient({ user }: { user: any }) {
           {activeTab === "settings" && (
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-6">بيانات الحساب</h2>
-              <form className="space-y-6 max-w-xl">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الاسم الكامل</label>
-                  <input type="text" defaultValue={user.name || ''} className="w-full h-12 px-4 bg-muted border border-border/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" />
+              <form onSubmit={handleUpdate} className="space-y-6 max-w-xl">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-primary border-b border-border/50 pb-2">المعلومات الشخصية</h3>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">الاسم الكامل</label>
+                    <input name="name" type="text" defaultValue={user.name || ''} className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">البريد الإلكتروني</label>
+                    <input type="email" defaultValue={user.email} disabled className="w-full h-12 px-4 bg-muted border border-border/50 rounded-xl opacity-70 cursor-not-allowed" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">البريد الإلكتروني</label>
-                  <input type="email" defaultValue={user.email} disabled className="w-full h-12 px-4 bg-muted border border-border/50 rounded-lg opacity-70 cursor-not-allowed" />
+
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-semibold text-primary border-b border-border/50 pb-2">بيانات التوصيل الأساسية</h3>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">رقم الهاتف</label>
+                    <input name="phone" type="tel" dir="ltr" defaultValue={user.phone || ''} className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-right" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">العنوان</label>
+                    <textarea name="address" defaultValue={user.address || ''} rows={3} className="w-full p-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">رقم الهاتف</label>
-                  <input type="tel" className="w-full h-12 px-4 bg-muted border border-border/50 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" />
+
+                <div className="space-y-4 pt-4">
+                  <h3 className="text-lg font-semibold text-primary border-b border-border/50 pb-2">الأمان وكلمة المرور</h3>
+                  <p className="text-xs text-muted-foreground mb-4">اترك هذه الحقول فارغة إذا لم تكن ترغب بتغيير كلمة المرور الخاصة بك.</p>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">كلمة المرور الحالية</label>
+                    <input name="password" type="password" className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">كلمة المرور الجديدة</label>
+                    <input name="newPassword" type="password" className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" />
+                  </div>
                 </div>
-                <button type="button" className="h-12 px-8 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-colors">
-                  حفظ التعديلات
-                </button>
+
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto h-12 px-8 gold-gradient text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5">
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "حفظ التعديلات"}
+                </Button>
               </form>
             </div>
           )}

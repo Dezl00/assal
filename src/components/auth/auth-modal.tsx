@@ -6,8 +6,8 @@ import { X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { signIn, getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { registerUser } from "@/app/actions/auth"
+import { useRouter, usePathname } from "next/navigation"
+import { registerUser, loginUser } from "@/app/actions/auth"
 
 export function AuthModal({ themeConfig }: { themeConfig?: any }) {
   const { isAuthModalOpen, setAuthModalOpen } = useUIStore()
@@ -15,6 +15,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
 
   // Touch drag state
   const [translateY, setTranslateY] = useState(0)
@@ -63,6 +64,13 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
     const password = formData.get("password") as string
 
     try {
+      const check = await loginUser(formData)
+      if (check.error) {
+        setError(check.error)
+        setLoading(false)
+        return
+      }
+
       const result = await signIn("credentials", {
         redirect: false,
         email,
@@ -72,14 +80,19 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
       if (result?.error) {
         setError("البريد الإلكتروني أو كلمة المرور غير صحيحة")
       } else {
-        const session = await getSession()
         setAuthModalOpen(false)
-        if (session?.user?.role === "ADMIN") {
-          router.push("/admin")
+        
+        // If we are currently on checkout, stay on checkout but refresh
+        if (pathname === "/checkout") {
+          router.refresh()
         } else {
-          router.push("/account")
+          if (check.role === "ADMIN") {
+            router.push("/admin")
+          } else {
+            router.push("/account")
+          }
+          router.refresh()
         }
-        router.refresh()
       }
     } catch (err) {
       setError("حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى")
@@ -118,8 +131,13 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
           setError("تم إنشاء الحساب بنجاح، ولكن حدث خطأ أثناء تسجيل الدخول التلقائي")
         } else {
           setAuthModalOpen(false)
-          router.push("/account")
-          router.refresh()
+          
+          if (pathname === "/checkout") {
+            router.refresh()
+          } else {
+            router.push("/account")
+            router.refresh()
+          }
         }
       }
     } catch (err) {
@@ -133,13 +151,13 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 transition-opacity"
+        className="fixed inset-0 bg-black/50 transition-opacity"
         onClick={() => setAuthModalOpen(false)}
       />
 
       {/* Modal */}
       <div 
-        className="bg-card w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl shadow-2xl relative z-10 sm:animate-in sm:zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto flex flex-col"
+        className="bg-card w-full sm:w-[450px] rounded-t-3xl sm:rounded-3xl shadow-2xl relative z-10 sm:animate-in sm:zoom-in-95 animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 duration-300 max-h-[90vh] overflow-y-auto flex flex-col"
         style={{ 
           transform: translateY > 0 ? `translateY(${translateY}px)` : undefined, 
           transition: isDragging ? 'none' : 'transform 0.3s ease-out' 

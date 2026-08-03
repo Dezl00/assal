@@ -18,6 +18,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
   const [mounted, setMounted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSummaryOpen, setIsSummaryOpen] = useState(false)
+  const [useNewAddress, setUseNewAddress] = useState(!(user?.address && user?.phone))
   
   useEffect(() => {
     setMounted(true)
@@ -33,11 +34,21 @@ export default function CheckoutClient({ user }: { user?: any }) {
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     
+    let finalPhone = user?.phone || ""
+    let finalAddress = user?.address || ""
+    let finalCity = "المملكة" // Default or fetched from DB
+
+    if (useNewAddress) {
+      finalPhone = formData.get("customerPhone") as string
+      finalAddress = formData.get("address") as string
+      finalCity = formData.get("city") as string
+    }
+    
     const data = {
-      customerName: formData.get("customerName") as string,
-      customerPhone: formData.get("customerPhone") as string,
-      address: formData.get("address") as string,
-      city: formData.get("city") as string,
+      customerName: user?.name || "عميل",
+      customerPhone: finalPhone,
+      address: finalAddress,
+      city: finalCity,
       totalAmount: total,
       items: items.map(item => ({
         productId: item.productId,
@@ -105,54 +116,85 @@ export default function CheckoutClient({ user }: { user?: any }) {
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold mb-6">بيانات التوصيل</h2>
             
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {user?.address && user?.phone && (
+              <div className="mb-8">
+                <div 
+                  className={`border-2 rounded-xl p-4 cursor-pointer transition-colors ${!useNewAddress ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+                  onClick={() => setUseNewAddress(false)}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${!useNewAddress ? 'border-primary' : 'border-muted-foreground'}`}>
+                      {!useNewAddress && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                    </div>
+                    <span className="font-bold">استخدام العنوان المحفوظ</span>
+                  </div>
+                  <div className="mr-8 text-sm text-muted-foreground space-y-1">
+                    <p><span className="font-semibold text-foreground">الاسم:</span> {user.name}</p>
+                    <p><span className="font-semibold text-foreground">الجوال:</span> <span dir="ltr">{user.phone}</span></p>
+                    <p><span className="font-semibold text-foreground">العنوان:</span> {user.address}</p>
+                  </div>
+                </div>
+
+                <div 
+                  className={`border-2 rounded-xl p-4 cursor-pointer transition-colors mt-4 ${useNewAddress ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+                  onClick={() => setUseNewAddress(true)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${useNewAddress ? 'border-primary' : 'border-muted-foreground'}`}>
+                      {useNewAddress && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                    </div>
+                    <span className="font-bold">إدخال عنوان جديد</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {useNewAddress && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">الاسم الكامل</label>
+                    <input 
+                      disabled
+                      value={user?.name || ""}
+                      className="w-full h-12 bg-muted border border-border/50 rounded-xl px-4 opacity-70 cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">رقم الجوال <span className="text-destructive">*</span></label>
+                    <input 
+                      name="customerPhone"
+                      required
+                      type="tel"
+                      dir="ltr"
+                      placeholder="05xxxxxxxx"
+                      className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">الاسم الكامل <span className="text-destructive">*</span></label>
+                  <label className="text-sm font-medium">المدينة <span className="text-destructive">*</span></label>
                   <input 
-                    name="customerName"
+                    name="city"
                     required
-                    defaultValue={user?.name || ""}
-                    placeholder="الاسم الثلاثي"
+                    placeholder="مثال: الرياض، جدة، الدمام..."
                     className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">رقم الجوال <span className="text-destructive">*</span></label>
-                  <input 
-                    name="customerPhone"
+                  <label className="text-sm font-medium">عنوان التوصيل بالتفصيل <span className="text-destructive">*</span></label>
+                  <textarea 
+                    name="address"
                     required
-                    defaultValue={user?.phone || ""}
-                    type="tel"
-                    dir="ltr"
-                    placeholder="05xxxxxxxx"
-                    className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                    rows={3}
+                    placeholder="اسم الحي، الشارع، رقم المبنى أو أي علامة مميزة"
+                    className="w-full bg-background border border-input rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none"
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">المدينة <span className="text-destructive">*</span></label>
-                <input 
-                  name="city"
-                  required
-                  placeholder="مثال: الرياض، جدة، الدمام..."
-                  className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">عنوان التوصيل بالتفصيل <span className="text-destructive">*</span></label>
-                <textarea 
-                  name="address"
-                  required
-                  defaultValue={user?.address || ""}
-                  rows={3}
-                  placeholder="اسم الحي، الشارع، رقم المبنى أو أي علامة مميزة"
-                  className="w-full bg-background border border-input rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none"
-                />
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">

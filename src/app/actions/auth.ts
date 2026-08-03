@@ -39,3 +39,28 @@ export async function registerUser(formData: FormData) {
     return { error: "حدث خطأ أثناء إنشاء الحساب" }
   }
 }
+
+export async function loginUser(formData: FormData) {
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+
+  if (!email || !password) {
+    return { error: "البريد الإلكتروني وكلمة المرور مطلوبان" }
+  }
+
+  try {
+    const user = await db.user.findUnique({
+      where: { email }
+    })
+
+    if (!user || !user.passwordHash || user.passwordHash !== password) {
+      return { error: "البريد الإلكتروني أو كلمة المرور غير صحيحة" }
+    }
+
+    return { success: true, role: user.role }
+  } catch (error) {
+    console.error("Login check error:", error)
+    return { error: "حدث خطأ أثناء تسجيل الدخول" }
+  }
+}
+

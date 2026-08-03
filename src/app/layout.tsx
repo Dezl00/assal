@@ -17,8 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const storeName = theme?.storeName || "عسل";
   const storeDescription = theme?.storeDescription || "أفضل المنتجات وأعلاها جودة";
   const logo = theme?.logoUrl || "/favicon.ico";
-  // Add a cache-buster so browsers don't cache the old favicon
-  const favicon = theme?.faviconUrl ? `${theme.faviconUrl}?v=${Date.now()}` : "/favicon.ico";
+  const favicon = theme?.faviconUrl || "/favicon.ico";
 
   return {
     metadataBase: new URL("https://assal1.vercel.app"), // Base URL for OG images
@@ -29,8 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description: storeDescription,
     icons: {
       icon: favicon,
-      apple: favicon,
       shortcut: favicon,
+      apple: favicon,
     },
     openGraph: {
       title: storeName,

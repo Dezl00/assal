@@ -78,7 +78,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                 className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsSearchOpen(true)}
               >
-                <Search className="w-7 h-7 md:w-6 md:h-6" />
+                <Search className="w-7 h-7 md:w-7 md:h-7" />
               </Button>
               
               <Button 
@@ -87,13 +87,13 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                 className="text-muted-foreground hover:text-foreground hidden md:flex" 
                 onClick={() => {
                   if (user) {
-                    router.push("/account")
+                    router.push(user.role === 'ADMIN' ? '/admin' : '/account')
                   } else {
                     setAuthModalOpen(true)
                   }
                 }}
               >
-                <User className="w-6 h-6" />
+                <User className="w-7 h-7" />
               </Button>
 
               <Button 
