@@ -65,10 +65,6 @@ export function ProductsClient({ products, categories, brands = [] }: { products
     const formData = new FormData(e.currentTarget)
     formData.set("brandId", selectedBrandId)
     
-    if (!formData.get("slug")) {
-      formData.set("slug", `product-${Date.now()}`)
-    }
-    
     let res;
     if (editingProduct) {
       res = await updateProduct(editingProduct.id, formData)

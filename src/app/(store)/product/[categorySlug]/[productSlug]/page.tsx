@@ -12,11 +12,11 @@ import { ProductFeatures } from "@/components/storefront/product-features"
 import type { Metadata } from "next"
 
 // Generate metadata for SEO
-export async function generateMetadata(props: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ categorySlug: string; productSlug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const [product, theme] = await Promise.all([
     db.product.findUnique({
-      where: { id: params.id },
+      where: { slug: params.productSlug },
       include: { images: { orderBy: { sortOrder: 'asc' } } }
     }),
     db.themeConfig.findUnique({ where: { id: "default" } })
@@ -35,7 +35,7 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
     openGraph: {
       title: `${product.name} | ${storeName}`,
       description: product.description || undefined,
-      url: `/product/${product.id}`,
+      url: `/product/${params.categorySlug}/${product.slug}`,
       type: 'website',
       siteName: storeName,
       images: ogImages,
@@ -49,10 +49,10 @@ export async function generateMetadata(props: { params: Promise<{ id: string }> 
   }
 }
 
-export default async function ProductDetailsPage(props: { params: Promise<{ id: string }> }) {
+export default async function ProductDetailsPage(props: { params: Promise<{ categorySlug: string; productSlug: string }> }) {
   const params = await props.params;
   const product = await db.product.findUnique({
-    where: { id: params.id },
+    where: { slug: params.productSlug },
     include: {
       images: { orderBy: { sortOrder: 'asc' } },
       category: true,

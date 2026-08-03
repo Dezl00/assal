@@ -7,12 +7,13 @@ import { useCartStore } from "@/store/cart-store"
 interface ProductCardProps {
   product: {
     id: string
+    slug: string
     name: string
     price: number
     discountPrice?: number | null
     stock: number
     images: { url: string }[]
-    category?: { name: string }
+    category?: { name: string; slug: string }
   }
 }
 
@@ -55,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
 
-      <Link href={`/product/${product.id}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
+      <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
         {product.images[0] ? (
           <img 
             src={product.images[0].url} 
@@ -86,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.category && (
             <p className="text-xs text-muted-foreground">{product.category.name}</p>
           )}
-          <Link href={`/product/${product.id}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
+          <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
             {product.name}
           </Link>
         </div>

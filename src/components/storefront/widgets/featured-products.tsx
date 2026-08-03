@@ -8,7 +8,7 @@ export async function FeaturedProducts({ widget }: { widget: any }) {
   const products = await db.product.findMany({
     take: 4,
     orderBy: { createdAt: "desc" },
-    include: { images: true }
+    include: { images: true, category: true }
   })
 
   if (products.length === 0) return null
@@ -35,8 +35,8 @@ export async function FeaturedProducts({ widget }: { widget: any }) {
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {products.map((product) => (
-          <div key={product.id} className="group relative rounded-2xl border border-border/50 bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-            <Link href={`/product/${product.id}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-muted">
+          <div key={product.id} className="group relative rounded-2xl bg-card p-4 transition-all hover:shadow-lg hover:shadow-primary/5 text-center">
+            <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-muted shrink-0">
               {product.images[0] ? (
                 <img 
                   src={product.images[0].url} 
@@ -48,15 +48,12 @@ export async function FeaturedProducts({ widget }: { widget: any }) {
               )}
             </Link>
             
-            <div className="space-y-2">
-              <Link href={`/product/${product.id}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2">
+            <div className="flex flex-col flex-1 justify-between text-center">
+              <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2 text-sm sm:text-base leading-snug">
                 {product.name}
               </Link>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex flex-col items-center justify-center mt-auto">
                 <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} ج.م</span>
-                <button className="h-9 w-9 rounded-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-white transition-colors flex items-center justify-center shrink-0">
-                  <ShoppingCart className="w-4 h-4" />
-                </button>
               </div>
             </div>
           </div>
