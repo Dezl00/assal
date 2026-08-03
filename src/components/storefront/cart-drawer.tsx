@@ -20,7 +20,7 @@ export function CartDrawer() {
       {/* Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-[100] backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/50 z-[100] transition-opacity"
           onClick={() => setIsOpen(false)}
         />
       )}

@@ -6,6 +6,8 @@ import type { Metadata } from "next"
 import { FilterSidebar } from "@/components/storefront/filter-sidebar"
 import { StoreToolbar } from "@/components/storefront/store-toolbar"
 import { StorePagination } from "@/components/storefront/pagination"
+import { ChevronRight } from "lucide-react"
+import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 
@@ -62,14 +64,6 @@ export default async function BrandPage(props: Props) {
 
   let whereClause: any = { brandId: brand.id }
 
-  if (searchParams?.brand) {
-    const selectedBrandSlugs = (searchParams.brand as string).split(",")
-    const selectedBrands = await db.brand.findMany({ where: { slug: { in: selectedBrandSlugs } } })
-    if (selectedBrands.length > 0) {
-      whereClause.brandId = { in: [brand.id, ...selectedBrands.map(b => b.id)] }
-    }
-  }
-
   if (categorySlug) {
     const category = await db.category.findUnique({ where: { slug: categorySlug } })
     if (category) {
@@ -87,7 +81,7 @@ export default async function BrandPage(props: Props) {
   if (sort === "price_asc") orderByClause = { price: "asc" }
   else if (sort === "price_desc") orderByClause = { price: "desc" }
 
-  const [totalProducts, products, categories, brandsList] = await Promise.all([
+  const [totalProducts, products, categories] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -102,29 +96,38 @@ export default async function BrandPage(props: Props) {
     db.category.findMany({ 
       select: { id: true, name: true, slug: true } 
     }),
-    db.brand.findMany({
-      select: { id: true, name: true, slug: true }
-    })
   ])
 
   const totalPages = Math.ceil(totalProducts / limit)
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[60vh]">
-      <div className="flex items-center gap-4 mb-10 bg-card p-6 rounded-3xl shadow-sm border border-border/50">
-        {brand.logoUrl && (
-          <div className="w-24 h-24 rounded-full border border-border/50 bg-white overflow-hidden shrink-0 flex items-center justify-center p-3 shadow-inner">
-            <img src={brand.logoUrl} alt={brand.name} className="max-w-full max-h-full object-contain" />
-          </div>
-        )}
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">{brand.name}</h1>
-          <p className="text-muted-foreground mt-2">{totalProducts} منتجات</p>
+      <div className="mb-8 sm:mb-12 relative overflow-hidden rounded-3xl bg-primary p-8 sm:p-16 text-center shadow-lg shadow-primary/20">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          {brand.logoUrl && (
+            <div className="w-24 h-24 rounded-full border-4 border-white/20 bg-white overflow-hidden shrink-0 flex items-center justify-center p-3 shadow-xl mb-4">
+              <img src={brand.logoUrl} alt={brand.name} className="max-w-full max-h-full object-contain" />
+            </div>
+          )}
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">{brand.name}</h1>
+          <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">{totalProducts} منتجات</p>
+          
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <Link href="/brands" className="hover:text-white transition-colors">الماركات</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <span className="text-white font-medium">{brand.name}</span>
+          </nav>
         </div>
       </div>
       
       <div className="flex flex-col lg:flex-row gap-8">
-        <FilterSidebar categories={categories} brands={brandsList} />
+        <FilterSidebar categories={categories} brands={[]} />
         
         <div className="flex-1 min-w-0">
           <StoreToolbar totalProducts={totalProducts} />

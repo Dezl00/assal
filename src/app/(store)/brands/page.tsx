@@ -1,7 +1,7 @@
 import React from "react"
 import { db } from "@/lib/db"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { ChevronRight } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -24,7 +24,13 @@ export default async function BrandsPage() {
         
         <div className="relative z-10 flex flex-col items-center">
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">الماركات</h1>
-          <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto">تصفح منتجاتنا حسب الماركات المفضلة لديك</p>
+          <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">تصفح منتجاتنا حسب الماركات المفضلة لديك</p>
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <span className="text-white font-medium">الماركات</span>
+          </nav>
         </div>
       </div>
 

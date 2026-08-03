@@ -91,16 +91,6 @@ export default async function RootLayout({
           position="top-center" 
           richColors 
           dir="rtl"
-          toastOptions={{
-            style: {
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-              border: '1px solid hsl(var(--border))',
-              background: 'hsl(var(--background))',
-              color: 'hsl(var(--foreground))',
-              fontFamily: 'inherit',
-            },
-            className: 'font-sans flex justify-center text-center rounded-2xl',
-          }}
         />
       </body>
     </html>

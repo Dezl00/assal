@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from "react"
-import { Minus, Plus, ShoppingBag, CheckCircle2, Loader2 } from "lucide-react"
+import { Minus, Plus, ShoppingBag, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cart-store"
 import { toast } from "sonner"
@@ -39,53 +39,13 @@ export function AddToCartForm({ product }: AddToCartProps) {
       
       setIsAdding(false)
 
-      toast.custom((t) => (
-        <div className="w-[350px] p-4 bg-background border border-border rounded-xl shadow-xl flex flex-col gap-3 relative overflow-hidden">
-          {/* Progress bar animation */}
-          <div className="absolute bottom-0 left-0 h-1 bg-primary animate-[shrink_3s_linear_forwards]" style={{ width: '100%' }}></div>
-          
-          <div className="flex gap-3">
-            {product.images[0]?.url && (
-              <img src={product.images[0].url} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-muted" />
-            )}
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5 text-green-600 mb-1">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="font-semibold text-sm">تمت الإضافة للسلة</span>
-              </div>
-              <p className="text-sm font-medium text-foreground line-clamp-1">{product.name}</p>
-            </div>
-          </div>
-
-          <div className="flex gap-2 mt-1">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex-1 text-xs h-9"
-              onClick={() => toast.dismiss(t)}
-            >
-              متابعة التسوق
-            </Button>
-            <Button 
-              size="sm" 
-              className="flex-1 text-xs h-9 bg-primary text-white"
-              onClick={() => {
-                toast.dismiss(t)
-                setIsOpen(true)
-              }}
-            >
-              عرض السلة
-            </Button>
-          </div>
-          
-          <style dangerouslySetInnerHTML={{__html: `
-            @keyframes shrink {
-              from { width: 100%; }
-              to { width: 0%; }
-            }
-          `}} />
-        </div>
-      ), { duration: 3000, position: 'top-center' })
+      toast.success("تمت الإضافة للسلة", {
+        description: product.name,
+        action: {
+          label: 'عرض السلة',
+          onClick: () => setIsOpen(true)
+        }
+      })
     }, 400) // 400ms delay to show the loader to user
   }
 

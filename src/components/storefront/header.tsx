@@ -90,7 +90,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                       <div key={cat.id} className="relative group/cat">
                         <Link 
                           href={`/category/${cat.slug}`} 
-                          className="flex items-center justify-between px-4 py-3 hover:bg-secondary transition-colors"
+                          className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors group/link"
                           onClick={() => setIsCategoriesHovered(false)}
                         >
                           <div className="flex items-center gap-3">
@@ -101,7 +101,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                                 <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
                               )}
                             </div>
-                            <span className="text-sm font-bold text-foreground">{cat.name}</span>
+                            <span className="text-sm font-bold text-foreground group-hover/link:text-primary transition-colors">{cat.name}</span>
                           </div>
                           {cat.children && cat.children.length > 0 && (
                             <ChevronDown className="w-4 h-4 text-muted-foreground rotate-90" />
@@ -114,7 +114,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                               <Link 
                                 key={sub.id} 
                                 href={`/category/${sub.slug}`} 
-                                className="flex items-center px-4 py-3 hover:bg-secondary transition-colors text-sm font-bold text-foreground"
+                                className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
                                 onClick={() => setIsCategoriesHovered(false)}
                               >
                                 {sub.name}
@@ -229,21 +229,21 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 {user && (
                   <div className="absolute top-full left-0 w-48 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-200 z-50 mt-2">
                     {user.role === 'ADMIN' ? (
-                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                         <LayoutDashboard className="w-4 h-4" />
                         لوحة التحكم
                       </Link>
                     ) : (
                       <>
-                        <Link href="/account" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                        <Link href="/account" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                           <User className="w-4 h-4" />
                           حسابي
                         </Link>
-                        <Link href="/account?tab=orders" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                        <Link href="/account?tab=orders" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                           <ShoppingCart className="w-4 h-4" />
                           طلباتي
                         </Link>
-                        <Link href="/account?tab=security" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                        <Link href="/account?tab=security" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                           <Settings className="w-4 h-4" />
                           الإعدادات
                         </Link>
@@ -252,7 +252,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                     <div className="h-px bg-border my-1"></div>
                     <button 
                       onClick={() => signOut({ callbackUrl: '/' })}
-                      className="flex items-center gap-2 w-full text-start px-4 py-2 hover:bg-secondary text-sm font-bold text-destructive transition-colors"
+                      className="flex items-center gap-2 w-full text-start px-4 py-2 hover:bg-red-500/10 hover:text-red-500 text-sm font-bold text-destructive transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       تسجيل الخروج
