@@ -62,6 +62,14 @@ export default async function BrandPage(props: Props) {
 
   let whereClause: any = { brandId: brand.id }
 
+  if (searchParams?.brand) {
+    const selectedBrandSlugs = (searchParams.brand as string).split(",")
+    const selectedBrands = await db.brand.findMany({ where: { slug: { in: selectedBrandSlugs } } })
+    if (selectedBrands.length > 0) {
+      whereClause.brandId = { in: [brand.id, ...selectedBrands.map(b => b.id)] }
+    }
+  }
+
   if (categorySlug) {
     const category = await db.category.findUnique({ where: { slug: categorySlug } })
     if (category) {
@@ -79,7 +87,7 @@ export default async function BrandPage(props: Props) {
   if (sort === "price_asc") orderByClause = { price: "asc" }
   else if (sort === "price_desc") orderByClause = { price: "desc" }
 
-  const [totalProducts, products, categories] = await Promise.all([
+  const [totalProducts, products, categories, brandsList] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -92,15 +100,11 @@ export default async function BrandPage(props: Props) {
       }
     }),
     db.category.findMany({ 
-      where: {
-        products: {
-          some: {
-            brandId: brand.id
-          }
-        }
-      },
       select: { id: true, name: true, slug: true } 
     }),
+    db.brand.findMany({
+      select: { id: true, name: true, slug: true }
+    })
   ])
 
   const totalPages = Math.ceil(totalProducts / limit)
@@ -120,7 +124,7 @@ export default async function BrandPage(props: Props) {
       </div>
       
       <div className="flex flex-col lg:flex-row gap-8">
-        <FilterSidebar categories={categories} brands={[]} />
+        <FilterSidebar categories={categories} brands={brandsList} />
         
         <div className="flex-1 min-w-0">
           <StoreToolbar totalProducts={totalProducts} />
