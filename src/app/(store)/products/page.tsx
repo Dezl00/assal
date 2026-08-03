@@ -49,7 +49,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
 export default async function AllProductsPage({ searchParams }: Props) {
   const resolvedParams = await searchParams;
-  const brandSlug = resolvedParams?.brand as string
+  const brandSlugs = resolvedParams?.brand ? (resolvedParams.brand as string).split(",") : []
   const categorySlug = resolvedParams?.category as string
   const minPrice = resolvedParams?.minPrice ? parseFloat(resolvedParams.minPrice as string) : undefined
   const maxPrice = resolvedParams?.maxPrice ? parseFloat(resolvedParams.maxPrice as string) : undefined
@@ -57,14 +57,18 @@ export default async function AllProductsPage({ searchParams }: Props) {
   const page = resolvedParams?.page ? parseInt(resolvedParams.page as string) : 1
   const limit = 20
 
-  let brand = null
+  let currentBrand = null
   let whereClause: any = {}
 
   // Apply filters
-  if (brandSlug) {
-    brand = await db.brand.findUnique({ where: { slug: brandSlug } })
-    if (brand) {
-      whereClause.brandId = brand.id
+  if (brandSlugs.length === 1) {
+    currentBrand = await db.brand.findUnique({ where: { slug: brandSlugs[0] } })
+  }
+
+  if (brandSlugs.length > 0) {
+    const brands = await db.brand.findMany({ where: { slug: { in: brandSlugs } } })
+    if (brands.length > 0) {
+      whereClause.brandId = { in: brands.map(b => b.id) }
     }
   }
 
@@ -81,6 +85,14 @@ export default async function AllProductsPage({ searchParams }: Props) {
     if (maxPrice !== undefined) whereClause.price.lte = maxPrice
   }
 
+  const searchQuery = resolvedParams?.q as string
+  if (searchQuery) {
+    whereClause.OR = [
+      { name: { contains: searchQuery, mode: "insensitive" } },
+      { description: { contains: searchQuery, mode: "insensitive" } }
+    ]
+  }
+
   // Apply sorting
   let orderByClause: any = { createdAt: "desc" }
   if (sort === "price_asc") {
@@ -90,7 +102,7 @@ export default async function AllProductsPage({ searchParams }: Props) {
   }
 
   // Fetch count and products
-  const [totalProducts, products, categories, brands] = await Promise.all([
+  const [totalProducts, products, categories, brands, priceAggregates] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -103,8 +115,16 @@ export default async function AllProductsPage({ searchParams }: Props) {
       }
     }),
     db.category.findMany({ select: { id: true, name: true, slug: true } }),
-    db.brand.findMany({ select: { id: true, name: true, slug: true } })
+    db.brand.findMany({ select: { id: true, name: true, slug: true } }),
+    db.product.aggregate({
+      where: whereClause, // Get min/max price for the current filtered view (or remove whereClause to get global min/max)
+      _min: { price: true },
+      _max: { price: true }
+    })
   ])
+
+  const globalMinPrice = priceAggregates._min.price || 0
+  const globalMaxPrice = priceAggregates._max.price || 10000
 
   const totalPages = Math.ceil(totalProducts / limit)
 
@@ -117,26 +137,29 @@ export default async function AllProductsPage({ searchParams }: Props) {
         
         <div className="relative z-10 flex flex-col items-center">
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">
-            {brand ? `منتجات ${brand.name}` : "جميع المنتجات"}
+            {currentBrand ? `منتجات ${currentBrand.name}` : "جميع المنتجات"}
           </h1>
           <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">
-            {brand ? `تصفح منتجات ماركة ${brand.name} الفاخرة` : "تصفح تشكيلتنا الكاملة من المنتجات الفاخرة"}
+            {currentBrand ? `تصفح منتجات ماركة ${currentBrand.name} الفاخرة` : "تصفح تشكيلتنا الكاملة من المنتجات الفاخرة"}
           </p>
           
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
             <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
-            <span className="text-white font-medium">{brand ? brand.name : "جميع المنتجات"}</span>
+            <span className="text-white font-medium">{currentBrand ? currentBrand.name : "جميع المنتجات"}</span>
           </nav>
         </div>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar */}
-        <FilterSidebar categories={categories} brands={brands} />
-
-        {/* Main Content */}
+        <FilterSidebar 
+          categories={categories} 
+          brands={brands}
+          globalMinPrice={globalMinPrice}
+          globalMaxPrice={globalMaxPrice}
+        />
+        
         <div className="flex-1 min-w-0">
           <StoreToolbar totalProducts={totalProducts} />
           

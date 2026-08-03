@@ -5,7 +5,7 @@ import { useUIStore } from "@/store/ui-store"
 import { X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { signIn } from "next-auth/react"
+import { signIn, getSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { registerUser } from "@/app/actions/auth"
 
@@ -72,8 +72,13 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
       if (result?.error) {
         setError("البريد الإلكتروني أو كلمة المرور غير صحيحة")
       } else {
+        const session = await getSession()
         setAuthModalOpen(false)
-        router.push("/account")
+        if (session?.user?.role === "ADMIN") {
+          router.push("/admin")
+        } else {
+          router.push("/account")
+        }
         router.refresh()
       }
     } catch (err) {

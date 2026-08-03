@@ -66,7 +66,7 @@ export default async function CategoryPage(props: Props) {
   if (!category) notFound()
 
   // Build filter where clause
-  const brandSlug = searchParams?.brand as string
+  const brandSlugs = searchParams?.brand ? (searchParams.brand as string).split(",") : []
   const minPrice = searchParams?.minPrice ? parseFloat(searchParams.minPrice as string) : undefined
   const maxPrice = searchParams?.maxPrice ? parseFloat(searchParams.maxPrice as string) : undefined
   const sort = (searchParams?.sort as string) || "newest"
@@ -75,9 +75,11 @@ export default async function CategoryPage(props: Props) {
 
   let whereClause: any = { categoryId: category.id }
 
-  if (brandSlug) {
-    const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
-    if (brand) whereClause.brandId = brand.id
+  if (brandSlugs.length > 0) {
+    const brands = await db.brand.findMany({ where: { slug: { in: brandSlugs } } })
+    if (brands.length > 0) {
+      whereClause.brandId = { in: brands.map(b => b.id) }
+    }
   }
 
   if (minPrice !== undefined || maxPrice !== undefined) {
@@ -90,7 +92,7 @@ export default async function CategoryPage(props: Props) {
   if (sort === "price_asc") orderByClause = { price: "asc" }
   else if (sort === "price_desc") orderByClause = { price: "desc" }
 
-  const [totalProducts, products, brands] = await Promise.all([
+  const [totalProducts, products, brands, priceAggregates] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -102,8 +104,16 @@ export default async function CategoryPage(props: Props) {
         category: true,
       }
     }),
-    db.brand.findMany({ select: { id: true, name: true, slug: true } })
+    db.brand.findMany({ select: { id: true, name: true, slug: true } }),
+    db.product.aggregate({
+      where: { categoryId: category.id },
+      _min: { price: true },
+      _max: { price: true }
+    })
   ])
+
+  const globalMinPrice = priceAggregates._min.price || 0
+  const globalMaxPrice = priceAggregates._max.price || 10000
 
   const totalPages = Math.ceil(totalProducts / limit)
   const isMainCategory = !category.parentId
@@ -161,10 +171,17 @@ export default async function CategoryPage(props: Props) {
       )}
 
       <div className="flex flex-col lg:flex-row gap-8">
-        <FilterSidebar categories={[]} brands={brands} />
+        {(!isMainCategory || category.children.length === 0) && (
+          <FilterSidebar 
+            categories={[]} 
+            brands={brands} 
+            globalMinPrice={globalMinPrice}
+            globalMaxPrice={globalMaxPrice}
+          />
+        )}
         
         <div className="flex-1 min-w-0">
-          <StoreToolbar totalProducts={totalProducts} />
+          <StoreToolbar totalProducts={totalProducts} hideToolbar={isMainCategory && category.children.length > 0} />
           
           {products.length > 0 ? (
             <>

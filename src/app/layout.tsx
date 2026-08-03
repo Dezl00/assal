@@ -79,13 +79,14 @@ export default async function RootLayout({
         <Toaster 
           position="top-center" 
           richColors 
+          dir="rtl"
           toastOptions={{
             style: {
-              boxShadow: 'none',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
               border: 'none',
               fontFamily: 'inherit',
             },
-            className: 'bg-background/90 backdrop-blur-md border-none shadow-none font-sans',
+            className: 'bg-background/95 backdrop-blur-lg border-none shadow-lg font-sans w-fit mx-auto min-w-[200px] justify-center',
           }}
         />
       </body>

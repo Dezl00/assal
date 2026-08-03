@@ -26,7 +26,7 @@ export function MobileSidebar({ menuItems, themeConfig }: { menuItems: any[], th
       />
 
       {/* Sidebar Panel */}
-      <div className="w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 animate-in slide-in-from-right duration-300 flex flex-col">
+      <div className="w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 animate-in slide-in-from-left duration-300 flex flex-col mr-auto">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">

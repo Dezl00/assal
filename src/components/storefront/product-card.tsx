@@ -56,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
 
-      <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
+      <Link href={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
         {product.images[0] ? (
           <img 
             src={product.images[0].url} 
@@ -71,7 +71,7 @@ export function ProductCard({ product }: ProductCardProps) {
         
         {/* Quick Add Overlay */}
         {!isOutOfStock && (
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center">
             <button 
               onClick={handleQuickAdd}
               className="bg-white text-black font-bold px-6 py-3 rounded-full translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-primary hover:text-white"
@@ -87,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.category && (
             <p className="text-xs text-muted-foreground">{product.category.name}</p>
           )}
-          <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
+          <Link href={`/product/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
             {product.name}
           </Link>
         </div>

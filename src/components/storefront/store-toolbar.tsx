@@ -1,53 +1,99 @@
 "use client"
 
-import React from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { usePathname, useSearchParams, useRouter } from "next/navigation"
-import { Filter, ArrowDownUp } from "lucide-react"
+import { Filter, ArrowDownUp, Check } from "lucide-react"
 import { useUIStore } from "@/store/ui-store"
 
-export function StoreToolbar({ totalProducts }: { totalProducts: number }) {
+export function StoreToolbar({ totalProducts, hideToolbar = false }: { totalProducts: number, hideToolbar?: boolean }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { setFilterSidebarOpen } = useUIStore()
+  const [isSortOpen, setIsSortOpen] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
 
   const currentSort = searchParams.get("sort") || "newest"
+  
+  // Check if any filters are active (excluding sort and page)
+  const hasFilters = Array.from(searchParams.keys()).some(key => !['sort', 'page', 'q'].includes(key))
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+        setIsSortOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const handleSortChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString())
-    params.set("sort", e.target.value)
-    params.set("page", "1") // reset page on sort
-    router.push(`${pathname}?${params.toString()}`)
+    params.set("sort", value)
+    params.set("page", "1")
+    router.push(`${pathname}?${params.toString()}`, { scroll: false })
+    setIsSortOpen(false)
   }
 
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-card p-4 rounded-2xl border border-border/50 shadow-sm">
-      
-      {/* Mobile Filter Button */}
-      <button 
-        onClick={() => setFilterSidebarOpen(true)}
-        className="lg:hidden flex items-center justify-center gap-2 w-full sm:w-auto h-10 px-4 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors font-medium"
-      >
-        <Filter className="w-4 h-4" />
-        تصفية المنتجات
-      </button>
+  if (hideToolbar) return null
 
-      <div className="text-muted-foreground text-sm hidden sm:block">
+  return (
+    <div className="flex items-center justify-between mb-6">
+      
+      <div className="text-muted-foreground text-sm">
         عرض <span className="font-bold text-foreground">{totalProducts}</span> منتج
       </div>
 
-      {/* Sort Dropdown */}
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <ArrowDownUp className="w-4 h-4 text-muted-foreground hidden sm:block" />
-        <select 
-          value={currentSort}
-          onChange={handleSortChange}
-          className="w-full sm:w-auto h-10 px-3 bg-transparent border border-border/50 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer"
+      <div className="flex items-center gap-2">
+        {/* Sort Button */}
+        <div className="relative" ref={sortRef}>
+          <button 
+            onClick={() => setIsSortOpen(!isSortOpen)}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-card border border-border/50 text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors shadow-sm"
+            title="الترتيب"
+          >
+            <ArrowDownUp className="w-4 h-4" />
+          </button>
+
+          {isSortOpen && (
+            <div className="absolute left-0 mt-2 w-48 bg-card border border-border/50 rounded-xl shadow-xl z-50 overflow-hidden py-1">
+              <button 
+                onClick={() => handleSortChange("newest")}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-secondary transition-colors text-right"
+              >
+                الأحدث
+                {currentSort === "newest" && <Check className="w-4 h-4 text-primary" />}
+              </button>
+              <button 
+                onClick={() => handleSortChange("price_asc")}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-secondary transition-colors text-right"
+              >
+                السعر: من الأقل للأعلى
+                {currentSort === "price_asc" && <Check className="w-4 h-4 text-primary" />}
+              </button>
+              <button 
+                onClick={() => handleSortChange("price_desc")}
+                className="w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-secondary transition-colors text-right"
+              >
+                السعر: من الأعلى للأقل
+                {currentSort === "price_desc" && <Check className="w-4 h-4 text-primary" />}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Filter Button */}
+        <button 
+          onClick={() => setFilterSidebarOpen(true)}
+          className="lg:hidden relative w-10 h-10 flex items-center justify-center rounded-full bg-card border border-border/50 text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors shadow-sm"
+          title="تصفية المنتجات"
         >
-          <option value="newest">الأحدث</option>
-          <option value="price_asc">السعر: من الأقل للأعلى</option>
-          <option value="price_desc">السعر: من الأعلى للأقل</option>
-        </select>
+          <Filter className="w-4 h-4" />
+          {hasFilters && (
+            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-card"></span>
+          )}
+        </button>
       </div>
     </div>
   )
