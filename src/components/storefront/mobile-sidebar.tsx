@@ -87,7 +87,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
                     <span>{cat.name}</span>
                     <ChevronLeft className={`w-4 h-4 text-muted-foreground transition-transform ${openCategory === cat.id ? '-rotate-90' : ''}`} />
                   </div>
-                  {openCategory === cat.id && cat.subCategories && (
+                  {openCategory === cat.id && cat.children && (
                     <div className="bg-secondary/10 flex flex-col pl-4 animate-in slide-in-from-top-2">
                       <Link 
                         href={`/products?category=${cat.slug}`}
@@ -96,7 +96,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
                       >
                         عرض كل منتجات {cat.name}
                       </Link>
-                      {cat.subCategories.map((sub: any) => (
+                      {cat.children.map((sub: any) => (
                         <Link 
                           key={sub.id}
                           href={`/products?category=${sub.slug}`}

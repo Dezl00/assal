@@ -90,9 +90,9 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                         <Link href={`/products?category=${cat.slug}`} className="font-bold text-primary hover:underline text-base block" onClick={() => setIsCategoriesHovered(false)}>
                           {cat.name}
                         </Link>
-                        {cat.subCategories && cat.subCategories.length > 0 && (
+                        {cat.children && cat.children.length > 0 && (
                           <div className="flex flex-col gap-2">
-                            {cat.subCategories.map((sub: any) => (
+                            {cat.children.map((sub: any) => (
                               <Link key={sub.id} href={`/products?category=${sub.slug}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors" onClick={() => setIsCategoriesHovered(false)}>
                                 {sub.name}
                               </Link>

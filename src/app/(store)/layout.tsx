@@ -37,7 +37,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   // Fetch Categories for Mega Menu
   const categories = await db.category.findMany({
     include: {
-      subCategories: true
+      children: true
     }
   })
 
