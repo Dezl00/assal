@@ -165,7 +165,7 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
       })
       // Auto-link the buttonUrl to the brand products if not explicitly set
       if (!buttonUrl) {
-        buttonUrl = `/products?brand=${brand.slug}`
+        buttonUrl = `/brand/${brand.slug}`
       }
     }
 
@@ -232,7 +232,7 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
             logoUrl: desktopImage || existingBrand.logoUrl
           }
         })
-        if (!buttonUrl) buttonUrl = `/products?brand=${existingBrand.slug}`
+        if (!buttonUrl) buttonUrl = `/brand/${existingBrand.slug}`
       } else {
         const brand = await db.brand.create({
           data: {
@@ -241,7 +241,7 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
             logoUrl: desktopImage,
           }
         })
-        if (!buttonUrl) buttonUrl = `/products?brand=${brand.slug}`
+        if (!buttonUrl) buttonUrl = `/brand/${brand.slug}`
       }
     }
 

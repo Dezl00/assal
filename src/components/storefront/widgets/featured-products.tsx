@@ -2,6 +2,7 @@ import React from "react"
 import { db } from "@/lib/db"
 import Link from "next/link"
 import { ShoppingCart } from "lucide-react"
+import { ProductCard } from "@/components/storefront/product-card"
 
 export async function FeaturedProducts({ widget }: { widget: any }) {
   // Fetch up to 4 latest products
@@ -33,30 +34,9 @@ export async function FeaturedProducts({ widget }: { widget: any }) {
         </div>
       )}
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product) => (
-          <div key={product.id} className="group relative rounded-2xl bg-card p-4 transition-all hover:shadow-lg hover:shadow-primary/5 text-center">
-            <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-muted shrink-0">
-              {product.images[0] ? (
-                <img 
-                  src={product.images[0].url} 
-                  alt={product.name}
-                  className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                />
-              ) : (
-                <div className="flex items-center justify-center w-full h-full text-muted-foreground">صورة غير متوفرة</div>
-              )}
-            </Link>
-            
-            <div className="flex flex-col flex-1 justify-between text-center">
-              <Link href={`/product/${product.category?.slug || 'uncategorized'}/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2 text-sm sm:text-base leading-snug">
-                {product.name}
-              </Link>
-              <div className="flex flex-col items-center justify-center mt-auto">
-                <span className="font-bold text-lg text-primary">{product.price.toFixed(2)} ج.م</span>
-              </div>
-            </div>
-          </div>
+          <ProductCard key={product.id} product={product as any} />
         ))}
       </div>
     </div>

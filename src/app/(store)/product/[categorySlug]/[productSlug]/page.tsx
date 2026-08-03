@@ -8,6 +8,7 @@ import { AddToCartForm } from "@/components/storefront/add-to-cart-form"
 import { ShareButton } from "@/components/storefront/share-button"
 import { ProductTabs } from "@/components/storefront/product-tabs"
 import { ProductFeatures } from "@/components/storefront/product-features"
+import { ProductCard } from "@/components/storefront/product-card"
 
 import type { Metadata } from "next"
 
@@ -71,7 +72,7 @@ export default async function ProductDetailsPage(props: { params: Promise<{ cate
       id: { not: product.id }
     },
     take: 4,
-    include: { images: true }
+    include: { images: true, category: true }
   })
 
   const finalPrice = product.discountPrice ?? product.price
@@ -132,7 +133,7 @@ export default async function ProductDetailsPage(props: { params: Promise<{ cate
             {product.brand && (
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-foreground">الماركة:</span>
-                <Link href={`/products?brand=${product.brand.slug}`} className="text-primary font-bold hover:underline">
+                <Link href={`/brand/${product.brand.slug}`} className="text-primary font-bold hover:underline">
                   {product.brand.name}
                 </Link>
               </div>
@@ -158,27 +159,9 @@ export default async function ProductDetailsPage(props: { params: Promise<{ cate
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-3xl font-bold tracking-tight">منتجات مشابهة</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {relatedProducts.map(related => (
-              <Link key={related.id} href={`/product/${related.id}`} className="group relative rounded-2xl border border-border/50 bg-card p-4 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5">
-                <div className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-muted">
-                  {related.images[0] ? (
-                    <img 
-                      src={related.images[0].url} 
-                      alt={related.name}
-                      className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-full text-muted-foreground">صورة</div>
-                  )}
-                </div>
-                <h3 className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 mb-2">
-                  {related.name}
-                </h3>
-                <span className="font-bold text-lg text-primary">
-                  {(related.discountPrice ?? related.price).toFixed(2)} ج.م
-                </span>
-              </Link>
+              <ProductCard key={related.id} product={related as any} />
             ))}
           </div>
         </div>
