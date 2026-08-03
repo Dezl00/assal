@@ -17,7 +17,6 @@ export default async function SearchPage({
     products = await db.product.findMany({
       where: {
         AND: [
-          { isActive: true },
           {
             OR: [
               { name: { contains: q, mode: 'insensitive' } },
