@@ -17,8 +17,9 @@ export default async function BrandsPage() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-      <div className="max-w-4xl mx-auto text-center mb-12">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4">الماركات</h1>
+      {/* Internal Header */}
+      <div className="bg-primary/5 rounded-3xl p-8 md:p-12 mb-12 text-center max-w-4xl mx-auto w-full">
+        <h1 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">الماركات</h1>
         <p className="text-muted-foreground text-lg">تصفح منتجاتنا حسب الماركات المفضلة لديك</p>
       </div>
 

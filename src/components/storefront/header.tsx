@@ -84,16 +84,38 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                   الأقسام <ChevronDown className="w-4 h-4" />
                 </div>
                 {isCategoriesHovered && categories.length > 0 && (
-                  <div className="absolute top-[80px] right-0 w-[600px] bg-card border border-border shadow-2xl rounded-2xl p-6 grid grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-200 z-50">
+                  <div className="absolute top-[80px] right-0 w-72 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col animate-in slide-in-from-top-2 duration-200 z-50">
                     {categories.map((cat: any) => (
-                      <div key={cat.id} className="space-y-3">
-                        <Link href={`/products?category=${cat.slug}`} className="font-bold text-primary hover:underline text-base block" onClick={() => setIsCategoriesHovered(false)}>
-                          {cat.name}
+                      <div key={cat.id} className="relative group/cat">
+                        <Link 
+                          href={`/products?category=${cat.slug}`} 
+                          className="flex items-center justify-between px-4 py-3 hover:bg-secondary transition-colors"
+                          onClick={() => setIsCategoriesHovered(false)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
+                              {cat.imageUrl ? (
+                                <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+                              )}
+                            </div>
+                            <span className="text-sm font-bold text-foreground">{cat.name}</span>
+                          </div>
+                          {cat.children && cat.children.length > 0 && (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground rotate-90" />
+                          )}
                         </Link>
+                        
                         {cat.children && cat.children.length > 0 && (
-                          <div className="flex flex-col gap-2">
+                          <div className="absolute top-0 right-[calc(100%-0.5rem)] w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible group-hover/cat:-translate-x-2 transition-all duration-200 z-50">
                             {cat.children.map((sub: any) => (
-                              <Link key={sub.id} href={`/products?category=${sub.slug}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors" onClick={() => setIsCategoriesHovered(false)}>
+                              <Link 
+                                key={sub.id} 
+                                href={`/products?category=${sub.slug}`} 
+                                className="flex items-center px-4 py-3 hover:bg-secondary transition-colors text-sm font-bold text-foreground"
+                                onClick={() => setIsCategoriesHovered(false)}
+                              >
                                 {sub.name}
                               </Link>
                             ))}
@@ -113,18 +135,74 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             <div className="flex items-center gap-4">
               
               {/* Search Bar */}
-              <form onSubmit={handleDesktopSearch} className="relative hidden lg:block w-64">
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input 
-                  type="text" 
-                  placeholder="ابحث هنا..." 
-                  value={desktopSearchQuery}
-                  onChange={(e) => setDesktopSearchQuery(e.target.value)}
-                  className="w-full h-10 bg-secondary/50 border border-transparent focus:border-primary focus:bg-background rounded-full pr-10 pl-4 text-sm outline-none transition-all"
-                />
-              </form>
+              <div className="relative hidden lg:block w-72">
+                <form onSubmit={handleDesktopSearch}>
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input 
+                    type="text" 
+                    placeholder="ابحث هنا..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setIsSearchOpen(true)}
+                    className="w-full h-11 bg-background border border-border hover:border-primary/50 focus:border-primary focus:bg-background rounded-full pr-10 pl-4 text-sm outline-none transition-all shadow-sm"
+                  />
+                  {isSearching && (
+                    <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                  )}
+                </form>
 
-              <div className="h-6 w-px bg-border mx-1"></div>
+                {/* Desktop Search Dropdown */}
+                {searchQuery.trim().length > 0 && isSearchOpen && (
+                  <div className="absolute top-full mt-2 right-0 w-[350px] bg-card rounded-2xl shadow-xl border border-border overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      {searchResults.length > 0 ? (
+                        <div className="p-2 flex flex-col gap-1">
+                          {searchResults.map(product => (
+                            <Link 
+                              key={product.id}
+                              href={`/product/${product.slug}`}
+                              onClick={() => setIsSearchOpen(false)}
+                              className="flex items-center gap-3 p-2 hover:bg-secondary rounded-xl transition-colors"
+                            >
+                              <div className="w-12 h-12 rounded-lg bg-background border border-border overflow-hidden shrink-0 flex items-center justify-center">
+                                {product.imageUrl ? (
+                                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <ShoppingBag className="w-5 h-5 text-muted-foreground/30" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-sm font-bold line-clamp-1">{product.name}</h4>
+                                <p className="text-xs text-muted-foreground">{product.categoryName}</p>
+                              </div>
+                              <div className="font-bold text-sm text-primary whitespace-nowrap">
+                                {product.discountPrice ? product.discountPrice.toFixed(2) : product.price?.toFixed(2) || "0"} ج.م
+                              </div>
+                            </Link>
+                          ))}
+                          <div className="p-2 border-t border-border mt-1">
+                            <Link 
+                              href={`/search?q=${encodeURIComponent(searchQuery)}`}
+                              onClick={() => setIsSearchOpen(false)}
+                              className="w-full py-2.5 bg-primary/10 text-primary text-sm font-bold rounded-lg hover:bg-primary/20 flex items-center justify-center transition-colors"
+                            >
+                              عرض كل النتائج
+                            </Link>
+                          </div>
+                        </div>
+                      ) : (
+                        !isSearching && (
+                          <div className="p-6 text-center text-sm text-muted-foreground">
+                            لا توجد نتائج مطابقة لـ "{searchQuery}"
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-8 w-px bg-border mx-1"></div>
               
               {/* User Button */}
               <button 
@@ -137,8 +215,8 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                   }
                 }}
               >
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                  <User className="w-5 h-5 text-foreground group-hover:text-primary" />
+                <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/30 transition-all shadow-sm">
+                  <User className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
                 <div className="flex flex-col items-start hidden xl:flex">
                   <span className="text-xs text-muted-foreground">مرحباً بك</span>
@@ -151,8 +229,8 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 className="flex items-center gap-2 hover:text-primary transition-colors group"
                 onClick={() => setIsOpen(true)}
               >
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors relative">
-                  <ShoppingBag className="w-5 h-5 text-foreground group-hover:text-primary" />
+                <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/30 transition-all shadow-sm relative">
+                  <ShoppingBag className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   {mounted && count > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground animate-in zoom-in duration-300">
                       {count}
@@ -170,10 +248,15 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
           {/* MOBILE HEADER */}
           <div className="flex md:hidden h-16 items-center justify-between w-full relative">
             
-            {/* Right: Menu */}
+            {/* Right: Search */}
             <div className="flex-1 flex justify-start">
-              <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setMobileMenuOpen(true)}>
-                <MenuIcon className="w-7 h-7" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-foreground"
+                onClick={() => setIsSearchOpen(true)}
+              >
+                <Search className="w-7 h-7" />
               </Button>
             </div>
 
@@ -183,20 +266,15 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 {themeConfig?.logoUrl ? (
                   <img src={themeConfig.logoUrl} alt="Store Logo" className="h-10 w-auto object-contain" />
                 ) : (
-                  <span className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-white text-xl shadow-lg shadow-primary/20">ع</span>
+                  <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl shadow-lg shadow-primary/20">ع</span>
                 )}
               </Link>
             </div>
 
-            {/* Left: Search */}
+            {/* Left: Menu */}
             <div className="flex-1 flex justify-end">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-foreground"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="w-7 h-7" />
+              <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setMobileMenuOpen(true)}>
+                <MenuIcon className="w-7 h-7" />
               </Button>
             </div>
             
@@ -209,7 +287,16 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
         <div className="fixed inset-0 z-[100] flex flex-col items-center pt-20 px-4 bg-black/40">
           <div className="fixed inset-0" onClick={() => setIsSearchOpen(false)}></div>
           <div className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative z-10 overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border">
-            <div className="p-4 border-b border-border bg-background flex items-center gap-3">
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (searchQuery.trim()) {
+                  setIsSearchOpen(false);
+                  router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+                }
+              }}
+              className="p-4 border-b border-border bg-background flex items-center gap-3"
+            >
               <Search className="w-5 h-5 text-muted-foreground" />
               <input 
                 type="text"
@@ -220,10 +307,10 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {isSearching && <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />}
-              <button onClick={() => setIsSearchOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors">
+              <button type="button" onClick={() => setIsSearchOpen(false)} className="p-2 hover:bg-secondary rounded-full transition-colors">
                 <X className="w-5 h-5 text-muted-foreground" />
               </button>
-            </div>
+            </form>
             
             {(searchQuery.trim().length > 0) && (
               <div className="max-h-[60vh] overflow-y-auto bg-background">

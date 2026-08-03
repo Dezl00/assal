@@ -41,25 +41,28 @@ export function SearchClient({ initialQuery, initialResults }: { initialQuery: s
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 min-h-[70vh]">
-      <div className="max-w-3xl mx-auto flex flex-col items-center">
-        {/* Search Bar - Center and Attractive */}
-        <form onSubmit={handleSubmit} className="w-full relative group">
-          <div className="absolute inset-y-0 right-0 flex items-center pr-6 pointer-events-none">
-            {isSearching ? (
-              <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            ) : (
-              <Search className="w-6 h-6 text-primary" />
-            )}
-          </div>
-          <input 
-            type="text" 
-            placeholder="عن ماذا تبحث؟" 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full h-16 md:h-20 bg-background border-2 border-border/50 hover:border-primary/50 focus:border-primary rounded-[2rem] shadow-sm focus:shadow-xl focus:shadow-primary/10 pr-16 pl-6 text-xl md:text-2xl outline-none transition-all duration-300"
-            autoFocus
-          />
-        </form>
+      {/* Internal Header */}
+      <div className="bg-primary/5 rounded-3xl p-8 md:p-12 mb-12 text-center max-w-4xl mx-auto w-full">
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">ابحث عن منتج</h1>
+        <div className="max-w-2xl mx-auto flex flex-col items-center">
+          <form onSubmit={handleSubmit} className="w-full relative group">
+            <div className="absolute inset-y-0 right-0 flex items-center pr-6 pointer-events-none">
+              {isSearching ? (
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              ) : (
+                <Search className="w-6 h-6 text-primary" />
+              )}
+            </div>
+            <input 
+              type="text" 
+              placeholder="عن ماذا تبحث؟" 
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full h-14 md:h-16 bg-background border-2 border-border/50 hover:border-primary/50 focus:border-primary rounded-2xl shadow-sm focus:shadow-lg focus:shadow-primary/10 pr-16 pl-6 text-lg md:text-xl outline-none transition-all duration-300"
+              autoFocus
+            />
+          </form>
+        </div>
       </div>
 
       {/* Results Section */}

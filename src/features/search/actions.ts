@@ -26,9 +26,11 @@ export async function searchProductsLive(query: string) {
       slug: p.slug,
       price: p.price,
       discountPrice: p.discountPrice,
+      images: p.images, // ProductCard expects this
       imageUrl: p.images[0]?.url,
       categorySlug: p.category?.slug || 'uncategorized',
-      categoryName: p.category?.name || ''
+      categoryName: p.category?.name || '',
+      stock: p.stock // Add stock for ProductCard quick add
     }))
   } catch (error) {
     console.error("Live search error:", error)
