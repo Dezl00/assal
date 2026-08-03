@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { signOut } from "next-auth/react"
 
 export default function AdminLayout({
   children,
@@ -57,7 +58,10 @@ export default function AdminLayout({
           })}
         </nav>
         <div className="p-4 border-t border-border shrink-0">
-          <button className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 active:scale-95">
+          <button 
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 active:scale-95"
+          >
             <LogOut className="h-5 w-5 rtl-flip" />
             تسجيل الخروج
           </button>

@@ -132,15 +132,20 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
               type="range"
               min={globalMinPrice}
               max={globalMaxPrice}
-              value={sliderMaxPrice || maxPrice || globalMaxPrice}
-              onChange={(e) => setSliderMaxPrice(e.target.value)}
-              onMouseUp={() => setMaxPrice(sliderMaxPrice)}
-              onTouchEnd={() => setMaxPrice(sliderMaxPrice)}
+              defaultValue={sliderMaxPrice || maxPrice || globalMaxPrice}
+              onMouseUp={(e) => {
+                setSliderMaxPrice(e.currentTarget.value)
+                setMaxPrice(e.currentTarget.value)
+              }}
+              onTouchEnd={(e) => {
+                setSliderMaxPrice(e.currentTarget.value)
+                setMaxPrice(e.currentTarget.value)
+              }}
               className="w-full accent-primary cursor-pointer"
             />
             <div className="flex justify-between text-xs text-muted-foreground mt-1">
               <span>{globalMinPrice}</span>
-              <span>{globalMaxPrice}</span>
+              <span>{sliderMaxPrice || maxPrice || globalMaxPrice}</span>
             </div>
           </div>
         </div>
@@ -234,12 +239,12 @@ export function FilterSidebar({ categories, brands, globalMinPrice = 0, globalMa
       </div>
 
       {/* Mobile Sidebar (Drawer) */}
-      <div className={`fixed inset-0 z-[100] lg:hidden transition-all duration-300 ${isFilterSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`fixed inset-0 z-[100] lg:hidden ${isFilterSidebarOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <div 
-          className="absolute inset-0 bg-black/50 transition-opacity duration-300"
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isFilterSidebarOpen ? 'opacity-100' : 'opacity-0'}`}
           onClick={() => setFilterSidebarOpen(false)}
         />
-        <div className={`w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 flex flex-col mr-auto transition-transform duration-300 ease-out ${isFilterSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 flex flex-col transition-transform duration-300 ease-out ${isFilterSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="flex items-center justify-between p-4 border-b border-border/50">
             <span className="font-bold text-foreground flex items-center gap-2">
               <Filter className="w-5 h-5 text-primary" />

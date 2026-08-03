@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Eye, Trash2, User } from "lucide-react"
+import { Search, Eye, Trash2, User, Phone, MapPin, Mail, Calendar, ChevronLeft, Package, Clock, CheckCircle2, XCircle } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { deleteCustomer } from "@/features/customers/actions"
@@ -10,17 +10,46 @@ import { deleteCustomer } from "@/features/customers/actions"
 export function CustomersClient({ customers }: { customers: any[] }) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   async function confirmDelete() {
     if (!customerToDelete) return
     const res = await deleteCustomer(customerToDelete)
     if (res.success) {
       toast.success("تم حذف العميل بنجاح")
+      if (selectedCustomer?.id === customerToDelete) setSelectedCustomer(null)
     } else {
       toast.error(res.error || "حدث خطأ أثناء الحذف")
     }
     setDeleteModalOpen(false)
     setCustomerToDelete(null)
+  }
+
+  const filteredCustomers = customers.filter(c => 
+    (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (c.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (c.phone || "").includes(searchQuery)
+  )
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'PROCESSING': return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'COMPLETED': return 'bg-green-100 text-green-800 border-green-200'
+      case 'CANCELLED': return 'bg-red-100 text-red-800 border-red-200'
+      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'قيد الانتظار'
+      case 'PROCESSING': return 'جاري التجهيز'
+      case 'COMPLETED': return 'مكتمل'
+      case 'CANCELLED': return 'ملغي'
+      default: return status
+    }
   }
 
   return (
@@ -32,87 +61,184 @@ export function CustomersClient({ customers }: { customers: any[] }) {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border/50 bg-card shadow-sm">
-        <div className="flex items-center border-b border-border/50 p-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="ابحث باسم العميل أو البريد..."
-              className="h-10 w-full rounded-md border border-input bg-transparent pr-10 pl-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-            />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-12rem)] min-h-[600px]">
+        {/* Right pane: Customer List */}
+        <div className="md:col-span-1 rounded-xl border border-border/50 bg-card shadow-sm flex flex-col h-full overflow-hidden">
+          <div className="p-4 border-b border-border/50 bg-muted/20 shrink-0">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="ابحث بالاسم، البريد، أو الهاتف..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background pr-10 pl-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-sm"
+              />
+            </div>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto scrollbar-thin">
+            {filteredCustomers.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                لا يوجد عملاء يطابقون بحثك
+              </div>
+            ) : (
+              <div className="divide-y divide-border/50">
+                {filteredCustomers.map(customer => (
+                  <button
+                    key={customer.id}
+                    onClick={() => setSelectedCustomer(customer)}
+                    className={`w-full text-start p-4 transition-all hover:bg-muted/50 flex items-center justify-between ${selectedCustomer?.id === customer.id ? 'bg-primary/5 border-l-2 border-l-primary' : ''}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${selectedCustomer?.id === customer.id ? 'bg-primary/20 text-primary' : 'bg-secondary text-secondary-foreground'}`}>
+                        <User className="h-5 w-5" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-sm text-foreground truncate max-w-[150px]">{customer.name || "بدون اسم"}</span>
+                        <span className="text-xs text-muted-foreground truncate max-w-[150px]">{customer.email}</span>
+                      </div>
+                    </div>
+                    <ChevronLeft className={`h-4 w-4 transition-transform ${selectedCustomer?.id === customer.id ? 'text-primary' : 'text-muted-foreground'}`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-right">
-            <thead className="border-b border-border/50 bg-muted/50 text-muted-foreground">
-              <tr>
-                <th className="px-6 py-4 font-medium">العميل</th>
-                <th className="px-6 py-4 font-medium">البريد الإلكتروني</th>
-                <th className="px-6 py-4 font-medium">عدد الطلبات</th>
-                <th className="px-6 py-4 font-medium">تاريخ التسجيل</th>
-                <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {customers.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
-                    لا يوجد عملاء مسجلين حتى الآن.
-                  </td>
-                </tr>
-              ) : (
-                customers.map((customer) => (
-                  <tr key={customer.id} className="transition-colors hover:bg-muted/30">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          <User className="h-5 w-5" />
-                        </div>
-                        <span className="font-medium text-foreground">
-                          {customer.name || "بدون اسم"}
-                        </span>
+
+        {/* Left pane: Customer Details */}
+        <div className="md:col-span-2 rounded-xl border border-border/50 bg-card shadow-sm h-full overflow-hidden flex flex-col">
+          {!selectedCustomer ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center space-y-4">
+              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+                <User className="h-10 w-10 opacity-20" />
+              </div>
+              <div>
+                <p className="font-medium text-lg text-foreground">حدد عميلاً من القائمة</p>
+                <p className="text-sm mt-1">لعرض التفاصيل الكاملة وسجل الطلبات</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto scrollbar-thin">
+              {/* Header Profile */}
+              <div className="bg-gradient-to-b from-primary/10 to-transparent p-6 border-b border-border/50">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-4">
+                    <div className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center text-primary border-4 border-background shadow-md">
+                      <User className="h-10 w-10" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground">{selectedCustomer.name || "بدون اسم"}</h2>
+                      <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>عضو منذ {new Date(selectedCustomer.createdAt).toLocaleDateString('ar-EG')}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {customer.email}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-800">
-                        {customer._count?.orders || 0}
+                    </div>
+                  </div>
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="gap-2"
+                    onClick={() => {
+                      setCustomerToDelete(selectedCustomer.id)
+                      setDeleteModalOpen(true)
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    حذف الحساب
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Contact Info */}
+                <div className="space-y-4">
+                  <h3 className="font-bold text-lg border-b border-border/50 pb-2">بيانات التواصل</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
+                        <Mail className="h-4 w-4" />
+                      </div>
+                      <span className="text-foreground">{selectedCustomer.email}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
+                        <Phone className="h-4 w-4" />
+                      </div>
+                      <span className="text-foreground">{selectedCustomer.phone || <span className="text-muted-foreground italic">غير محدد</span>}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm">
+                      <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
+                        <MapPin className="h-4 w-4" />
+                      </div>
+                      <span className="text-foreground line-clamp-2">{selectedCustomer.address || <span className="text-muted-foreground italic">غير محدد</span>}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="space-y-4">
+                  <h3 className="font-bold text-lg border-b border-border/50 pb-2">إحصائيات العميل</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-secondary/50 rounded-lg p-4 border border-border/50 text-center">
+                      <span className="block text-3xl font-bold text-primary mb-1">{selectedCustomer._count?.orders || 0}</span>
+                      <span className="text-xs text-muted-foreground font-medium">إجمالي الطلبات</span>
+                    </div>
+                    <div className="bg-secondary/50 rounded-lg p-4 border border-border/50 text-center">
+                      <span className="block text-3xl font-bold text-primary mb-1">
+                        {selectedCustomer.orders?.filter((o: any) => o.status === 'COMPLETED').length || 0}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(customer.createdAt).toLocaleDateString('ar-EG')}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-primary"
-                          onClick={() => toast("تفاصيل العميل ستتوفر قريباً")}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => {
-                            setCustomerToDelete(customer.id)
-                            setDeleteModalOpen(true)
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <span className="text-xs text-muted-foreground font-medium">الطلبات المكتملة</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order History */}
+              <div className="p-6 pt-0">
+                <h3 className="font-bold text-lg border-b border-border/50 pb-2 mb-4">سجل الطلبات</h3>
+                
+                {!selectedCustomer.orders || selectedCustomer.orders.length === 0 ? (
+                  <div className="text-center p-8 bg-secondary/20 rounded-lg border border-border/50 border-dashed">
+                    <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground">لم يقم هذا العميل بأي طلبات حتى الآن.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedCustomer.orders.map((order: any) => (
+                      <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border/50 bg-card hover:bg-muted/20 transition-colors gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getStatusColor(order.status)}`}>
+                            {order.status === 'COMPLETED' ? <CheckCircle2 className="h-5 w-5" /> : 
+                             order.status === 'CANCELLED' ? <XCircle className="h-5 w-5" /> : 
+                             <Clock className="h-5 w-5" />}
+                          </div>
+                          <div>
+                            <div className="font-bold text-sm">طلب #{order.id.substring(0, 8).toUpperCase()}</div>
+                            <div className="text-xs text-muted-foreground mt-1 flex gap-2">
+                              <span>{new Date(order.createdAt).toLocaleDateString('ar-EG')}</span>
+                              <span>•</span>
+                              <span>{order.totalAmount} ج.م</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${getStatusColor(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={`/admin/orders?search=${order.id.substring(0, 8)}`} target="_blank">عرض</a>
+                          </Button>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
         </div>
       </div>
 

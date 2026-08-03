@@ -3,6 +3,7 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { db } from "@/lib/db";
+import NextTopLoader from 'nextjs-toploader';
 
 const fallbackFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -74,6 +75,17 @@ export default async function RootLayout({
         `}} />
       </head>
       <body className="font-sans antialiased">
+        <NextTopLoader 
+          color="var(--color-primary, #b79045)"
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px var(--color-primary, #b79045),0 0 5px var(--color-primary, #b79045)"
+        />
         {children}
         <Toaster 
           position="top-center" 
@@ -81,11 +93,11 @@ export default async function RootLayout({
           dir="rtl"
           toastOptions={{
             style: {
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              border: 'none',
+              boxShadow: 'none',
+              border: '1px solid var(--border)',
               fontFamily: 'inherit',
             },
-            className: 'bg-background/95 backdrop-blur-lg border-none shadow-lg font-sans w-fit mx-auto min-w-[200px] justify-center',
+            className: 'bg-background border-border font-sans justify-center text-center',
           }}
         />
       </body>

@@ -50,9 +50,9 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
-                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-12 md:h-14 w-auto object-contain" />
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-16 md:h-20 w-auto object-contain" />
                 ) : (
-                  <span className="w-10 h-10 md:w-12 md:h-12 rounded-full gold-gradient flex items-center justify-center text-white text-xl md:text-2xl shadow-lg shadow-primary/20">ع</span>
+                  <span className="w-12 h-12 md:w-16 md:h-16 rounded-full gold-gradient flex items-center justify-center text-white text-2xl md:text-3xl shadow-lg shadow-primary/20">ع</span>
                 )}
               </Link>
             </div>
@@ -78,7 +78,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                 className="text-muted-foreground hover:text-foreground"
                 onClick={() => setIsSearchOpen(true)}
               >
-                <Search className="w-7 h-7 md:w-7 md:h-7" />
+                <Search className="w-8 h-8 md:w-8 md:h-8" />
               </Button>
               
               <Button 
@@ -93,7 +93,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                   }
                 }}
               >
-                <User className="w-7 h-7" />
+                <User className="w-8 h-8 md:w-8 md:h-8" />
               </Button>
 
               <Button 
@@ -102,16 +102,16 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                 className="text-muted-foreground hover:text-primary relative group"
                 onClick={() => setIsOpen(true)}
               >
-                <ShoppingBag className="w-7 h-7 md:w-6 md:h-6 group-hover:scale-110 transition-transform" />
+                <ShoppingBag className="w-8 h-8 md:w-8 md:h-8 group-hover:scale-110 transition-transform" />
                 {mounted && count > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 md:h-4 md:w-4 items-center justify-center rounded-full bg-primary text-[11px] md:text-[10px] font-bold text-primary-foreground animate-in zoom-in duration-300">
+                  <span className="absolute top-0 right-0 flex h-5 w-5 md:h-5 md:w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground animate-in zoom-in duration-300">
                     {count}
                   </span>
                 )}
               </Button>
 
               <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground" onClick={() => setMobileMenuOpen(true)}>
-                <MenuIcon className="w-7 h-7" />
+                <MenuIcon className="w-8 h-8" />
               </Button>
             </div>
           </div>

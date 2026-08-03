@@ -10,7 +10,7 @@ import { useUIStore } from "@/store/ui-store"
 export function MobileBottomNav({ user }: { user?: any }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { getTotals } = useCartStore()
+  const { getTotals, setIsOpen } = useCartStore()
   const { count } = getTotals()
   const { setAuthModalOpen } = useUIStore()
   const [mounted, setMounted] = useState(false)
@@ -31,7 +31,16 @@ export function MobileBottomNav({ user }: { user?: any }) {
   const navItems = [
     { name: "الرئيسية", href: "/", icon: Home },
     { name: "المتجر", href: "/products", icon: Store },
-    { name: "السلة", href: "/cart", icon: ShoppingBag, badge: mounted ? count : 0 },
+    { 
+      name: "السلة", 
+      href: "#", 
+      icon: ShoppingBag, 
+      badge: mounted ? count : 0,
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault()
+        setIsOpen(true)
+      }
+    },
     { name: "حسابي", href: "/account", icon: User, onClick: handleAccountClick },
   ]
 
@@ -47,10 +56,10 @@ export function MobileBottomNav({ user }: { user?: any }) {
               onClick={item.onClick}
               className="flex flex-col items-center justify-center w-full h-full space-y-1 relative group"
             >
-              <div className={`transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
+              <div className={`transition-colors duration-200 relative ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`}>
                 <item.icon className={`w-6 h-6 ${isActive ? 'stroke-[2.5px]' : ''}`} />
                 {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute top-[-4px] right-[calc(50%-18px)] w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-2 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
                     {item.badge}
                   </span>
                 )}

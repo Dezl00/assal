@@ -44,7 +44,7 @@ export default function CheckoutClient({ user }: { user?: any }) {
       finalCity = formData.get("city") as string
     }
     
-    const data = {
+    const data: any = {
       customerName: user?.name || "عميل",
       customerPhone: finalPhone,
       address: finalAddress,
@@ -55,6 +55,10 @@ export default function CheckoutClient({ user }: { user?: any }) {
         quantity: item.quantity,
         price: item.price
       }))
+    }
+    
+    if (user?.id) {
+      data.userId = user.id
     }
 
     const result = await submitOrder(data)

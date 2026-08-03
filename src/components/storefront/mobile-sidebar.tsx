@@ -25,15 +25,15 @@ export function MobileSidebar({ menuItems, themeConfig }: { menuItems: any[], th
   }, [isMobileMenuOpen])
 
   return (
-    <div className={`fixed inset-0 z-[100] md:hidden transition-all duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+    <div className={`fixed inset-0 z-[100] md:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/50 transition-opacity duration-300"
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
         onClick={() => setMobileMenuOpen(false)}
       />
 
       {/* Sidebar Panel */}
-      <div className={`w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 flex flex-col mr-auto transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`w-[85vw] max-w-sm bg-card h-full shadow-2xl relative z-10 flex flex-col transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">
