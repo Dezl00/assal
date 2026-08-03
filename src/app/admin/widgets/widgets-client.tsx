@@ -401,8 +401,18 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         />
                         
                         <div className="space-y-2">
-                          <input name="title" placeholder="العنوان النصي (اختياري)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
-                          <input name="buttonUrl" placeholder="رابط التوجيه عند الضغط" dir="ltr" className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" />
+                          <input 
+                            name="title" 
+                            placeholder={editingWidget.type === "BrandSlider" ? "اسم الماركة (مطلوب لإنشاء الماركة)" : "العنوان النصي (اختياري)"} 
+                            required={editingWidget.type === "BrandSlider"}
+                            className="h-9 w-full rounded border border-input bg-background px-2 text-xs" 
+                          />
+                          <input 
+                            name="buttonUrl" 
+                            placeholder={editingWidget.type === "BrandSlider" ? "رابط التوجيه (يتم تلقائياً التوجيه لمنتجات الماركة)" : "رابط التوجيه عند الضغط"} 
+                            dir="ltr" 
+                            className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" 
+                          />
                         </div>
                         
                         <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || !newItemImage}>
