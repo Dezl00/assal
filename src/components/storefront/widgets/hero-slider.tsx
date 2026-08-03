@@ -30,9 +30,6 @@ export function HeroSlider({ widget }: { widget: any }) {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden bg-black rounded-2xl" dir="ltr">
         {slides.map((slide: any, index: number) => {
-          // Calculate standard sliding transform. 
-          // Since we forced dir="ltr", translateX(100%) is to the right.
-          // By reversing it for RTL feel, the next slide comes from the left.
           const offset = (currentSlide - index) * 100;
           return (
             <div 
@@ -48,18 +45,18 @@ export function HeroSlider({ widget }: { widget: any }) {
                   backgroundImage: `url(${slide.desktopImage})`,
                 }}
               />
-              {/* Overlay gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-8 md:p-24 pb-16">
+              {/* Content Container (Removed dark gradient shadow) */}
+              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-24 pb-16">
                 <div className="container mx-auto max-w-4xl text-center md:text-right">
                   {slide.title && (
-                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight animate-in slide-in-from-bottom-8 duration-700">
+                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight animate-in slide-in-from-bottom-8 duration-700 drop-shadow-md">
                       {slide.title}
                     </h2>
                   )}
                   {slide.buttonUrl && (
                     <div className="animate-in slide-in-from-bottom-12 duration-700 delay-150">
                       <Link href={slide.buttonUrl}>
-                        <Button size="lg" className="gold-gradient text-white border-0 px-8 text-lg hover:scale-105 transition-transform">
+                        <Button size="lg" className="gold-gradient text-white border-0 px-8 text-lg hover:scale-105 transition-transform shadow-md">
                           تسوق الآن
                         </Button>
                       </Link>
@@ -91,11 +88,11 @@ export function HeroSlider({ widget }: { widget: any }) {
 
             {/* Dots */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex gap-2">
-              {slides.map((_, idx) => (
+              {slides.map((_: any, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`transition-all duration-300 rounded-full shadow-sm ${
+                  className={`transition-all duration-300 rounded-full ${
                     currentSlide === idx 
                       ? "w-8 h-2.5 bg-primary" 
                       : "w-2.5 h-2.5 bg-white/50 hover:bg-white"
