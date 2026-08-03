@@ -65,6 +65,7 @@ export function SearchClient({ initialQuery, initialResults }: { initialQuery: s
               className="w-full h-16 bg-background border-2 border-transparent focus:border-white/20 rounded-2xl pr-14 pl-6 text-lg outline-none transition-all shadow-xl text-foreground placeholder:text-muted-foreground"
             />
           </form>
+          </div>
         </div>
       </div>
 
