@@ -1,8 +1,9 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import Link from "next/link"
-import { Search, ShoppingBag, User, Menu as MenuIcon, X, Loader2, ChevronDown } from "lucide-react"
+import { Search, ShoppingBag, User, Menu as MenuIcon, X, Loader2, ChevronDown, LogOut, Settings, LayoutDashboard, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { signOut } from "next-auth/react"
 import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
 import { useRouter } from "next/navigation"
@@ -62,7 +63,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
-                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-16 w-auto object-contain" />
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-20 w-auto object-contain" />
                 ) : (
                   <span className="w-12 h-12 rounded-full gold-gradient flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20">ع</span>
                 )}
@@ -88,7 +89,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                     {categories.map((cat: any) => (
                       <div key={cat.id} className="relative group/cat">
                         <Link 
-                          href={`/products?category=${cat.slug}`} 
+                          href={`/category/${cat.slug}`} 
                           className="flex items-center justify-between px-4 py-3 hover:bg-secondary transition-colors"
                           onClick={() => setIsCategoriesHovered(false)}
                         >
@@ -108,11 +109,11 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                         </Link>
                         
                         {cat.children && cat.children.length > 0 && (
-                          <div className="absolute top-0 right-[calc(100%-0.5rem)] w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible group-hover/cat:-translate-x-2 transition-all duration-200 z-50">
+                          <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
                             {cat.children.map((sub: any) => (
                               <Link 
                                 key={sub.id} 
-                                href={`/products?category=${sub.slug}`} 
+                                href={`/category/${sub.slug}`} 
                                 className="flex items-center px-4 py-3 hover:bg-secondary transition-colors text-sm font-bold text-foreground"
                                 onClick={() => setIsCategoriesHovered(false)}
                               >
@@ -205,32 +206,68 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
               <div className="h-8 w-px bg-border mx-1"></div>
               
               {/* User Button */}
-              <button 
-                className="flex items-center gap-2 hover:text-primary transition-colors group"
-                onClick={() => {
-                  if (user) {
-                    router.push(user.role === 'ADMIN' ? '/admin' : '/account')
-                  } else {
-                    setAuthModalOpen(true)
-                  }
-                }}
-              >
-                <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/30 transition-all shadow-sm">
-                  <User className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </div>
-                <div className="flex flex-col items-start hidden xl:flex">
-                  <span className="text-xs text-muted-foreground">مرحباً بك</span>
-                  <span className="text-sm font-bold">{user ? (user.name?.split(' ')[0] || 'حسابي') : 'تسجيل الدخول'}</span>
-                </div>
-              </button>
+              {/* User Dropdown */}
+              <div className="relative group/user">
+                <button 
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    if (!user) setAuthModalOpen(true)
+                  }}
+                >
+                  <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center shadow-sm">
+                    <User className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex flex-col items-start hidden xl:flex">
+                    <span className="text-xs text-muted-foreground">مرحباً بك</span>
+                    <div className="flex items-center gap-1 text-sm font-bold">
+                      {user ? (user.name?.split(' ')[0] || 'حسابي') : 'تسجيل الدخول'}
+                      {user && <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+                    </div>
+                  </div>
+                </button>
+                
+                {user && (
+                  <div className="absolute top-full left-0 w-48 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-200 z-50 mt-2">
+                    {user.role === 'ADMIN' ? (
+                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                        <LayoutDashboard className="w-4 h-4" />
+                        لوحة التحكم
+                      </Link>
+                    ) : (
+                      <>
+                        <Link href="/account" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                          <User className="w-4 h-4" />
+                          حسابي
+                        </Link>
+                        <Link href="/account?tab=orders" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                          <ShoppingCart className="w-4 h-4" />
+                          طلباتي
+                        </Link>
+                        <Link href="/account?tab=security" className="flex items-center gap-2 px-4 py-2 hover:bg-secondary text-sm font-bold transition-colors">
+                          <Settings className="w-4 h-4" />
+                          الإعدادات
+                        </Link>
+                      </>
+                    )}
+                    <div className="h-px bg-border my-1"></div>
+                    <button 
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                      className="flex items-center gap-2 w-full text-start px-4 py-2 hover:bg-secondary text-sm font-bold text-destructive transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      تسجيل الخروج
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Cart Button */}
               <button 
-                className="flex items-center gap-2 hover:text-primary transition-colors group"
+                className="flex items-center gap-2 group"
                 onClick={() => setIsOpen(true)}
               >
-                <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/30 transition-all shadow-sm relative">
-                  <ShoppingBag className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center shadow-sm relative">
+                  <ShoppingBag className="w-5 h-5 text-muted-foreground" />
                   {mounted && count > 0 && (
                     <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground animate-in zoom-in duration-300">
                       {count}
@@ -264,7 +301,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             <div className="flex-shrink-0 flex items-center justify-center absolute left-1/2 -translate-x-1/2">
               <Link href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
-                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-10 w-auto object-contain" />
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-14 w-auto object-contain" />
                 ) : (
                   <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl shadow-lg shadow-primary/20">ع</span>
                 )}

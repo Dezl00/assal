@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic"
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: { q?: string }
+  searchParams: Promise<{ q?: string }>
 }) {
-  const q = searchParams.q || ""
+  const resolvedParams = await searchParams;
+  const q = resolvedParams.q || ""
 
   let products: any[] = []
   

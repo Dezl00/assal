@@ -34,8 +34,8 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
         onClick={() => setMobileMenuOpen(false)}
       />
 
-      {/* Sidebar Panel - sliding from Right (assuming RTL) */}
-      <div className={`absolute top-0 bottom-0 right-0 w-[85vw] max-w-sm bg-card shadow-2xl z-10 flex flex-col transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      {/* Sidebar Panel - sliding from Left */}
+      <div className={`absolute top-0 bottom-0 left-0 w-[85vw] max-w-sm bg-card shadow-2xl z-10 flex flex-col transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">
@@ -121,7 +121,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
                   <div className="flex items-center justify-between p-2">
                     {/* Category Link with Image */}
                     <Link 
-                      href={`/products?category=${cat.slug}`}
+                      href={`/category/${cat.slug}`}
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 flex-1 p-2 hover:bg-secondary/30 rounded-xl transition-colors"
                     >
@@ -139,20 +139,20 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
                     {cat.children && cat.children.length > 0 && (
                       <button 
                         onClick={() => setOpenCategory(openCategory === cat.id ? null : cat.id)}
-                        className="p-3 bg-secondary/20 hover:bg-secondary/50 rounded-xl text-muted-foreground transition-all mr-2"
+                        className="p-1 hover:opacity-80 rounded-full text-muted-foreground transition-all mr-2"
                       >
-                        <ChevronLeft className={`w-5 h-5 transition-transform ${openCategory === cat.id ? '-rotate-90 text-primary' : ''}`} />
+                        <ChevronLeft className={`w-4 h-4 transition-transform ${openCategory === cat.id ? '-rotate-90 text-primary' : ''}`} />
                       </button>
                     )}
                   </div>
 
                   {/* Subcategories */}
                   {openCategory === cat.id && cat.children && (
-                    <div className="bg-secondary/10 flex flex-col pr-12 pl-4 py-2 animate-in slide-in-from-top-2">
+                    <div className="flex flex-col pr-12 pl-4 py-2 animate-in slide-in-from-top-2">
                       {cat.children.map((sub: any) => (
                         <Link 
                           key={sub.id}
-                          href={`/products?category=${sub.slug}`}
+                          href={`/category/${sub.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
                           className="py-3 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors border-b border-border/10 last:border-0"
                         >

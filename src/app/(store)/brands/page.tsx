@@ -18,9 +18,14 @@ export default async function BrandsPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
       {/* Internal Header */}
-      <div className="bg-primary/5 rounded-3xl p-8 md:p-12 mb-12 text-center max-w-4xl mx-auto w-full">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4 text-foreground">الماركات</h1>
-        <p className="text-muted-foreground text-lg">تصفح منتجاتنا حسب الماركات المفضلة لديك</p>
+      <div className="mb-8 sm:mb-12 relative overflow-hidden rounded-3xl bg-primary p-8 sm:p-16 text-center shadow-lg shadow-primary/20">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">الماركات</h1>
+          <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto">تصفح منتجاتنا حسب الماركات المفضلة لديك</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
