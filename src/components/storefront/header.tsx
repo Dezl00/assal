@@ -1,24 +1,28 @@
 "use client"
 import React, { useEffect, useState } from "react"
 import Link from "next/link"
-import { Search, ShoppingBag, User, Menu as MenuIcon, X, Loader2 } from "lucide-react"
+import { Search, ShoppingBag, User, Menu as MenuIcon, X, Loader2, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
 import { useRouter } from "next/navigation"
 import { searchProductsLive } from "@/features/search/actions"
 
-export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: any[], themeConfig?: any, user?: any }) {
+export function StorefrontHeader({ menuItems, themeConfig, user, categories = [] }: { menuItems?: any[], themeConfig?: any, user?: any, categories?: any[] }) {
   const { getTotals, setIsOpen } = useCartStore()
-  const { count } = getTotals()
+  const { count, total } = getTotals()
   const [mounted, setMounted] = useState(false)
   const { setAuthModalOpen, setMobileMenuOpen } = useUIStore()
   const router = useRouter()
 
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [desktopSearchQuery, setDesktopSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
+  
+  // Mega Menu state
+  const [isCategoriesHovered, setIsCategoriesHovered] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -40,51 +44,91 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  const handleDesktopSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (desktopSearchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(desktopSearchQuery)}`)
+    }
+  }
+
   return (
     <>
-      <header className="sticky top-0 z-50 w-full glass transition-all duration-300">
+      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/40 transition-all duration-300 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 md:h-20 items-center justify-between gap-4 md:gap-8">
+          {/* DESKTOP HEADER */}
+          <div className="hidden md:flex h-20 items-center justify-between gap-6">
             
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
-                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-16 md:h-20 w-auto object-contain" />
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-16 w-auto object-contain" />
                 ) : (
-                  <span className="w-12 h-12 md:w-16 md:h-16 rounded-full gold-gradient flex items-center justify-center text-white text-2xl md:text-3xl shadow-lg shadow-primary/20">ع</span>
+                  <span className="w-12 h-12 rounded-full gold-gradient flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20">ع</span>
                 )}
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8 flex-1 justify-center">
-              {menuItems.map(item => (
-                <Link 
-                  key={item.id} 
-                  href={item.url}
-                  className="text-sm font-medium text-foreground hover:text-primary transition-colors relative after:absolute after:bottom-[-4px] after:left-0 after:right-0 after:h-[2px] after:bg-primary after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 after:origin-right"
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <nav className="flex items-center gap-6 lg:gap-8 flex-1 justify-center">
+              <Link href="/" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الرئيسية</Link>
+              <Link href="/products" className="text-sm font-bold text-foreground hover:text-primary transition-colors">المتجر</Link>
+              
+              {/* Categories Mega Menu */}
+              <div 
+                className="relative py-8"
+                onMouseEnter={() => setIsCategoriesHovered(true)}
+                onMouseLeave={() => setIsCategoriesHovered(false)}
+              >
+                <div className="flex items-center gap-1 text-sm font-bold text-foreground hover:text-primary transition-colors cursor-pointer">
+                  الأقسام <ChevronDown className="w-4 h-4" />
+                </div>
+                {isCategoriesHovered && categories.length > 0 && (
+                  <div className="absolute top-[80px] right-0 w-[600px] bg-card border border-border shadow-2xl rounded-2xl p-6 grid grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-200 z-50">
+                    {categories.map((cat: any) => (
+                      <div key={cat.id} className="space-y-3">
+                        <Link href={`/products?category=${cat.slug}`} className="font-bold text-primary hover:underline text-base block" onClick={() => setIsCategoriesHovered(false)}>
+                          {cat.name}
+                        </Link>
+                        {cat.subCategories && cat.subCategories.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            {cat.subCategories.map((sub: any) => (
+                              <Link key={sub.id} href={`/products?category=${sub.slug}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors" onClick={() => setIsCategoriesHovered(false)}>
+                                {sub.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <Link href="/brands" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الماركات</Link>
+              <Link href="/products?discounted=true" className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors">عروض وخصومات</Link>
             </nav>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="w-8 h-8 md:w-8 md:h-8" />
-              </Button>
+            {/* Desktop Actions */}
+            <div className="flex items-center gap-4">
               
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-muted-foreground hover:text-foreground hidden md:flex" 
+              {/* Search Bar */}
+              <form onSubmit={handleDesktopSearch} className="relative hidden lg:block w-64">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input 
+                  type="text" 
+                  placeholder="ابحث هنا..." 
+                  value={desktopSearchQuery}
+                  onChange={(e) => setDesktopSearchQuery(e.target.value)}
+                  className="w-full h-10 bg-secondary/50 border border-transparent focus:border-primary focus:bg-background rounded-full pr-10 pl-4 text-sm outline-none transition-all"
+                />
+              </form>
+
+              <div className="h-6 w-px bg-border mx-1"></div>
+              
+              {/* User Button */}
+              <button 
+                className="flex items-center gap-2 hover:text-primary transition-colors group"
                 onClick={() => {
                   if (user) {
                     router.push(user.role === 'ADMIN' ? '/admin' : '/account')
@@ -93,43 +137,85 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                   }
                 }}
               >
-                <User className="w-8 h-8 md:w-8 md:h-8" />
-              </Button>
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                  <User className="w-5 h-5 text-foreground group-hover:text-primary" />
+                </div>
+                <div className="flex flex-col items-start hidden xl:flex">
+                  <span className="text-xs text-muted-foreground">مرحباً بك</span>
+                  <span className="text-sm font-bold">{user ? (user.name?.split(' ')[0] || 'حسابي') : 'تسجيل الدخول'}</span>
+                </div>
+              </button>
 
+              {/* Cart Button */}
+              <button 
+                className="flex items-center gap-2 hover:text-primary transition-colors group"
+                onClick={() => setIsOpen(true)}
+              >
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors relative">
+                  <ShoppingBag className="w-5 h-5 text-foreground group-hover:text-primary" />
+                  {mounted && count > 0 && (
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground animate-in zoom-in duration-300">
+                      {count}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-col items-start hidden xl:flex">
+                  <span className="text-xs text-muted-foreground">سلة المشتريات</span>
+                  <span className="text-sm font-bold">{mounted ? total.toFixed(2) : '0.00'} ج.م</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* MOBILE HEADER */}
+          <div className="flex md:hidden h-16 items-center justify-between w-full relative">
+            
+            {/* Right: Menu */}
+            <div className="flex-1 flex justify-start">
+              <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setMobileMenuOpen(true)}>
+                <MenuIcon className="w-7 h-7" />
+              </Button>
+            </div>
+
+            {/* Center: Logo */}
+            <div className="flex-shrink-0 flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+              <Link href="/" className="flex items-center gap-2">
+                {themeConfig?.logoUrl ? (
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-10 w-auto object-contain" />
+                ) : (
+                  <span className="w-10 h-10 rounded-full gold-gradient flex items-center justify-center text-white text-xl shadow-lg shadow-primary/20">ع</span>
+                )}
+              </Link>
+            </div>
+
+            {/* Left: Search */}
+            <div className="flex-1 flex justify-end">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-muted-foreground hover:text-primary relative group"
-                onClick={() => setIsOpen(true)}
+                className="text-foreground"
+                onClick={() => setIsSearchOpen(true)}
               >
-                <ShoppingBag className="w-8 h-8 md:w-8 md:h-8 group-hover:scale-110 transition-transform" />
-                {mounted && count > 0 && (
-                  <span className="absolute top-0 right-0 flex h-5 w-5 md:h-5 md:w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground animate-in zoom-in duration-300">
-                    {count}
-                  </span>
-                )}
-              </Button>
-
-              <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground" onClick={() => setMobileMenuOpen(true)}>
-                <MenuIcon className="w-8 h-8" />
+                <Search className="w-7 h-7" />
               </Button>
             </div>
+            
           </div>
         </div>
       </header>
 
-      {/* Search Overlay */}
+      {/* Mobile Search Overlay */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center pt-20 px-4">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSearchOpen(false)}></div>
-          <div className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative z-10 overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border/50">
-            <div className="p-4 border-b border-border/50 flex items-center gap-3 bg-secondary/20">
+        <div className="fixed inset-0 z-[100] flex flex-col items-center pt-20 px-4 bg-black/40">
+          <div className="fixed inset-0" onClick={() => setIsSearchOpen(false)}></div>
+          <div className="w-full max-w-2xl bg-card rounded-2xl shadow-2xl relative z-10 overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border">
+            <div className="p-4 border-b border-border bg-background flex items-center gap-3">
               <Search className="w-5 h-5 text-muted-foreground" />
               <input 
                 type="text"
                 autoFocus
                 placeholder="ابحث عن المنتجات..."
-                className="flex-1 bg-transparent border-none focus:outline-none text-foreground text-lg"
+                className="flex-1 bg-background border-none focus:outline-none text-foreground text-lg"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -140,7 +226,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
             </div>
             
             {(searchQuery.trim().length > 0) && (
-              <div className="max-h-[60vh] overflow-y-auto">
+              <div className="max-h-[60vh] overflow-y-auto bg-background">
                 {searchResults.length > 0 ? (
                   <div className="p-2">
                     {searchResults.map(product => (
@@ -166,11 +252,11 @@ export function StorefrontHeader({ menuItems, themeConfig, user }: { menuItems: 
                         </div>
                       </Link>
                     ))}
-                    <div className="p-4 border-t border-border/50">
+                    <div className="p-4 border-t border-border mt-2">
                       <Link 
-                        href={`/products?q=${encodeURIComponent(searchQuery)}`}
+                        href={`/search?q=${encodeURIComponent(searchQuery)}`}
                         onClick={() => setIsSearchOpen(false)}
-                        className="text-sm text-primary font-bold hover:underline flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary/20 flex items-center justify-center transition-colors"
                       >
                         عرض كل النتائج
                       </Link>

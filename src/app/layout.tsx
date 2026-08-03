@@ -93,11 +93,13 @@ export default async function RootLayout({
           dir="rtl"
           toastOptions={{
             style: {
-              boxShadow: 'none',
-              border: '1px solid var(--border)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+              border: '1px solid hsl(var(--border))',
+              background: 'hsl(var(--background))',
+              color: 'hsl(var(--foreground))',
               fontFamily: 'inherit',
             },
-            className: 'bg-background border-border font-sans justify-center text-center',
+            className: 'font-sans flex justify-center text-center rounded-2xl',
           }}
         />
       </body>

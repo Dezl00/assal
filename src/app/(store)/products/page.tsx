@@ -93,6 +93,11 @@ export default async function AllProductsPage({ searchParams }: Props) {
     ]
   }
 
+  const isDiscounted = resolvedParams?.discounted === "true"
+  if (isDiscounted) {
+    whereClause.discountPrice = { not: null }
+  }
+
   // Apply sorting
   let orderByClause: any = { createdAt: "desc" }
   if (sort === "price_asc") {
@@ -115,7 +120,12 @@ export default async function AllProductsPage({ searchParams }: Props) {
       }
     }),
     db.category.findMany({ select: { id: true, name: true, slug: true } }),
-    db.brand.findMany({ select: { id: true, name: true, slug: true } }),
+    db.brand.findMany({ 
+      where: categorySlug ? {
+        products: { some: { category: { slug: categorySlug } } }
+      } : undefined,
+      select: { id: true, name: true, slug: true } 
+    }),
     db.product.aggregate({
       where: whereClause, // Get min/max price for the current filtered view (or remove whereClause to get global min/max)
       _min: { price: true },

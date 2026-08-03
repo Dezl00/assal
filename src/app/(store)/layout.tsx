@@ -34,13 +34,20 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     where: { id: "default" }
   })
 
+  // Fetch Categories for Mega Menu
+  const categories = await db.category.findMany({
+    include: {
+      subCategories: true
+    }
+  })
+
   const topNavItems = headerMenu?.items || fallbackMenu?.items || []
   const footerItems = footerMenu?.items || fallbackMenu?.items || []
 
   return (
     <div className="min-h-screen flex flex-col font-sans pb-16 md:pb-0 selection:bg-primary/20">
-      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} />
-      <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} />
+      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} categories={categories} />
+      <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} categories={categories} />
       <CartDrawer />
       <AuthModal themeConfig={themeConfig} />
       <main className="flex-1">

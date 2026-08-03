@@ -3,6 +3,7 @@ import React from "react"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
 import { useCartStore } from "@/store/cart-store"
+import { motion } from "framer-motion"
 
 interface ProductCardProps {
   product: {
@@ -15,9 +16,10 @@ interface ProductCardProps {
     images: { url: string }[]
     category?: { name: string; slug: string }
   }
+  disableAnimation?: boolean
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, disableAnimation = false }: ProductCardProps) {
   const { addItem } = useCartStore()
   
   const finalPrice = product.discountPrice ?? product.price
@@ -39,8 +41,18 @@ export function ProductCard({ product }: ProductCardProps) {
     })
   }
 
+  const CardWrapper = disableAnimation ? "div" : motion.div
+
   return (
-    <div className="group relative rounded-2xl bg-card p-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full">
+    <CardWrapper 
+      {...(!disableAnimation ? {
+        initial: { opacity: 0, y: 30 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, margin: "-50px" },
+        transition: { type: "spring", stiffness: 100, damping: 15 }
+      } : {})}
+      className="group relative rounded-2xl bg-card p-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full"
+    >
       
       {/* Badges */}
       <div className="absolute top-6 right-6 z-10 flex flex-col gap-2">
@@ -103,6 +115,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
       </div>
-    </div>
+    </CardWrapper>
   )
 }
