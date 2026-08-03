@@ -9,7 +9,25 @@ export async function createProduct(formData: FormData) {
     let slug = formData.get("slug") as string
     let sku = formData.get("sku") as string
     
-    if (!slug) slug = `product-${Date.now()}`
+    if (!slug) {
+      // Find the next available sequential number
+      const products = await db.product.findMany({ select: { slug: true } });
+      const numericSlugs = products
+        .map(p => parseInt(p.slug, 10))
+        .filter(n => !isNaN(n) && n > 0)
+        .sort((a, b) => a - b);
+      
+      let nextId = 1;
+      for (const id of numericSlugs) {
+        if (id === nextId) {
+          nextId++;
+        } else if (id > nextId) {
+          break;
+        }
+      }
+      slug = nextId.toString();
+    }
+    
     if (!sku) sku = `SKU-${Date.now()}`
     const price = parseFloat(formData.get("price") as string)
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null

@@ -4,6 +4,16 @@ import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
+async function translateToEnglish(text: string): Promise<string> {
+  try {
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    return data[0][0][0] || text;
+  } catch (e) {
+    return text;
+  }
+}
+
 const WidgetSchema = z.object({
   type: z.string().min(1),
   title: z.string().optional().nullable(),
@@ -132,7 +142,20 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
     
     if (widget?.type === "BrandSlider" && title) {
       // Auto-sync: Create Brand
-      const slug = title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0621-\u064A0-9\-]+/g, '') + '-' + Math.random().toString(36).substring(2, 6)
+      const translated = await translateToEnglish(title);
+      let baseSlug = translated.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w0-9\-]+/g, '');
+      if (!baseSlug || baseSlug === '-') {
+        baseSlug = 'brand';
+      }
+      let slug = baseSlug;
+      let counter = 1;
+      
+      // Ensure unique slug
+      while (await db.brand.findUnique({ where: { slug } })) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      
       const brand = await db.brand.create({
         data: {
           name: title,

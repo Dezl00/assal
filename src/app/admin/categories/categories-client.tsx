@@ -240,6 +240,24 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                     required
                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                     placeholder="مثال: العسل الجبلي"
+                    onBlur={async (e) => {
+                      if (!editingCategory && e.target.value) {
+                        const form = document.getElementById("add-category-form") as any;
+                        if (form && !form.slug.value) {
+                          try {
+                            const res = await fetch("/api/translate", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ text: e.target.value })
+                            });
+                            const data = await res.json();
+                            if (data.translated) {
+                              form.slug.value = data.translated;
+                            }
+                          } catch (err) {}
+                        }
+                      }
+                    }}
                   />
                 </div>
 
