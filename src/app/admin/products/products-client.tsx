@@ -18,6 +18,10 @@ export function ProductsClient({ products, categories, brands = [] }: { products
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
 
+  const [brandSearch, setBrandSearch] = useState("")
+  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false)
+  const [selectedBrandId, setSelectedBrandId] = useState("")
+
   // Populate form when editingProduct changes
   useEffect(() => {
     if (editingProduct) {
@@ -31,29 +35,34 @@ export function ProductsClient({ products, categories, brands = [] }: { products
         form.stock.value = editingProduct.stock || 0
         form.categoryId.value = editingProduct.categoryId || ""
         form.description.value = editingProduct.description || ""
-        form.description.value = editingProduct.description || ""
-        form.brandId.value = editingProduct.brandId || ""
       }
+      setSelectedBrandId(editingProduct.brandId || "")
+      setBrandSearch(brands.find((b: any) => b.id === editingProduct.brandId)?.name || "")
+
       if (editingProduct.images && editingProduct.images.length > 0) {
         setImageUrls(editingProduct.images.map((img: any) => img.url))
       } else {
         setImageUrls([])
       }
-      setIsFormVisible(true) // Ensure form is visible on mobile when editing
+      setIsFormVisible(true)
     }
-  }, [editingProduct])
+  }, [editingProduct, brands])
 
   function resetForm() {
     setEditingProduct(null)
     setImageUrls([])
+    setSelectedBrandId("")
+    setBrandSearch("")
     const form: any = document.getElementById("add-product-form")
     if (form) form.reset()
   }
 
+  // Submit Handler
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
+    formData.set("brandId", selectedBrandId)
     
     let res;
     if (editingProduct) {
@@ -83,6 +92,8 @@ export function ProductsClient({ products, categories, brands = [] }: { products
     setDeleteModalOpen(false)
     setProductToDelete(null)
   }
+
+  const filteredBrands = brands.filter(b => b.name.toLowerCase().includes(brandSearch.toLowerCase()))
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
@@ -271,18 +282,55 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-3 relative">
+                    <div className="space-y-2 relative">
                       <label className="text-sm font-medium">الماركة <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
-                      <select 
-                        name="brandId"
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
-                      >
-                        <option value="">بدون ماركة</option>
-                        {brands.map(brand => (
-                          <option key={brand.id} value={brand.id}>{brand.name}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={brandSearch}
+                          onChange={(e) => {
+                            setBrandSearch(e.target.value)
+                            setIsBrandDropdownOpen(true)
+                            if (e.target.value === "") setSelectedBrandId("")
+                          }}
+                          onFocus={() => setIsBrandDropdownOpen(true)}
+                          onBlur={() => setTimeout(() => setIsBrandDropdownOpen(false), 200)}
+                          placeholder="ابحث عن ماركة..."
+                          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                        />
+                        {isBrandDropdownOpen && (
+                          <div className="absolute top-full left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50">
+                            <div
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
+                              onClick={() => {
+                                setSelectedBrandId("")
+                                setBrandSearch("")
+                                setIsBrandDropdownOpen(false)
+                              }}
+                            >
+                              بدون ماركة
+                            </div>
+                            {filteredBrands.map((brand: any) => (
+                              <div
+                                key={brand.id}
+                                className="px-3 py-2 text-sm cursor-pointer hover:bg-muted/50"
+                                onClick={() => {
+                                  setSelectedBrandId(brand.id)
+                                  setBrandSearch(brand.name)
+                                  setIsBrandDropdownOpen(false)
+                                }}
+                              >
+                                {brand.name}
+                              </div>
+                            ))}
+                            {filteredBrands.length === 0 && (
+                              <div className="px-3 py-2 text-sm text-muted-foreground text-center">لا توجد نتائج</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <input type="hidden" name="brandId" value={selectedBrandId} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">الرمز (SKU) <span className="text-red-500">*</span></label>

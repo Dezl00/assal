@@ -1,6 +1,6 @@
 import React from "react"
 import { Button } from "./button"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Loader2 } from "lucide-react"
 
 interface ConfirmModalProps {
   isOpen: boolean
@@ -9,9 +9,10 @@ interface ConfirmModalProps {
   onConfirm: () => void
   onCancel: () => void
   isDestructive?: boolean
+  isLoading?: boolean
 }
 
-export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, isDestructive = true }: ConfirmModalProps) {
+export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, isDestructive = true, isLoading = false }: ConfirmModalProps) {
   if (!isOpen) return null
 
   return (
@@ -27,12 +28,14 @@ export function ConfirmModal({ isOpen, title, description, onConfirm, onCancel, 
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={onCancel}>إلغاء</Button>
+          <Button variant="outline" onClick={onCancel} disabled={isLoading}>إلغاء</Button>
           <Button 
             variant={isDestructive ? "destructive" : "default"} 
             onClick={onConfirm}
+            disabled={isLoading}
+            className="min-w-[80px]"
           >
-            تأكيد
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "تأكيد"}
           </Button>
         </div>
       </div>

@@ -31,6 +31,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [newItemImage, setNewItemImage] = useState("")
 
+  const [isDeleting, setIsDeleting] = useState(false)
+
   // Drag and Drop handlers
   function handleDragStart(e: React.DragEvent, id: string) {
     setDraggedWidgetId(id)
@@ -81,6 +83,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
 
   async function confirmDelete() {
     if (!widgetToDelete) return
+    setIsDeleting(true)
     const res = await deleteWidget(widgetToDelete)
     if (res.success) {
       setWidgets(widgets.filter(w => w.id !== widgetToDelete))
@@ -89,7 +92,10 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         setEditingWidget(null)
         setActiveTab("add")
       }
+    } else {
+      toast.error("فشل في الحذف")
     }
+    setIsDeleting(false)
     setWidgetToDelete(null)
   }
 
@@ -112,6 +118,20 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     if (res.success) {
       setWidgets(widgets.map(w => w.id === editingWidget.id ? { ...w, ...data } : w))
       toast.success("تم حفظ الإعدادات")
+    }
+  }
+
+  async function handleToggleWidget(widget: any) {
+    const newStatus = !widget.status;
+    const res = await updateWidget(widget.id, { status: newStatus });
+    if (res.success) {
+      setWidgets(widgets.map(w => w.id === widget.id ? { ...w, status: newStatus } : w));
+      toast.success(newStatus ? "تم تفعيل الواجهة" : "تم إلغاء تفعيل الواجهة");
+      if (editingWidget?.id === widget.id) {
+        setEditingWidget({ ...editingWidget, status: newStatus });
+      }
+    } else {
+      toast.error("حدث خطأ أثناء تغيير حالة الواجهة");
     }
   }
 
@@ -463,9 +483,11 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <div className="hidden sm:flex items-center gap-2 me-4 text-muted-foreground">
-                      {widget.showDesktop ? <Eye className="h-3.5 w-3.5 text-primary" /> : <EyeOff className="h-3.5 w-3.5 opacity-50" />}
-                      {widget.showMobile ? <Eye className="h-3.5 w-3.5 text-primary" /> : <EyeOff className="h-3.5 w-3.5 opacity-50" />}
+                    <div className="flex items-center me-4" onClick={(e) => e.stopPropagation()}>
+                      <Switch 
+                        checked={widget.status} 
+                        onCheckedChange={() => handleToggleWidget(widget)}
+                      />
                     </div>
 
                     <Button 
@@ -494,6 +516,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         description="هل أنت متأكد من حذف هذه الواجهة نهائياً من الصفحة الرئيسية؟"
         onConfirm={confirmDelete}
         onCancel={() => setWidgetToDelete(null)}
+        isLoading={isDeleting}
       />
     </div>
   )

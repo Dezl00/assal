@@ -3,7 +3,6 @@ import React, { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X } from "lucide-react"
-import { Toaster } from "sonner"
 import { cn } from "@/lib/utils"
 
 export default function AdminLayout({
@@ -110,13 +109,6 @@ export default function AdminLayout({
         })}
       </nav>
 
-      <Toaster 
-        position="bottom-left" 
-        richColors
-        toastOptions={{
-          style: { boxShadow: 'none' },
-        }} 
-      />
     </div>
   )
 }
