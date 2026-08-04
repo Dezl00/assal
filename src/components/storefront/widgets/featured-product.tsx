@@ -106,11 +106,7 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
               </div>
 
               <div className="pt-4 max-w-sm">
-                <AddToCartForm 
-                  productId={product.id} 
-                  stock={product.stock}
-                  price={finalPrice}
-                />
+                <AddToCartForm product={product} />
               </div>
             </div>
           </div>
