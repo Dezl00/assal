@@ -184,22 +184,24 @@ export default async function CategoryPage(props: Props) {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        {(!isMainCategory || category.children.length === 0) && (
-          <FilterSidebar 
-            categories={[]} 
-            brands={brands} 
-            globalMinPrice={globalMinPrice}
-            globalMaxPrice={globalMaxPrice}
-          />
-        )}
-        
-        <div className="flex-1 min-w-0">
-          <StoreToolbar totalProducts={totalProducts} hideToolbar={isMainCategory && category.children.length > 0} />
-          <ProductGrid products={products} />
-          {products.length > 0 && <StorePagination totalPages={totalPages} currentPage={page} />}
+      {(!isMainCategory || category.children.length === 0 || products.length > 0) && (
+        <div className="flex flex-col lg:flex-row gap-8">
+          {(!isMainCategory || category.children.length === 0) && (
+            <FilterSidebar 
+              categories={[]} 
+              brands={brands} 
+              globalMinPrice={globalMinPrice}
+              globalMaxPrice={globalMaxPrice}
+            />
+          )}
+          
+          <div className="flex-1 min-w-0">
+            <StoreToolbar totalProducts={totalProducts} hideToolbar={isMainCategory && category.children.length > 0} />
+            <ProductGrid products={products} />
+            {products.length > 0 && <StorePagination totalPages={totalPages} currentPage={page} />}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
