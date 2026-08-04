@@ -55,10 +55,10 @@ export function AdminGlobalSearch() {
   }
 
   return (
-    <div ref={containerRef} className="relative w-full md:w-64 lg:w-80 flex-1 md:flex-none">
+    <div ref={containerRef} className="relative w-full flex-1 md:flex-none max-w-2xl">
       {/* Mobile Search Icon & Input */}
       <div className="relative group">
-        <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input 
           type="text" 
           value={query}
@@ -67,14 +67,17 @@ export function AdminGlobalSearch() {
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}
-          placeholder="ابحث في لوحة التحكم..." 
-          className="h-10 w-full rounded-md border border-input bg-background/50 pr-10 pl-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:bg-background transition-all"
+          placeholder="ابحث في المتجر والطلبات والعملاء..." 
+          className="w-full h-11 bg-background border border-border hover:border-primary/50 focus:border-primary focus:bg-background rounded-full pr-12 pl-4 text-sm outline-none transition-all shadow-sm"
         />
+        {isLoading && (
+          <Loader2 className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        )}
       </div>
 
       {/* Results Dropdown */}
-      {isOpen && query.length > 0 && (
-        <div className="absolute top-full left-0 right-0 md:left-auto md:-right-4 mt-2 w-[calc(100vw-2rem)] md:w-[400px] bg-background border border-border rounded-xl shadow-xl overflow-hidden z-50 max-h-[70vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      {isOpen && query.trim().length > 0 && (
+        <div className="absolute top-full left-0 right-0 md:left-auto md:right-0 mt-2 w-[calc(100vw-2rem)] md:w-[450px] bg-card border border-border rounded-2xl shadow-xl overflow-hidden z-50 max-h-[70vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
           
           <div className="p-3 border-b border-border bg-muted/20 flex items-center justify-between">
             <span className="text-sm font-semibold">نتائج البحث</span>

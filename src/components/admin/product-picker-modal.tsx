@@ -139,8 +139,8 @@ export function ProductPickerModal({ open, onOpenChange, onSave, initialSelected
                 )}
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
-                <Button onClick={() => {
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
+                <Button type="button" onClick={() => {
                   onSave(Array.from(selectedIds))
                   onOpenChange(false)
                 }}>حفظ التحديد</Button>

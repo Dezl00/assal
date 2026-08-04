@@ -55,7 +55,7 @@ export function BannerGrid({ widget }: { widget: any }) {
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                 style={{ backgroundImage: `url(${item.desktopImage})` }}
               />
-              {overlayEnabled && (
+              {overlayEnabled && overlayOpacity > 0 && (
                 <div 
                   className="absolute inset-0 transition-colors duration-500" 
                   style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity / 100})` }}

@@ -160,9 +160,16 @@ function AdminLayoutInner({
              </div>
           </div>
 
-          {/* Header Right (Search & Profile) */}
-          <div className="flex items-center gap-3 md:gap-4 flex-1 justify-end">
+          {/* Central Search Bar */}
+          <div className="hidden md:flex flex-1 justify-center max-w-xl mx-4">
             <AdminGlobalSearch />
+          </div>
+
+          {/* Header Right (Profile) */}
+          <div className="flex items-center gap-3 md:gap-4 justify-end">
+            <div className="md:hidden flex-1">
+              <AdminGlobalSearch />
+            </div>
             
             <Link 
               href="/" 
