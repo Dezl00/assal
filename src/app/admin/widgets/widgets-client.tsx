@@ -13,7 +13,7 @@ const WIDGET_TYPES = [
   { id: "HeroSlider", name: "سلايدر الصور", icon: ImageIcon, desc: "سلايدر متحرك للصور أعلى الصفحة" },
   { id: "FeaturedProducts", name: "المنتجات المميزة", icon: ShoppingBag, desc: "عرض مجموعة من المنتجات المختارة" },
   { id: "BannerGrid", name: "شبكة البنرات", icon: LayoutTemplate, desc: "بنرات إعلانية لعروض المتجر" },
-  { id: "BrandSlider", name: "سلايدر الماركات", icon: ImagePlus, desc: "شريط متحرك لانهائي لشعارات الماركات" },
+  { id: "BrandSlider", name: "سلايدر شعارات", icon: ImagePlus, desc: "شريط متحرك لعرض الشعارات أو الشركاء" },
   { id: "CategoryGrid", name: "شبكة الأقسام", icon: LayoutTemplate, desc: "عرض الأقسام الرئيسية كشبكة صور" },
   { id: "TextBlock", name: "نص مخصص", icon: AlignLeft, desc: "مساحة لكتابة نص ترحيبي أو معلومات" },
   { id: "AboutUs", name: "من نحن", icon: AlignLeft, desc: "نبذة تعريفية عن الشركة وتاريخها" },
@@ -133,6 +133,12 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       }
     }
     
+    if (editingWidget.type === "BrandSlider") {
+      data.settings = {
+        disableRouting: formData.get("disableRouting") === "on",
+      }
+    }
+
     const res = await updateWidget(editingWidget.id, data)
     setIsSubmitting(false)
     
@@ -361,6 +367,16 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         <label className="text-xs font-medium cursor-pointer">عرض على أجهزة الجوال</label>
                         <Switch name="showMobile" defaultChecked={editingWidget.showMobile} />
                       </div>
+
+                      {editingWidget.type === "BrandSlider" && (
+                        <div className="flex items-center justify-between border-t border-border/50 pt-2 mt-2">
+                          <div className="space-y-0.5">
+                            <label className="text-xs font-medium cursor-pointer block">قفل التوجيه (الروابط)</label>
+                            <span className="text-[10px] text-muted-foreground">عند التفعيل، سيتم عرض الصور فقط بدون روابط</span>
+                          </div>
+                          <Switch name="disableRouting" defaultChecked={editingWidget.settings?.disableRouting} />
+                        </div>
+                      )}
                     </div>
 
                     {editingWidget.type === "AboutUs" && (

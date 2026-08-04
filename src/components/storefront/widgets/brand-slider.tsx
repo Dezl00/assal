@@ -137,7 +137,7 @@ export function BrandSlider({ widget }: { widget: any }) {
               <div key={pageIndex} className="flex-shrink-0 w-full flex items-center justify-around">
                 {pageItems.map((item: any, index: number) => (
                   <div key={`${item.id}-${index}`} className="flex justify-center px-2" style={{ width: `${100 / itemsPerPage}%` }}>
-                    {item.buttonUrl ? (
+                    {!widget?.settings?.disableRouting && item.buttonUrl ? (
                       <Link href={getValidLink(item.buttonUrl)} className="block transition-transform hover:scale-110">
                         <img 
                           src={item.desktopImage} 
@@ -164,17 +164,17 @@ export function BrandSlider({ widget }: { widget: any }) {
           <>
             <button 
               onClick={handlePrev}
-              className="absolute left-0 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 md:w-10 md:h-10 rounded-full bg-background border border-border shadow-md flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-11 md:h-11 rounded-full bg-background/60 backdrop-blur-md border border-border/50 shadow-sm flex items-center justify-center text-foreground hover:bg-background hover:scale-105 transition-all"
               aria-label="Previous slide"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             <button 
               onClick={handleNext}
-              className="absolute right-0 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 md:w-10 md:h-10 rounded-full bg-background border border-border shadow-md flex items-center justify-center text-foreground hover:bg-muted transition-colors"
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-9 h-9 md:w-11 md:h-11 rounded-full bg-background/60 backdrop-blur-md border border-border/50 shadow-sm flex items-center justify-center text-foreground hover:bg-background hover:scale-105 transition-all"
               aria-label="Next slide"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
             </button>
 
             {/* Dots */}

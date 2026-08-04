@@ -31,20 +31,15 @@ export function ValuesSlider({ widget }: { widget?: any }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const totalPages = Math.ceil(items.length / itemsPerPage)
+  const maxIndex = Math.max(0, items.length - itemsPerPage)
 
   useEffect(() => {
-    if (totalPages <= 1) return
+    if (maxIndex <= 0) return
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % totalPages)
+      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
     }, 3000)
     return () => clearInterval(interval)
-  }, [totalPages])
-
-  const pages = []
-  for (let i = 0; i < totalPages; i++) {
-    pages.push(items.slice(i * itemsPerPage, (i + 1) * itemsPerPage))
-  }
+  }, [maxIndex])
 
   return (
     <div className="bg-primary py-16 text-primary-foreground overflow-hidden">
@@ -59,40 +54,36 @@ export function ValuesSlider({ widget }: { widget?: any }) {
           <div className="overflow-hidden" dir="rtl">
               <div 
                 className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translate3d(${currentIndex * 100}%, 0, 0)` }}
+                style={{ transform: `translate3d(${currentIndex * (100 / itemsPerPage)}%, 0, 0)` }}
               >
-                {pages.map((pageItems, pageIdx) => (
-                  <div key={pageIdx} className="w-full flex-shrink-0 flex justify-center">
-                    {pageItems.map((item: any, idx: number) => {
-                      const Icon = item.icon || Leaf
-                      return (
-                        <div 
-                          key={item.id || idx} 
-                          className="px-4"
-                          style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%`, flexGrow: 1 }}
-                        >
-                          <div className="flex flex-col items-center justify-center text-center p-4">
-                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 text-primary shadow-lg transition-transform hover:scale-105">
-                              {item.imageUrl ? (
-                                <img src={item.imageUrl} alt={item.title || item.name} className="w-16 h-16 object-contain" />
-                              ) : (
-                                <Icon className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={1.5} />
-                              )}
-                            </div>
-                            <h3 className="text-xl sm:text-2xl font-medium text-white">{item.title || item.name}</h3>
-                          </div>
+                {items.map((item: any, idx: number) => {
+                  const Icon = item.icon || Leaf
+                  return (
+                    <div 
+                      key={item.id || idx} 
+                      className="px-4 flex-shrink-0"
+                      style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%` }}
+                    >
+                      <div className="flex flex-col items-center justify-center text-center p-4">
+                        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 text-primary shadow-lg transition-transform hover:scale-105">
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt={item.title || item.name} className="w-16 h-16 object-contain" />
+                          ) : (
+                            <Icon className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={1.5} />
+                          )}
                         </div>
-                      )
-                    })}
-                  </div>
-                ))}
+                        <h3 className="text-xl sm:text-2xl font-medium text-white">{item.title || item.name}</h3>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
             {/* Dots */}
-            {totalPages > 1 && (
+            {maxIndex > 0 && (
               <div className="flex justify-center gap-2 mt-8">
-                {Array.from({ length: totalPages }).map((_, index) => (
+                {Array.from({ length: maxIndex + 1 }).map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentIndex(index)}

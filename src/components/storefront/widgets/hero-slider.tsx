@@ -74,17 +74,17 @@ export function HeroSlider({ widget }: { widget: any }) {
           <>
             <button 
               onClick={() => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1))}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur hover:bg-white/30 text-white flex items-center justify-center transition-colors"
+              className="absolute right-2 sm:right-6 md:right-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur border border-white/30 hover:bg-white/40 hover:scale-105 text-white flex items-center justify-center transition-all shadow-lg"
               aria-label="Previous slide"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <button 
               onClick={() => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1))}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur hover:bg-white/30 text-white flex items-center justify-center transition-colors"
+              className="absolute left-2 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur border border-white/30 hover:bg-white/40 hover:scale-105 text-white flex items-center justify-center transition-all shadow-lg"
               aria-label="Next slide"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
             {/* Dots */}
