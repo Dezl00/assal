@@ -16,8 +16,10 @@ export function ValuesSlider({ widget }: { widget?: any }) {
   
   const [currentIndex, setCurrentIndex] = useState(0)
   const [itemsPerPage, setItemsPerPage] = useState(4)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const handleResize = () => {
       if (window.innerWidth < 640) setItemsPerPage(1)
       else if (window.innerWidth < 768) setItemsPerPage(2)
@@ -51,9 +53,10 @@ export function ValuesSlider({ widget }: { widget?: any }) {
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{widget?.title || "قيمنا"}</h2>
           </div>
+        </ScrollReveal>
           
-          <div className="relative max-w-5xl mx-auto">
-            <div className="overflow-hidden" dir="rtl">
+        <div className="relative max-w-5xl mx-auto">
+          <div className="overflow-hidden" dir="rtl">
               <div 
                 className="flex transition-transform duration-500 ease-in-out"
                 style={{ transform: `translate3d(${currentIndex * 100}%, 0, 0)` }}
@@ -104,7 +107,6 @@ export function ValuesSlider({ widget }: { widget?: any }) {
               </div>
             )}
           </div>
-        </ScrollReveal>
       </div>
     </div>
   )
