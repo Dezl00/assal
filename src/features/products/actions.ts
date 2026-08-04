@@ -33,6 +33,7 @@ export async function createProduct(formData: FormData) {
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null
     const stock = parseInt(formData.get("stock") as string)
     const categoryId = formData.get("categoryId") as string
+    const departmentId = formData.get("departmentId") as string || null
     const brandId = formData.get("brandId") as string || null
     const description = formData.get("description") as string
     
@@ -56,6 +57,7 @@ export async function createProduct(formData: FormData) {
         discountPrice,
         stock: isNaN(stock) ? 0 : stock,
         categoryId,
+        departmentId,
         brandId,
         description: description || null,
         ...(images.length > 0 && {
@@ -101,6 +103,7 @@ export async function updateProduct(id: string, formData: FormData) {
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null
     const stock = parseInt(formData.get("stock") as string)
     const categoryId = formData.get("categoryId") as string
+    const departmentId = formData.get("departmentId") as string || null
     const brandId = formData.get("brandId") as string || null
     const description = formData.get("description") as string
     
@@ -128,6 +131,7 @@ export async function updateProduct(id: string, formData: FormData) {
         discountPrice,
         stock: isNaN(stock) ? 0 : stock,
         categoryId,
+        departmentId,
         brandId,
         description: description || null,
         ...(images.length > 0 && {

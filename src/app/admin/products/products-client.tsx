@@ -9,7 +9,7 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 
 import { MultiImageUploader } from "@/components/ui/multi-image-uploader"
 
-export function ProductsClient({ products, categories, brands = [] }: { products: any[], categories: any[], brands?: any[] }) {
+export function ProductsClient({ products, categories, brands = [], departments = [] }: { products: any[], categories: any[], brands?: any[], departments?: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
@@ -35,6 +35,7 @@ export function ProductsClient({ products, categories, brands = [] }: { products
         form.discountPrice.value = editingProduct.discountPrice || ""
         form.stock.value = editingProduct.stock || 0
         form.categoryId.value = editingProduct.categoryId || ""
+        form.departmentId.value = editingProduct.departmentId || ""
         form.description.value = editingProduct.description || ""
       }
       setSelectedBrandId(editingProduct.brandId || "")
@@ -266,6 +267,19 @@ export function ProductsClient({ products, categories, brands = [] }: { products
                             <option key={subCat.id} value={subCat.id}>{subCat.name}</option>
                           ))}
                         </optgroup>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">المجال <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                    <select 
+                      name="departmentId"
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                    >
+                      <option value="">بدون مجال (يتبع القسم)</option>
+                      {departments?.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
                       ))}
                     </select>
                   </div>

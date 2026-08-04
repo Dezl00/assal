@@ -1,5 +1,6 @@
 import React from "react"
 import { ProductCard } from "./product-card"
+import { ScrollReveal } from "@/components/ui/scroll-reveal"
 
 export function ProductGrid({ products, title, subtitle }: { products: any[], title?: string, subtitle?: string }) {
   if (!products || products.length === 0) {
@@ -25,7 +26,15 @@ export function ProductGrid({ products, title, subtitle }: { products: any[], ti
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product, index) => (
-          <ProductCard key={product.id} product={product} index={index} />
+          <ScrollReveal
+            key={product.id}
+            variant="fade-up"
+            delay={index * 0.08}
+            duration={0.6}
+            className="h-full"
+          >
+            <ProductCard product={product} disableAnimation={true} />
+          </ScrollReveal>
         ))}
       </div>
     </div>

@@ -41,13 +41,20 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     }
   })
 
+  // Fetch Departments
+  const departments = await db.department.findMany({
+    include: {
+      categories: true
+    }
+  })
+
   const topNavItems = headerMenu?.items || fallbackMenu?.items || []
   const footerItems = footerMenu?.items || fallbackMenu?.items || []
 
   return (
     <div className="min-h-screen flex flex-col font-sans pb-16 md:pb-0 selection:bg-primary/20">
-      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} categories={categories} />
-      <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} categories={categories} />
+      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} categories={categories} departments={departments} />
+      <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} categories={categories} departments={departments} />
       <CartDrawer />
       <AuthModal themeConfig={themeConfig} />
       <main className="flex-1 overflow-x-hidden">

@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { ImageUploader } from "@/components/ui/image-uploader"
 
-export function CategoriesClient({ categories }: { categories: any[] }) {
+export function CategoriesClient({ categories, departments = [] }: { categories: any[], departments?: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
   
@@ -35,6 +35,11 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
           select.disabled = !isSub
           select.value = editingCategory.parentId || ""
         }
+
+        const deptSelect = document.getElementById('departmentId-select') as HTMLSelectElement
+        if (deptSelect) {
+          deptSelect.value = editingCategory.departmentId || ""
+        }
       }
       setIsFormVisible(true)
     }
@@ -51,6 +56,10 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
       if (select) {
         select.disabled = true
         select.value = ""
+      }
+      const deptSelect = document.getElementById('departmentId-select') as HTMLSelectElement
+      if (deptSelect) {
+        deptSelect.value = ""
       }
     }
   }
@@ -317,6 +326,20 @@ export function CategoriesClient({ categories }: { categories: any[] }) {
                     <option value="">اختر...</option>
                     {categories.filter(c => !c.parentId && c.id !== editingCategory?.id).map(cat => (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">المجال التابع له (اختياري)</label>
+                  <select 
+                    id="departmentId-select"
+                    name="departmentId"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                  >
+                    <option value="">بدون مجال (قسم مستقل أو يتبع الأب)</option>
+                    {departments?.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>

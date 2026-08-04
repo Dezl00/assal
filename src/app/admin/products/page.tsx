@@ -23,5 +23,16 @@ export default async function AdminProductsPage() {
     orderBy: { name: "asc" }
   })
 
-  return <ProductsClient products={products} categories={categories} brands={brands} />
+  const departments = await db.department.findMany({
+    orderBy: { name: "asc" }
+  })
+
+  return (
+    <ProductsClient 
+      products={products} 
+      categories={categories} 
+      brands={brands} 
+      departments={departments}
+    />
+  )
 }

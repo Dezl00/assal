@@ -9,7 +9,7 @@ import { useUIStore } from "@/store/ui-store"
 import { useRouter } from "next/navigation"
 import { searchProductsLive } from "@/features/search/actions"
 
-export function StorefrontHeader({ menuItems, themeConfig, user, categories = [] }: { menuItems?: any[], themeConfig?: any, user?: any, categories?: any[] }) {
+export function StorefrontHeader({ menuItems, themeConfig, user, categories = [], departments = [] }: { menuItems?: any[], themeConfig?: any, user?: any, categories?: any[], departments?: any[] }) {
   const { getTotals, setIsOpen } = useCartStore()
   const { count, total } = getTotals()
   const [mounted, setMounted] = useState(false)
@@ -82,48 +82,93 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 onMouseLeave={() => setIsCategoriesHovered(false)}
               >
                 <div className="flex items-center gap-1 text-sm font-bold text-foreground hover:text-primary transition-colors cursor-pointer">
-                  الأقسام <ChevronDown className="w-4 h-4" />
+                  المجالات و الأقسام <ChevronDown className="w-4 h-4" />
                 </div>
-                {isCategoriesHovered && categories.length > 0 && (
+                {isCategoriesHovered && (
                   <div className="absolute top-[80px] right-0 w-72 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col animate-in slide-in-from-top-2 duration-200 z-50">
-                    {categories.map((cat: any) => (
-                      <div key={cat.id} className="relative group/cat">
-                        <Link 
-                          href={`/category/${cat.slug}`} 
-                          className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors group/link"
-                          onClick={() => setIsCategoriesHovered(false)}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
-                              {cat.imageUrl ? (
-                                <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+                    {departments.length > 0 ? (
+                      departments.map((dept: any) => {
+                        const deptCategories = categories.filter(c => c.departmentId === dept.id && !c.parentId);
+                        return (
+                          <div key={dept.id} className="relative group/cat">
+                            <Link 
+                              href={`/department/${dept.slug}`} 
+                              className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors group/link"
+                              onClick={() => setIsCategoriesHovered(false)}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
+                                  {dept.imageUrl ? (
+                                    <img src={dept.imageUrl} alt={dept.name} className="w-full h-full object-cover" />
+                                  ) : (
+                                    <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+                                  )}
+                                </div>
+                                <span className="text-sm font-bold text-foreground group-hover/link:text-primary transition-colors">{dept.name}</span>
+                              </div>
+                              {deptCategories.length > 0 && (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground rotate-90" />
                               )}
+                            </Link>
+                            
+                            {deptCategories.length > 0 && (
+                              <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
+                                {deptCategories.map((cat: any) => (
+                                  <Link 
+                                    key={cat.id} 
+                                    href={`/category/${cat.slug}`} 
+                                    className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
+                                    onClick={() => setIsCategoriesHovered(false)}
+                                  >
+                                    {cat.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })
+                    ) : (
+                      // Fallback to categories if no departments
+                      categories.filter(c => !c.parentId).map((cat: any) => (
+                        <div key={cat.id} className="relative group/cat">
+                          <Link 
+                            href={`/category/${cat.slug}`} 
+                            className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors group/link"
+                            onClick={() => setIsCategoriesHovered(false)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
+                                {cat.imageUrl ? (
+                                  <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+                                )}
+                              </div>
+                              <span className="text-sm font-bold text-foreground group-hover/link:text-primary transition-colors">{cat.name}</span>
                             </div>
-                            <span className="text-sm font-bold text-foreground group-hover/link:text-primary transition-colors">{cat.name}</span>
-                          </div>
+                            {cat.children && cat.children.length > 0 && (
+                              <ChevronDown className="w-4 h-4 text-muted-foreground rotate-90" />
+                            )}
+                          </Link>
+                          
                           {cat.children && cat.children.length > 0 && (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground rotate-90" />
+                            <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
+                              {cat.children.map((sub: any) => (
+                                <Link 
+                                  key={sub.id} 
+                                  href={`/category/${sub.slug}`} 
+                                  className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
+                                  onClick={() => setIsCategoriesHovered(false)}
+                                >
+                                  {sub.name}
+                                </Link>
+                              ))}
+                            </div>
                           )}
-                        </Link>
-                        
-                        {cat.children && cat.children.length > 0 && (
-                          <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
-                            {cat.children.map((sub: any) => (
-                              <Link 
-                                key={sub.id} 
-                                href={`/category/${sub.slug}`} 
-                                className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
-                                onClick={() => setIsCategoriesHovered(false)}
-                              >
-                                {sub.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

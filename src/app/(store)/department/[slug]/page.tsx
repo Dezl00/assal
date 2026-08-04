@@ -1,0 +1,225 @@
+import React from "react"
+import { db } from "@/lib/db"
+import { notFound } from "next/navigation"
+import { ProductGrid } from "@/components/storefront/product-grid"
+import Link from "next/link"
+import { ChevronRight } from "lucide-react"
+import { FilterSidebar } from "@/components/storefront/filter-sidebar"
+import { StoreToolbar } from "@/components/storefront/store-toolbar"
+import { StorePagination } from "@/components/storefront/pagination"
+
+import type { Metadata } from "next"
+
+export const dynamic = 'force-dynamic'
+
+type Props = {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
+  const [department, theme] = await Promise.all([
+    db.department.findUnique({ where: { slug: decodeURIComponent(params.slug) } }),
+    db.themeConfig.findUnique({ where: { id: "default" } })
+  ])
+  
+  if (!department) return { title: "المجال غير موجود" }
+  
+  const storeName = theme?.storeName || "عسل";
+  const ogImages = department.imageUrl 
+    ? [{ url: department.imageUrl, width: 800, height: 600, alt: department.name }]
+    : [];
+
+  return {
+    title: department.name,
+    description: department.description || `تصفح منتجات مجال ${department.name} في ${storeName}`,
+    openGraph: {
+      title: `${department.name} | ${storeName}`,
+      description: department.description || `تصفح منتجات مجال ${department.name} في ${storeName}`,
+      url: `/department/${department.slug}`,
+      type: 'website',
+      siteName: storeName,
+      images: ogImages,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${department.name} | ${storeName}`,
+      description: department.description || `تصفح منتجات مجال ${department.name} في ${storeName}`,
+      images: ogImages.map(img => img.url),
+    },
+  }
+}
+
+export default async function DepartmentPage(props: Props) {
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+  
+  const departmentSlug = decodeURIComponent(params.slug);
+  const department = await db.department.findUnique({
+    where: { slug: departmentSlug },
+    include: {
+      categories: { 
+        where: { parentId: null },
+        orderBy: { createdAt: "asc" } 
+      },
+    }
+  })
+
+  if (!department) notFound()
+
+  // Build filter where clause
+  const brandSlugs = searchParams?.brand ? (searchParams.brand as string).split(",") : []
+  const categorySlug = searchParams?.category as string
+  const minPrice = searchParams?.minPrice ? parseFloat(searchParams.minPrice as string) : undefined
+  const maxPrice = searchParams?.maxPrice ? parseFloat(searchParams.maxPrice as string) : undefined
+  const sort = (searchParams?.sort as string) || "newest"
+  const page = searchParams?.page ? parseInt(searchParams.page as string) : 1
+  const limit = 20
+
+  let whereClause: any = { 
+    OR: [
+      { departmentId: department.id },
+      { category: { departmentId: department.id } }
+    ]
+  }
+
+  if (categorySlug) {
+    const filterCat = await db.category.findUnique({ where: { slug: categorySlug } })
+    if (filterCat) {
+      whereClause.categoryId = filterCat.id
+    }
+  }
+
+  if (brandSlugs.length > 0) {
+    const brands = await db.brand.findMany({ where: { slug: { in: brandSlugs } } })
+    if (brands.length > 0) {
+      whereClause.brandId = { in: brands.map(b => b.id) }
+    }
+  }
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    whereClause.price = {}
+    if (minPrice !== undefined) whereClause.price.gte = minPrice
+    if (maxPrice !== undefined) whereClause.price.lte = maxPrice
+  }
+
+  let orderByClause: any = { createdAt: "desc" }
+  if (sort === "price_asc") orderByClause = { price: "asc" }
+  else if (sort === "price_desc") orderByClause = { price: "desc" }
+
+  const [totalProducts, products, brands, allDepartmentCategories, priceAggregates] = await Promise.all([
+    db.product.count({ where: whereClause }),
+    db.product.findMany({
+      where: whereClause,
+      orderBy: orderByClause,
+      take: limit,
+      skip: (page - 1) * limit,
+      include: {
+        images: { orderBy: { sortOrder: 'asc' } },
+        category: true,
+      }
+    }),
+    db.brand.findMany({ 
+      where: { 
+        products: { 
+          some: { 
+            OR: [
+              { departmentId: department.id },
+              { category: { departmentId: department.id } }
+            ]
+          } 
+        } 
+      },
+      select: { id: true, name: true, slug: true } 
+    }),
+    db.category.findMany({
+      where: { departmentId: department.id },
+      select: { id: true, name: true, slug: true }
+    }),
+    db.product.aggregate({
+      where: { 
+        OR: [
+          { departmentId: department.id },
+          { category: { departmentId: department.id } }
+        ]
+      },
+      _min: { price: true },
+      _max: { price: true }
+    })
+  ])
+
+  const globalMinPrice = priceAggregates._min.price || 0
+  const globalMaxPrice = priceAggregates._max.price || 10000
+
+  const totalPages = Math.ceil(totalProducts / limit)
+
+  return (
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Department Header */}
+      <div className="mb-12 relative overflow-hidden rounded-3xl bg-primary p-10 sm:p-16 text-center shadow-lg shadow-primary/20">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">{department.name}</h1>
+          
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 mb-4 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <Link href="/products" className="hover:text-white transition-colors">المنتجات</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <span className="text-white font-medium">{department.name}</span>
+          </nav>
+        </div>
+      </div>
+
+      {department.categories && department.categories.length > 0 && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">أقسام {department.name}</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {department.categories.map(child => (
+              <Link 
+                key={child.id} 
+                href={`/category/${child.slug}`}
+                className="group relative rounded-2xl border border-border/50 bg-card p-4 text-center transition-all hover:border-primary/50 hover:shadow-lg"
+              >
+                {child.imageUrl && (
+                  <div className="mx-auto mb-4 h-24 w-24 overflow-hidden rounded-full border border-border/50 bg-muted flex items-center justify-center p-4">
+                    <img src={child.imageUrl} alt={child.name} className="h-full w-full object-contain transition-transform group-hover:scale-110" />
+                  </div>
+                )}
+                <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">{child.name}</h3>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-8">
+        <FilterSidebar 
+          categories={allDepartmentCategories} 
+          brands={brands} 
+          globalMinPrice={globalMinPrice}
+          globalMaxPrice={globalMaxPrice}
+        />
+        
+        <div className="flex-1 min-w-0">
+          <StoreToolbar totalProducts={totalProducts} />
+          
+          {products.length > 0 ? (
+            <>
+              <ProductGrid products={products} />
+              <StorePagination totalPages={totalPages} currentPage={page} />
+            </>
+          ) : (
+            <div className="text-center py-20 bg-card rounded-2xl border border-border/50">
+              <h2 className="text-2xl font-bold text-foreground mb-2">لا توجد منتجات</h2>
+              <p className="text-muted-foreground">لم يتم العثور على منتجات تطابق معايير البحث.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

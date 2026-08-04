@@ -91,6 +91,9 @@ export default async function RootLayout({
           position="top-center" 
           richColors 
           dir="rtl"
+          toastOptions={{
+            className: "font-sans flex justify-center text-center rounded-2xl",
+          }}
         />
       </body>
     </html>

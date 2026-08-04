@@ -6,7 +6,7 @@ import { useUIStore } from "@/store/ui-store"
 import { X, ChevronLeft } from "lucide-react"
 import { usePathname } from "next/navigation"
 
-export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { menuItems?: any[], themeConfig?: any, categories?: any[] }) {
+export function MobileSidebar({ menuItems, themeConfig, categories = [], departments = [] }: { menuItems?: any[], themeConfig?: any, categories?: any[], departments?: any[] }) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore()
   const pathname = usePathname()
   const [openCategory, setOpenCategory] = React.useState<string | null>(null)
@@ -64,10 +64,10 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
             القائمة
           </button>
           <button 
-            className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'categories' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
             onClick={() => setActiveTab('categories')}
+            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'categories' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
           >
-            الأقسام
+            المجالات والأقسام
           </button>
         </div>
 
@@ -116,28 +116,86 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
 
           {activeTab === 'categories' && (
             <div className="flex flex-col py-2 animate-in fade-in duration-300">
-              {categories.map((cat: any) => (
-                <div key={cat.id} className="flex flex-col border-b border-border/50 last:border-0">
-                  <div className="flex items-center justify-between p-2">
-                    {/* Category Link with Image */}
-                    <Link 
-                      href={`/category/${cat.slug}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 flex-1 p-2 hover:bg-secondary/30 rounded-xl transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
-                        {cat.imageUrl ? (
-                          <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+              {departments.length > 0 ? (
+                departments.map((dept: any) => {
+                  const deptCategories = categories.filter(c => c.departmentId === dept.id && !c.parentId);
+                  return (
+                    <div key={dept.id} className="flex flex-col border-b border-border/50 last:border-0">
+                      <div className="flex items-center justify-between p-2">
+                        {/* Department Link with Image */}
+                        <Link 
+                          href={`/department/${dept.slug}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-3 flex-1 p-2 hover:bg-secondary/30 rounded-xl transition-colors"
+                        >
+                          <div className="w-10 h-10 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
+                            {dept.imageUrl ? (
+                              <img src={dept.imageUrl} alt={dept.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+                            )}
+                          </div>
+                          <span className="font-bold text-foreground">{dept.name}</span>
+                        </Link>
+
+                        {/* Expand/Collapse Chevron (Only if children exist) */}
+                        {deptCategories.length > 0 && (
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setOpenCategory(openCategory === dept.id ? null : dept.id);
+                            }}
+                            className="p-3 mr-2 bg-muted/50 hover:bg-muted rounded-lg text-muted-foreground transition-colors"
+                          >
+                            <ChevronLeft className={`w-5 h-5 transition-transform duration-300 ${openCategory === dept.id ? '-rotate-90' : 'rtl-flip'}`} />
+                          </button>
                         )}
                       </div>
-                      <span className="font-bold text-foreground">{cat.name}</span>
-                    </Link>
 
-                    {/* Expand/Collapse Chevron (Only if children exist) */}
-                    {cat.children && cat.children.length > 0 && (
-                      <button 
+                      {/* Sub-categories (Animated collapse) */}
+                      <div 
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${openCategory === dept.id ? 'max-h-[1000px] opacity-100 mb-2' : 'max-h-0 opacity-0'}`}
+                      >
+                        <div className="flex flex-col gap-1 pr-14 pl-4 pb-2">
+                          {deptCategories.map((sub: any) => (
+                            <Link 
+                              key={sub.id} 
+                              href={`/category/${sub.slug}`}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="py-2.5 px-3 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-muted-foreground/30 hover:before:bg-primary/50"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                categories.filter(c => !c.parentId).map((cat: any) => (
+                  <div key={cat.id} className="flex flex-col border-b border-border/50 last:border-0">
+                    <div className="flex items-center justify-between p-2">
+                      {/* Category Link with Image */}
+                      <Link 
+                        href={`/category/${cat.slug}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 flex-1 p-2 hover:bg-secondary/30 rounded-xl transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded bg-background border border-border shrink-0 flex items-center justify-center overflow-hidden">
+                          {cat.imageUrl ? (
+                            <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
+                          )}
+                        </div>
+                        <span className="font-bold text-foreground">{cat.name}</span>
+                      </Link>
+
+                      {/* Expand/Collapse Chevron (Only if children exist) */}
+                      {cat.children && cat.children.length > 0 && (
+                        <button 
                         onClick={() => setOpenCategory(openCategory === cat.id ? null : cat.id)}
                         className="p-1 hover:opacity-80 rounded-full text-muted-foreground transition-all mr-2"
                       >
@@ -162,7 +220,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [] }: { men
                     </div>
                   )}
                 </div>
-              ))}
+              )))}
             </div>
           )}
 

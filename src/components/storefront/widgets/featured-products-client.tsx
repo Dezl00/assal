@@ -33,7 +33,15 @@ export function FeaturedProductsClient({ widget, products }: { widget: any, prod
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         {products.map((product, index) => (
-          <ProductCard key={product.id} product={product as any} index={index} />
+          <ScrollReveal
+            key={product.id}
+            variant="fade-up"
+            delay={index * 0.1}
+            duration={0.6}
+            className="h-full"
+          >
+            <ProductCard product={product as any} disableAnimation={true} />
+          </ScrollReveal>
         ))}
       </div>
     </div>
