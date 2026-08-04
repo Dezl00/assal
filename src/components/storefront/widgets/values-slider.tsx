@@ -39,7 +39,10 @@ export function ValuesSlider({ widget }: { widget?: any }) {
     return () => clearInterval(interval)
   }, [totalPages])
 
-  const visibleItems = items.slice(currentIndex * itemsPerPage, (currentIndex + 1) * itemsPerPage)
+  const pages = []
+  for (let i = 0; i < totalPages; i++) {
+    pages.push(items.slice(i * itemsPerPage, (i + 1) * itemsPerPage))
+  }
 
   return (
     <div className="bg-primary py-16 text-primary-foreground overflow-hidden">
@@ -51,29 +54,35 @@ export function ValuesSlider({ widget }: { widget?: any }) {
           
           <div className="relative max-w-5xl mx-auto">
             <div className="overflow-hidden" dir="rtl">
-              <div className="flex justify-center transition-all duration-500 ease-in-out">
-                {visibleItems.map((item: any, idx: number) => {
-                  const Icon = item.icon || Leaf
-                  
-                  return (
-                    <div 
-                      key={item.id || idx} 
-                      className="flex-1 min-w-0 px-4"
-                      style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%` }}
-                    >
-                      <div className="flex flex-col items-center justify-center text-center p-4">
-                        <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 text-primary shadow-lg transition-transform hover:scale-105">
-                          {item.imageUrl ? (
-                            <img src={item.imageUrl} alt={item.title || item.name} className="w-16 h-16 object-contain" />
-                          ) : (
-                            <Icon className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={1.5} />
-                          )}
+              <div 
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translate3d(${currentIndex * 100}%, 0, 0)` }}
+              >
+                {pages.map((pageItems, pageIdx) => (
+                  <div key={pageIdx} className="w-full flex-shrink-0 flex justify-center">
+                    {pageItems.map((item: any, idx: number) => {
+                      const Icon = item.icon || Leaf
+                      return (
+                        <div 
+                          key={item.id || idx} 
+                          className="px-4"
+                          style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%`, flexGrow: 1 }}
+                        >
+                          <div className="flex flex-col items-center justify-center text-center p-4">
+                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 text-primary shadow-lg transition-transform hover:scale-105">
+                              {item.imageUrl ? (
+                                <img src={item.imageUrl} alt={item.title || item.name} className="w-16 h-16 object-contain" />
+                              ) : (
+                                <Icon className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={1.5} />
+                              )}
+                            </div>
+                            <h3 className="text-xl sm:text-2xl font-bold text-white">{item.title || item.name}</h3>
+                          </div>
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-bold text-white">{item.title || item.name}</h3>
-                      </div>
-                    </div>
-                  )
-                })}
+                      )
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
 
