@@ -57,7 +57,12 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
     where: { slug: productSlug },
     include: {
       images: { orderBy: { sortOrder: 'asc' } },
-      category: true,
+      category: {
+        include: {
+          department: true,
+          parent: { include: { department: true } }
+        }
+      },
       brand: true,
     }
   })
@@ -79,14 +84,36 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
   const finalPrice = product.discountPrice ?? product.price
   const hasDiscount = product.discountPrice !== null && product.discountPrice < product.price
 
+  const category = product.category
+  const dept = category.department || (category.parent as any)?.department
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
         <Link href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
         <ChevronRight className="w-4 h-4 rtl-flip" />
-        <Link href={`/category/${product.category.slug}`} className="hover:text-primary transition-colors">
-          {product.category.name}
+        
+        {dept && (
+          <>
+            <Link href={`/department/${dept.slug}`} className="hover:text-primary transition-colors">
+              {dept.name}
+            </Link>
+            <ChevronRight className="w-4 h-4 rtl-flip" />
+          </>
+        )}
+        
+        {category.parent && (
+          <>
+            <Link href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors">
+              {category.parent.name}
+            </Link>
+            <ChevronRight className="w-4 h-4 rtl-flip" />
+          </>
+        )}
+
+        <Link href={`/category/${category.slug}`} className="hover:text-primary transition-colors">
+          {category.name}
         </Link>
         <ChevronRight className="w-4 h-4 rtl-flip" />
         <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">{product.name}</span>

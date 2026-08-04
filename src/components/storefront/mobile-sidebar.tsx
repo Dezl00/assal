@@ -158,15 +158,30 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                         className={`overflow-hidden transition-all duration-300 ease-in-out ${openCategory === dept.id ? 'max-h-[1000px] opacity-100 mb-2' : 'max-h-0 opacity-0'}`}
                       >
                         <div className="flex flex-col gap-1 pr-14 pl-4 pb-2">
-                          {deptCategories.map((sub: any) => (
-                            <Link 
-                              key={sub.id} 
-                              href={`/category/${sub.slug}`}
-                              onClick={() => setMobileMenuOpen(false)}
-                              className="py-2.5 px-3 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-muted-foreground/30 hover:before:bg-primary/50"
-                            >
-                              {sub.name}
-                            </Link>
+                          {deptCategories.map((mainCat: any) => (
+                            <div key={mainCat.id} className="flex flex-col mb-1 last:mb-0">
+                              <Link 
+                                href={`/category/${mainCat.slug}`}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="py-2.5 px-3 text-sm font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary/50"
+                              >
+                                {mainCat.name}
+                              </Link>
+                              {mainCat.children && mainCat.children.length > 0 && (
+                                <div className="flex flex-col gap-1 pr-4 border-r-2 border-border/30 mr-3 mt-1 mb-2">
+                                  {mainCat.children.map((subCat: any) => (
+                                    <Link 
+                                      key={subCat.id} 
+                                      href={`/category/${subCat.slug}`}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                      className="py-1.5 px-3 text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-2 before:content-[''] before:w-1 before:h-1 before:rounded-full before:bg-muted-foreground/30 hover:before:bg-primary/50"
+                                    >
+                                      {subCat.name}
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       </div>

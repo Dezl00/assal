@@ -59,7 +59,8 @@ export default async function CategoryPage(props: Props) {
   const category = await db.category.findUnique({
     where: { slug: categorySlug },
     include: {
-      parent: true,
+      parent: { include: { department: true } },
+      department: true,
       children: { orderBy: { createdAt: "asc" } },
     }
   })
@@ -122,6 +123,8 @@ export default async function CategoryPage(props: Props) {
   const totalPages = Math.ceil(totalProducts / limit)
   const isMainCategory = !category.parentId
 
+  const dept = category.department || (category.parent as any)?.department
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Category Header */}
@@ -134,8 +137,15 @@ export default async function CategoryPage(props: Props) {
           
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 mb-4 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
             <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
-            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
-            <Link href="/products" className="hover:text-white transition-colors">المنتجات</Link>
+            
+            {dept && (
+              <>
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+                <Link href={`/department/${dept.slug}`} className="hover:text-white transition-colors">
+                  {dept.name}
+                </Link>
+              </>
+            )}
             
             {category.parent && (
               <>

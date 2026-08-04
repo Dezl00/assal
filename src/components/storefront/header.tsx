@@ -114,14 +114,33 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                             {deptCategories.length > 0 && (
                               <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/cat:opacity-100 group-hover/cat:visible transition-all duration-200 z-50">
                                 {deptCategories.map((cat: any) => (
-                                  <Link 
-                                    key={cat.id} 
-                                    href={`/category/${cat.slug}`} 
-                                    className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
-                                    onClick={() => setIsCategoriesHovered(false)}
-                                  >
-                                    {cat.name}
-                                  </Link>
+                                  <div key={cat.id} className="relative group/subcat">
+                                    <Link 
+                                      href={`/category/${cat.slug}`} 
+                                      className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground group/sublink"
+                                      onClick={() => setIsCategoriesHovered(false)}
+                                    >
+                                      <span>{cat.name}</span>
+                                      {cat.children && cat.children.length > 0 && (
+                                        <ChevronDown className="w-4 h-4 text-muted-foreground rotate-90" />
+                                      )}
+                                    </Link>
+                                    
+                                    {cat.children && cat.children.length > 0 && (
+                                      <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/subcat:opacity-100 group-hover/subcat:visible transition-all duration-200 z-50">
+                                        {cat.children.map((sub: any) => (
+                                          <Link 
+                                            key={sub.id} 
+                                            href={`/category/${sub.slug}`} 
+                                            className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
+                                            onClick={() => setIsCategoriesHovered(false)}
+                                          >
+                                            {sub.name}
+                                          </Link>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
                                 ))}
                               </div>
                             )}
