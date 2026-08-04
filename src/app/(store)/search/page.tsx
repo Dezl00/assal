@@ -23,11 +23,12 @@ export default async function SearchPage({
               { name: { contains: q, mode: 'insensitive' } },
               { description: { contains: q, mode: 'insensitive' } }
             ]
-          }
+          },
+          { isActive: true }
         ]
       },
       include: {
-        images: true,
+        images: { orderBy: { sortOrder: 'asc' } },
         category: true
       },
       take: 50

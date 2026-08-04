@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { db } from "@/lib/db";
 import NextTopLoader from 'nextjs-toploader';
+import { PageTracker } from "@/components/page-tracker";
 
 const fallbackFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -71,6 +72,7 @@ export default async function RootLayout({
           :root {
             ${theme?.primaryColor ? `--color-primary: ${theme.primaryColor}; --color-ring: ${theme.primaryColor};` : ''}
             ${theme?.secondaryColor ? `--color-secondary: ${theme.secondaryColor};` : ''}
+            ${theme?.adminColor ? `--color-admin-bg: ${theme.adminColor};` : '--color-admin-bg: #0f172a;'}
           }
         `}} />
       </head>
@@ -86,6 +88,7 @@ export default async function RootLayout({
           speed={200}
           shadow="0 0 10px var(--color-primary, #b79045),0 0 5px var(--color-primary, #b79045)"
         />
+        <PageTracker />
         {children}
         <Toaster 
           position="top-center" 

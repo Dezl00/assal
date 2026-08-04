@@ -75,7 +75,7 @@ export default async function CategoryPage(props: Props) {
   const page = searchParams?.page ? parseInt(searchParams.page as string) : 1
   const limit = 20
 
-  let whereClause: any = { categoryId: category.id }
+  let whereClause: any = { categoryId: category.id, isActive: true }
 
   if (brandSlugs.length > 0) {
     const brands = await db.brand.findMany({ where: { slug: { in: brandSlugs } } })

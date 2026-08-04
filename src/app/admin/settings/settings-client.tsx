@@ -2,142 +2,342 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Palette, CheckCircle, Save, Loader2 } from "lucide-react"
-import { updateThemeConfig } from "@/features/settings/actions"
+import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database } from "lucide-react"
+import { updateThemeConfig, createBranch, updateBranch, deleteBranch } from "@/features/settings/actions"
 import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"
+import { Switch } from "@/components/ui/switch"
 
-export function SettingsClient({ config }: { config: any }) {
+export function SettingsClient({ config, branches = [], backups = [] }: { config: any, branches?: any[], backups?: any[] }) {
+  const [activeTab, setActiveTab] = useState("general")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [logoUrl, setLogoUrl] = useState(config?.logoUrl || "")
-  const [faviconUrl, setFaviconUrl] = useState(config?.faviconUrl || "")
 
-  async function handleSave(e: React.FormEvent<HTMLFormElement>) {
+  // Branch states
+  const [isBranchFormOpen, setIsBranchFormOpen] = useState(false)
+  const [editingBranch, setEditingBranch] = useState<any>(null)
+  const [isBranchSubmitting, setIsBranchSubmitting] = useState(false)
+
+  // Theme Config States
+  const [logoUrl, setLogoUrl] = useState(config.logoUrl || "")
+  const [faviconUrl, setFaviconUrl] = useState(config.faviconUrl || "")
+  const [primaryColor, setPrimaryColor] = useState(config.primaryColor || "#D97706")
+  const [secondaryColor, setSecondaryColor] = useState(config.secondaryColor || "#FBBF24")
+  const [adminColor, setAdminColor] = useState(config.adminColor || "#0f172a")
+
+  const [whatsappEnabled, setWhatsappEnabled] = useState(config.whatsappEnabled !== false) // default true
+
+  async function handleConfigSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
-    formData.set("logoUrl", logoUrl) // Add the image url to formData
-    formData.set("faviconUrl", faviconUrl) 
-    
+    formData.set("logoUrl", logoUrl)
+    formData.set("faviconUrl", faviconUrl)
+    formData.set("primaryColor", primaryColor)
+    formData.set("secondaryColor", secondaryColor)
+    formData.set("adminColor", adminColor)
+    formData.set("whatsappEnabled", whatsappEnabled.toString())
+
     const res = await updateThemeConfig(formData)
     setIsSubmitting(false)
+
     if (res.success) {
-      toast.success("تم حفظ الإعدادات بنجاح!")
+      toast.success("تم حفظ الإعدادات بنجاح")
+      window.location.reload() // reload to apply admin color
     } else {
-      toast.error(res.error || "حدث خطأ ما")
+      toast.error(res.error || "حدث خطأ أثناء الحفظ")
     }
   }
 
+  async function handleBranchSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsBranchSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    
+    let res;
+    if (editingBranch) {
+      res = await updateBranch(editingBranch.id, formData)
+    } else {
+      res = await createBranch(formData)
+    }
+
+    setIsBranchSubmitting(false)
+    if (res.success) {
+      toast.success("تم الحفظ بنجاح")
+      setEditingBranch(null)
+      setIsBranchFormOpen(false)
+    } else {
+      toast.error(res.error || "فشل الحفظ")
+    }
+  }
+
+  async function handleDeleteBranch(id: string) {
+    if (!confirm("هل أنت متأكد من حذف هذا الفرع؟")) return
+    const res = await deleteBranch(id)
+    if (res.success) toast.success("تم الحذف بنجاح")
+    else toast.error("فشل الحذف")
+  }
+
+  const tabs = [
+    { id: "general", label: "عام", icon: <Store className="w-4 h-4" /> },
+    { id: "appearance", label: "المظهر والهوية", icon: <Palette className="w-4 h-4" /> },
+    { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" /> },
+    { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" /> },
+    { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" /> },
+  ]
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">إعدادات المتجر</h1>
-          <p className="text-muted-foreground mt-1">تخصيص المظهر العام، الألوان، ومعلومات المتجر الأساسية.</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">إعدادات المتجر</h1>
+        <p className="text-muted-foreground mt-1">إدارة بيانات المتجر، الهوية البصرية، الفروع والتواصل.</p>
       </div>
 
-      <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-        <div className="md:col-span-2 space-y-6">
-          <div className="rounded-xl border border-border/50 bg-card p-6">
-            <h2 className="text-xl font-semibold mb-6">المعلومات الأساسية والشعار</h2>
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Tabs Sidebar */}
+        <div className="w-full md:w-64 shrink-0 flex flex-col gap-1">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground hover:text-foreground'}`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
+          {/* Config Forms */}
+          {activeTab !== "branches" && (
+            <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
+              <div className="p-6 flex-1 space-y-8">
+                
+                {activeTab === "general" && (
+                  <div className="space-y-6 animate-in fade-in">
+                    <h2 className="text-lg font-semibold border-b border-border/50 pb-2">الإعدادات العامة</h2>
+                    <div className="space-y-4 max-w-xl">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">اسم المتجر</label>
+                        <input name="storeName" type="text" defaultValue={config.storeName} required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">وصف المتجر</label>
+                        <textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-1 focus:ring-primary" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "appearance" && (
+                  <div className="space-y-6 animate-in fade-in">
+                    <h2 className="text-lg font-semibold border-b border-border/50 pb-2">المظهر والهوية</h2>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">شعار المتجر (Logo)</label>
+                        <ImageUploader value={logoUrl} onChange={setLogoUrl} />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">أيقونة المتصفح (Favicon)</label>
+                        <ImageUploader value={faviconUrl} onChange={setFaviconUrl} />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">اللون الرئيسي</label>
+                        <div className="flex items-center gap-3">
+                          <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
+                          <input type="text" value={primaryColor.toUpperCase()} onChange={e => setPrimaryColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">اللون الثانوي</label>
+                        <div className="flex items-center gap-3">
+                          <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
+                          <input type="text" value={secondaryColor.toUpperCase()} onChange={e => setSecondaryColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">لون لوحة التحكم</label>
+                        <div className="flex items-center gap-3">
+                          <input type="color" value={adminColor} onChange={e => setAdminColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
+                          <input type="text" value={adminColor.toUpperCase()} onChange={e => setAdminColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === "social" && (
+                  <div className="space-y-6 animate-in fade-in">
+                    <h2 className="text-lg font-semibold border-b border-border/50 pb-2">التواصل الاجتماعي وواتساب</h2>
+                    
+                    <div className="max-w-xl space-y-5">
+                      <div className="flex items-center justify-between p-4 border border-green-200 bg-green-50/50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-green-800">أيقونة واتساب العائمة</p>
+                          <p className="text-sm text-green-700/80">إظهار أيقونة الدردشة عبر واتساب في واجهة المتجر الرئيسية</p>
+                        </div>
+                        <Switch checked={whatsappEnabled} onCheckedChange={setWhatsappEnabled} />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">رقم الواتساب (مع رمز الدولة)</label>
+                        <input name="whatsappNumber" type="text" defaultValue={config.whatsappNumber || ""} placeholder="مثال: 201012345678" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">رابط فيسبوك</label>
+                        <input name="facebookUrl" type="url" defaultValue={config.facebookUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">رابط انستجرام</label>
+                        <input name="instagramUrl" type="url" defaultValue={config.instagramUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">رابط تويتر / X</label>
+                        <input name="twitterUrl" type="url" defaultValue={config.twitterUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">رابط تيك توك</label>
+                        <input name="tiktokUrl" type="url" defaultValue={config.tiktokUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">رابط سناب شات</label>
+                        <input name="snapchatUrl" type="url" defaultValue={config.snapchatUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4 border-t border-border/50 bg-muted/20 flex justify-end">
+                <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ الإعدادات"}
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* Branches Tab */}
+          {activeTab === "branches" && (
+            <div className="p-6 h-full flex flex-col animate-in fade-in">
+              <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold">الفروع والمواقع</h2>
+                  <p className="text-sm text-muted-foreground">تتم إضافة الفروع ليتم عرضها في تذييل الموقع.</p>
+                </div>
+                <Button onClick={() => { setEditingBranch(null); setIsBranchFormOpen(true); }} className="gap-2">
+                  <Plus className="w-4 h-4" /> إضافة فرع
+                </Button>
+              </div>
+
+              {isBranchFormOpen && (
+                <div className="mb-8 p-4 border border-border bg-muted/10 rounded-lg">
+                  <h3 className="font-medium mb-4">{editingBranch ? "تعديل فرع" : "إضافة فرع جديد"}</h3>
+                  <form onSubmit={handleBranchSubmit} className="space-y-4 max-w-xl">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">اسم الفرع <span className="text-red-500">*</span></label>
+                      <input name="name" type="text" required defaultValue={editingBranch?.name || ""} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">العنوان التفصيلي</label>
+                      <input name="address" type="text" defaultValue={editingBranch?.address || ""} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">رقم الهاتف للفرع</label>
+                      <input name="phone" type="text" defaultValue={editingBranch?.phone || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-left" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">رابط خرائط جوجل (Google Maps URL)</label>
+                      <input name="mapUrl" type="url" defaultValue={editingBranch?.mapUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-left" />
+                    </div>
+                    {editingBranch && (
+                      <div className="flex items-center gap-2 pt-2">
+                        <Switch name="isActive" defaultChecked={editingBranch.isActive} />
+                        <span className="text-sm">تفعيل الفرع</span>
+                      </div>
+                    )}
+                    <div className="flex gap-3 pt-2">
+                      <Button type="submit" disabled={isBranchSubmitting}>
+                        {isBranchSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "حفظ الفرع"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setIsBranchFormOpen(false)}>إلغاء</Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {branches.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">لا توجد فروع مسجلة.</div>
+                ) : (
+                  branches.map(branch => (
+                    <div key={branch.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg hover:border-primary/50 transition-colors">
+                      <div>
+                        <h4 className="font-semibold">{branch.name} {!branch.isActive && <span className="text-xs text-red-500 bg-red-50 px-2 py-0.5 rounded-full mr-2">غير مفعل</span>}</h4>
+                        <div className="text-sm text-muted-foreground mt-1 flex flex-col gap-1">
+                          {branch.address && <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {branch.address}</span>}
+                          {branch.phone && <span>هاتف: {branch.phone}</span>}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingBranch(branch); setIsBranchFormOpen(true); }}><Edit className="w-4 h-4 text-muted-foreground" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteBranch(branch.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "backups" && (
             <div className="space-y-6">
-              
-              <div className="flex flex-wrap gap-8">
-                <div className="w-48">
-                  <ImageUploader 
-                    label="شعار المتجر (Logo)" 
-                    value={logoUrl} 
-                    onChange={setLogoUrl} 
-                  />
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">النسخ الاحتياطي</h3>
+                  <p className="text-sm text-muted-foreground mt-1">تصدير واستيراد البيانات الأساسية بصيغة JSON.</p>
                 </div>
-                <div className="w-32">
-                  <ImageUploader 
-                    label="أيقونة المتجر (Favicon)" 
-                    value={faviconUrl} 
-                    onChange={setFaviconUrl} 
-                  />
-                </div>
+                <Button onClick={() => window.location.href='/api/backups/export'} className="gap-2">
+                  <Database className="w-4 h-4" /> تصدير نسخة احتياطية
+                </Button>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">اسم المتجر</label>
-                <input
-                  name="storeName"
-                  type="text"
-                  defaultValue={config?.storeName || "عسل طبيعي"}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">وصف المتجر (للسيو)</label>
-                <textarea
-                  name="storeDescription"
-                  rows={3}
-                  defaultValue={config?.storeDescription || ""}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-y"
-                  placeholder="وصف مختصر يظهر في محركات البحث..."
-                />
+              <div className="grid gap-4 mt-4">
+                {backups.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground border border-dashed border-border/50 rounded-lg">لا توجد نسخ احتياطية سابقة.</div>
+                ) : (
+                  backups.map(backup => (
+                    <div key={backup.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg bg-card">
+                      <div>
+                        <h4 className="font-semibold">{backup.filename}</h4>
+                        <div className="text-sm text-muted-foreground mt-1 flex gap-4">
+                          <span>الحجم: {(backup.size / 1024).toFixed(2)} KB</span>
+                          <span>التاريخ: {new Date(backup.createdAt).toLocaleString("ar-EG")}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${backup.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          {backup.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-          </div>
+          )}
 
-          <div className="rounded-xl border border-border/50 bg-card p-6">
-            <h2 className="text-xl font-semibold mb-6">الألوان والهوية</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">اللون الرئيسي (Primary)</label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    name="primaryColor"
-                    defaultValue={config?.primaryColor || "#D97706"}
-                    className="h-10 w-12 rounded cursor-pointer border border-border/50"
-                  />
-                  <input
-                    type="text"
-                    defaultValue={config?.primaryColor || "#D97706"}
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring uppercase text-left"
-                    dir="ltr"
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">اللون الثانوي (Secondary)</label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    name="secondaryColor"
-                    defaultValue={config?.secondaryColor || "#FBBF24"}
-                    className="h-10 w-12 rounded cursor-pointer border border-border/50"
-                  />
-                  <input
-                    type="text"
-                    defaultValue={config?.secondaryColor || "#FBBF24"}
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring uppercase text-left"
-                    dir="ltr"
-                    disabled
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-
-        <div className="md:col-span-1">
-          <div className="rounded-xl border border-border/50 bg-card p-6 sticky top-4">
-            <h3 className="font-semibold mb-4">إجراءات الحفظ</h3>
-            <p className="text-sm text-muted-foreground mb-6">تأكد من مراجعة كافة التعديلات قبل حفظ الإعدادات، حيث ستنعكس فوراً على واجهة المتجر الرئيسية.</p>
-            
-            <div className="flex justify-end pt-6 border-t border-border/50">
-              <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base shadow-sm flex items-center justify-center gap-2">
-                 {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : "حفظ التغييرات"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </form>
+      </div>
     </div>
   )
 }

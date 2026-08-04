@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   ADMIN
+  MANAGER
   CUSTOMER
 }
 
@@ -146,6 +147,7 @@ model Product {
   price          Float
   discountPrice  Float?
   stock          Int          @default(0)
+  isActive       Boolean      @default(true)
   
   categoryId     String
   category       Category     @relation(fields: [categoryId], references: [id])
@@ -237,6 +239,15 @@ model ThemeConfig {
   borderRadius  String   @default("0px")
   buttonStyle   String   @default("solid") // solid, outline
   
+  adminColor    String   @default("#0f172a")
+  whatsappNumber String?
+  whatsappEnabled Boolean @default(true)
+  facebookUrl   String?
+  instagramUrl  String?
+  twitterUrl    String?
+  tiktokUrl     String?
+  snapchatUrl   String?
+  
   updatedAt     DateTime @updatedAt
 }
 
@@ -250,5 +261,41 @@ model ActivityLog {
   details     Json?
   ipAddress   String?
   browser     String?
+  createdAt   DateTime @default(now())
+}
+
+model Branch {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  mapUrl      String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PageVisit {
+  id          String   @id @default(cuid())
+  path        String
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+}
+
+model ProductView {
+  id          String   @id @default(cuid())
+  productId   String
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+}
+
+model Backup {
+  id          String   @id @default(cuid())
+  filename    String
+  size        Int
+  status      String   // COMPLETED, FAILED, PENDING
   createdAt   DateTime @default(now())
 }

@@ -22,6 +22,8 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   
+  --color-admin: var(--color-admin-bg);
+  
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);

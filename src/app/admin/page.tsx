@@ -3,7 +3,7 @@ import { Activity, Users, ShoppingBag, DollarSign } from "lucide-react"
 import { db } from "@/lib/db"
 
 export default async function AdminDashboardPage() {
-  const [totalSalesResult, newOrders, customers, activeProducts] = await Promise.all([
+  const [totalSalesResult, newOrders, customers, activeProducts, topProductsData, topPages, recentActivities] = await Promise.all([
     db.order.aggregate({
       _sum: { totalAmount: true },
       where: { status: { not: "CANCELLED" } }
@@ -14,8 +14,33 @@ export default async function AdminDashboardPage() {
     db.user.count({
       where: { role: "CUSTOMER" }
     }),
-    db.product.count()
+    db.product.count(),
+    db.productView.groupBy({
+      by: ['productId'],
+      _count: { productId: true },
+      orderBy: { _count: { productId: 'desc' } },
+      take: 5
+    }),
+    db.pageVisit.groupBy({
+      by: ['path'],
+      _count: { path: true },
+      orderBy: { _count: { path: 'desc' } },
+      take: 5
+    }),
+    db.activityLog.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      include: { user: true }
+    })
   ])
+
+  // Get product details for topProducts
+  const topProducts = await Promise.all(
+    topProductsData.map(async (tp) => {
+      const product = await db.product.findUnique({ where: { id: tp.productId }, select: { name: true } })
+      return { ...tp, product: product || { name: 'منتج محذوف' } }
+    })
+  )
 
   const totalSales = totalSalesResult._sum.totalAmount || 0
 
@@ -77,11 +102,57 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Recent Activity Placeholder */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Most Viewed Products */}
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold tracking-tight">المنتجات الأكثر مشاهدة</h3>
+          <div className="flex flex-col gap-4">
+            {topProducts.length > 0 ? topProducts.map((tv, idx) => (
+              <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
+                <span className="text-sm font-medium">{tv.product.name}</span>
+                <span className="text-sm font-bold text-muted-foreground bg-secondary/20 px-2 py-0.5 rounded">{tv._count.productId} مشاهدة</span>
+              </div>
+            )) : (
+              <p className="text-sm text-muted-foreground text-center py-8">لا توجد بيانات بعد</p>
+            )}
+          </div>
+        </div>
+
+        {/* Most Visited Pages */}
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold tracking-tight">الصفحات الأكثر زيارة</h3>
+          <div className="flex flex-col gap-4">
+            {topPages.length > 0 ? topPages.map((pv, idx) => (
+              <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
+                <span className="text-sm font-medium text-left" dir="ltr">{pv.path}</span>
+                <span className="text-sm font-bold text-muted-foreground bg-secondary/20 px-2 py-0.5 rounded">{pv._count.path} زيارة</span>
+              </div>
+            )) : (
+              <p className="text-sm text-muted-foreground text-center py-8">لا توجد بيانات بعد</p>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-xl border border-border/50 bg-card p-8 shadow-sm">
-        <h3 className="mb-6 text-lg font-semibold tracking-tight">الأنشطة الأخيرة</h3>
-        <div className="flex h-40 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
-          <p className="text-sm text-muted-foreground">لا توجد أنشطة مسجلة حتى الآن.</p>
+        <h3 className="mb-6 text-lg font-semibold tracking-tight">الأنشطة الإدارية الأخيرة</h3>
+        <div className="flex flex-col gap-4">
+          {recentActivities.length > 0 ? recentActivities.map((activity) => (
+            <div key={activity.id} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
+              <div className="flex flex-col">
+                <span className="font-medium">{activity.action} {activity.entityType}</span>
+                {activity.details && <span className="text-sm text-muted-foreground">{(activity.details as any)?.message || JSON.stringify(activity.details)}</span>}
+              </div>
+              <div className="flex flex-col items-end text-sm text-muted-foreground">
+                <span>{activity.user?.name || activity.user?.email || "مدير النظام"}</span>
+                <span>{new Date(activity.createdAt).toLocaleString("ar-EG")}</span>
+              </div>
+            </div>
+          )) : (
+            <div className="flex h-32 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
+              <p className="text-sm text-muted-foreground">لا توجد أنشطة مسجلة حتى الآن.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

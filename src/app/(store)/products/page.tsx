@@ -58,7 +58,7 @@ export default async function AllProductsPage({ searchParams }: Props) {
   const limit = 20
 
   let currentBrand = null
-  let whereClause: any = {}
+  let whereClause: any = { isActive: true }
 
   // Apply filters
   if (brandSlugs.length === 1) {

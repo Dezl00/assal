@@ -63,8 +63,8 @@ export function CustomersClient({ customers }: { customers: any[] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-12rem)] min-h-[600px]">
         {/* Right pane: Customer List */}
-        <div className="md:col-span-1 rounded-xl border border-border/50 bg-card shadow-sm flex flex-col h-full overflow-hidden">
-          <div className="p-4 border-b border-border/50 bg-muted/20 shrink-0">
+        <div className="md:col-span-1 rounded-xl border border-border bg-card flex flex-col h-full overflow-hidden">
+          <div className="p-4 border-b border-border bg-muted/5 shrink-0">
             <div className="relative">
               <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -108,10 +108,10 @@ export function CustomersClient({ customers }: { customers: any[] }) {
         </div>
 
         {/* Left pane: Customer Details */}
-        <div className="md:col-span-2 rounded-xl border border-border/50 bg-card shadow-sm h-full overflow-hidden flex flex-col">
+        <div className="md:col-span-2 rounded-xl border border-border bg-card h-full overflow-hidden flex flex-col">
           {!selectedCustomer ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center space-y-4">
-              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+              <div className="h-20 w-20 rounded-full border border-border bg-muted/20 flex items-center justify-center">
                 <User className="h-10 w-10 opacity-20" />
               </div>
               <div>
@@ -122,11 +122,11 @@ export function CustomersClient({ customers }: { customers: any[] }) {
           ) : (
             <div className="flex-1 overflow-y-auto scrollbar-thin">
               {/* Header Profile */}
-              <div className="bg-gradient-to-b from-primary/10 to-transparent p-6 border-b border-border/50">
+              <div className="p-6 border-b border-border">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-4">
-                    <div className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center text-primary border-4 border-background shadow-md">
-                      <User className="h-10 w-10" />
+                    <div className="h-16 w-16 rounded-full border border-border bg-muted/30 flex items-center justify-center text-muted-foreground">
+                      <User className="h-8 w-8" />
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-foreground">{selectedCustomer.name || "بدون اسم"}</h2>
@@ -154,22 +154,22 @@ export function CustomersClient({ customers }: { customers: any[] }) {
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Contact Info */}
                 <div className="space-y-4">
-                  <h3 className="font-bold text-lg border-b border-border/50 pb-2">بيانات التواصل</h3>
+                  <h3 className="font-bold text-lg border-b border-border pb-2">بيانات التواصل</h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
+                      <div className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground shrink-0">
                         <Mail className="h-4 w-4" />
                       </div>
                       <span className="text-foreground">{selectedCustomer.email}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
+                      <div className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground shrink-0">
                         <Phone className="h-4 w-4" />
                       </div>
                       <span className="text-foreground">{selectedCustomer.phone || <span className="text-muted-foreground italic">غير محدد</span>}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm">
-                      <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center text-muted-foreground shrink-0">
+                      <div className="h-8 w-8 rounded-md border border-border flex items-center justify-center text-muted-foreground shrink-0">
                         <MapPin className="h-4 w-4" />
                       </div>
                       <span className="text-foreground line-clamp-2">{selectedCustomer.address || <span className="text-muted-foreground italic">غير محدد</span>}</span>
@@ -179,13 +179,13 @@ export function CustomersClient({ customers }: { customers: any[] }) {
 
                 {/* Quick Stats */}
                 <div className="space-y-4">
-                  <h3 className="font-bold text-lg border-b border-border/50 pb-2">إحصائيات العميل</h3>
+                  <h3 className="font-bold text-lg border-b border-border pb-2">إحصائيات العميل</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-secondary/50 rounded-lg p-4 border border-border/50 text-center">
+                    <div className="rounded-lg p-4 border border-border text-center">
                       <span className="block text-3xl font-bold text-primary mb-1">{selectedCustomer._count?.orders || 0}</span>
                       <span className="text-xs text-muted-foreground font-medium">إجمالي الطلبات</span>
                     </div>
-                    <div className="bg-secondary/50 rounded-lg p-4 border border-border/50 text-center">
+                    <div className="rounded-lg p-4 border border-border text-center">
                       <span className="block text-3xl font-bold text-primary mb-1">
                         {selectedCustomer.orders?.filter((o: any) => o.status === 'COMPLETED').length || 0}
                       </span>
@@ -197,17 +197,17 @@ export function CustomersClient({ customers }: { customers: any[] }) {
 
               {/* Order History */}
               <div className="p-6 pt-0">
-                <h3 className="font-bold text-lg border-b border-border/50 pb-2 mb-4">سجل الطلبات</h3>
+                <h3 className="font-bold text-lg border-b border-border pb-2 mb-4">سجل الطلبات</h3>
                 
                 {!selectedCustomer.orders || selectedCustomer.orders.length === 0 ? (
-                  <div className="text-center p-8 bg-secondary/20 rounded-lg border border-border/50 border-dashed">
+                  <div className="text-center p-8 rounded-lg border border-border border-dashed">
                     <Package className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
                     <p className="text-sm text-muted-foreground">لم يقم هذا العميل بأي طلبات حتى الآن.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {selectedCustomer.orders.map((order: any) => (
-                      <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border/50 bg-card hover:bg-muted/20 transition-colors gap-4">
+                      <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-muted/10 transition-colors gap-4">
                         <div className="flex items-center gap-4">
                           <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getStatusColor(order.status)}`}>
                             {order.status === 'COMPLETED' ? <CheckCircle2 className="h-5 w-5" /> : 

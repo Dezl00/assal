@@ -33,6 +33,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [editingWidget, setEditingWidget] = useState<any | null>(null)
   const [widgetToDelete, setWidgetToDelete] = useState<string | null>(null)
   
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [draggedWidgetId, setDraggedWidgetId] = useState<string | null>(null)
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
@@ -162,11 +164,14 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     }
     
     if (editingWidget.type === "BannerGrid") {
+      const opacityRaw = formData.get("overlayOpacity") as string;
+      const parsedOpacity = parseInt(opacityRaw);
+      
       data.settings = {
         textPosition: formData.get("textPosition") as string || "bottom",
         textAlign: formData.get("textAlign") as string || "center",
         overlayEnabled: formData.get("overlayEnabled") === "on",
-        overlayOpacity: parseInt(formData.get("overlayOpacity") as string) || 40,
+        overlayOpacity: isNaN(parsedOpacity) ? 40 : parsedOpacity,
       }
     }
 
@@ -363,10 +368,40 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   }
 
   return (
-    <div className="flex flex-col-reverse md:flex-row gap-6 animate-in fade-in duration-500">
+    <div className="flex flex-col lg:flex-row gap-6 animate-in fade-in duration-500 relative">
       
+      {/* Mobile Form Toggle Overlay */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/10 z-40 lg:hidden"
+          onClick={() => setIsMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Floating Action Button for Mobile */}
+      <button 
+        className="fixed bottom-20 left-6 z-40 lg:hidden h-14 w-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition-transform active:scale-95"
+        onClick={() => {
+          if (!editingWidget) setActiveTab("add")
+          setIsMobileSidebarOpen(true)
+        }}
+      >
+        {editingWidget ? <Settings2 className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+      </button>
+
       {/* Sidebar (Right) */}
-      <div id="widget-sidebar" className="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border border-border/50 bg-card rounded-xl md:h-[calc(100vh-8rem)] shadow-sm">
+      <div id="widget-sidebar" className={cn(
+        "w-full lg:w-[420px] shrink-0 flex flex-col border border-border/50 bg-card lg:rounded-xl shadow-xl lg:shadow-sm lg:h-[calc(100vh-8rem)]",
+        "fixed inset-y-0 right-0 z-50 lg:static transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-hidden",
+        isMobileSidebarOpen ? "translate-x-0" : "translate-x-full"
+      )}>
+        <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/10 lg:hidden">
+          <h3 className="font-bold text-lg">أدوات الواجهات</h3>
+          <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 -mr-2 rounded-md hover:bg-muted text-muted-foreground">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
         {/* Sidebar Header Tabs */}
         <div className="flex items-center border-b border-border/50 bg-muted/20 shrink-0">
           <button 
@@ -535,6 +570,16 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                             </span>
                           </Button>
                         </div>
+                        {productPickerOpen && editingWidget.type === "FeaturedProduct" && (
+                          <ProductPickerModal 
+                            open={productPickerOpen}
+                            onOpenChange={setProductPickerOpen}
+                            initialSelectedIds={featuredProductId ? [featuredProductId] : []}
+                            single={true}
+                            returnSlug={true}
+                            onSave={(ids) => setFeaturedProductId(ids[0] || "")}
+                          />
+                        )}
                       </div>
                     )}
 
@@ -766,15 +811,6 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                           returnSlug={true}
                           onSave={(ids) => setLinkValue(ids[0] || "")}
                         />
-                      ) : productPickerOpen && editingWidget.type === "FeaturedProduct" ? (
-                        <ProductPickerModal 
-                          open={productPickerOpen}
-                          onOpenChange={setProductPickerOpen}
-                          initialSelectedIds={featuredProductId ? [featuredProductId] : []}
-                          single={true}
-                          returnSlug={true}
-                          onSave={(ids) => setFeaturedProductId(ids[0] || "")}
-                        />
                       ) : productPickerOpen && editingWidget.type === "ProductList" ? (
                         <ProductPickerModal 
                           open={productPickerOpen}
@@ -801,13 +837,13 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         
         <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-muted/5 scrollbar-thin">
           {widgets.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+            <div className="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto p-6">
               <div className="w-16 h-16 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4">
                 <LayoutTemplate className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold mb-2">منطقة العرض فارغة</h3>
-              <p className="text-muted-foreground text-sm mb-6">استخدم القائمة الجانبية لإضافة واجهات جديدة مثل سلايدر الصور أو شبكة المنتجات.</p>
-              <Button onClick={() => setActiveTab("add")}>
+              <p className="text-muted-foreground text-sm mb-6">استخدم القائمة لإضافة واجهات جديدة مثل سلايدر الصور أو شبكة المنتجات.</p>
+              <Button onClick={() => { setActiveTab("add"); setIsMobileSidebarOpen(true) }}>
                 إضافة واجهة جديدة
               </Button>
             </div>
@@ -824,6 +860,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                   onClick={() => {
                     setEditingWidget(widget)
                     setActiveTab("edit")
+                    setIsMobileSidebarOpen(true)
                   }}
                   className={`group flex items-center justify-between p-3 md:p-4 rounded-xl border transition-all cursor-pointer ${
                     draggedWidgetId === widget.id 

@@ -7,6 +7,7 @@ import { AuthModal } from "@/components/auth/auth-modal"
 import { MobileSidebar } from "@/components/storefront/mobile-sidebar"
 import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav"
 import { auth } from "@/lib/auth"
+import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -41,6 +42,12 @@ export default async function StoreLayout({ children }: { children: React.ReactN
     }
   })
 
+  // Fetch active branches
+  const branches = await db.branch.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' }
+  })
+
   // Fetch Departments
   const departments = await db.department.findMany({
     include: {
@@ -60,8 +67,11 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       <main className="flex-1 overflow-x-hidden">
         {children}
       </main>
-      <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} />
+      <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} branches={branches} />
       <MobileBottomNav user={user} />
+      {themeConfig?.whatsappEnabled && themeConfig?.whatsappNumber && (
+        <FloatingWhatsApp number={themeConfig.whatsappNumber} />
+      )}
     </div>
   )
 }

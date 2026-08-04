@@ -79,15 +79,52 @@ export async function createProduct(formData: FormData) {
   }
 }
 
+import { auth } from "@/lib/auth"
+
 export async function deleteProduct(id: string) {
   try {
-    await db.product.delete({
+    const session = await auth()
+    if (session?.user?.role !== "ADMIN") {
+      return { success: false, error: "Not authorized to delete products" }
+    }
+    
+    const product = await db.product.delete({
       where: { id }
     })
+    
+    await db.activityLog.create({
+      data: {
+        action: "DELETE",
+        entityType: "Product",
+        entityId: product.id,
+        details: { message: `تم حذف المنتج: ${product.name}` },
+        userId: session.user.id || null
+      }
+    })
+
     revalidatePath("/admin/products")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete product" }
+  }
+}
+
+// ... skipped down to bulkDeleteProducts ...
+
+export async function bulkDeleteProducts(ids: string[]) {
+  try {
+    const session = await auth()
+    if (session?.user?.role !== "ADMIN") {
+      return { success: false, error: "Not authorized to delete products" }
+    }
+
+    await db.product.deleteMany({
+      where: { id: { in: ids } }
+    })
+    revalidatePath("/admin/products")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Failed to delete products" }
   }
 }
 
@@ -150,5 +187,56 @@ export async function updateProduct(id: string, formData: FormData) {
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update product" }
+  }
+}
+
+export async function toggleProductStatus(id: string, isActive: boolean) {
+  try {
+    await db.product.update({
+      where: { id },
+      data: { isActive }
+    })
+    revalidatePath("/admin/products")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Failed to update product status" }
+  }
+}
+
+export async function bulkToggleProductsStatus(ids: string[], isActive: boolean) {
+  try {
+    await db.product.updateMany({
+      where: { id: { in: ids } },
+      data: { isActive }
+    })
+    revalidatePath("/admin/products")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Failed to update products status" }
+  }
+}
+
+export async function bulkUpdateProducts(productsData: any[]) {
+  try {
+    // We update sequentially or use transaction
+    await db.$transaction(
+      productsData.map(p => 
+        db.product.update({
+          where: { id: p.id },
+          data: {
+            name: p.name,
+            price: p.price,
+            stock: p.stock,
+            categoryId: p.categoryId,
+            brandId: p.brandId || null,
+            isActive: p.isActive
+          }
+        })
+      )
+    )
+    revalidatePath("/admin/products")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Failed to update products" }
   }
 }

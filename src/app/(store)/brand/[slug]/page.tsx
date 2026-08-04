@@ -62,7 +62,7 @@ export default async function BrandPage(props: Props) {
   const page = searchParams?.page ? parseInt(searchParams.page as string) : 1
   const limit = 20
 
-  let whereClause: any = { brandId: brand.id }
+  let whereClause: any = { brandId: brand.id, isActive: true }
 
   if (categorySlug) {
     const category = await db.category.findUnique({ where: { slug: categorySlug } })

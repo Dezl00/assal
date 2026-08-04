@@ -12,6 +12,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
   
+  const [searchQuery, setSearchQuery] = useState("")
   const [editingCategory, setEditingCategory] = useState<any | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
@@ -106,6 +107,11 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     setCategoryToDelete(null)
   }
 
+  const filteredCategories = categories.filter(c => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    c.slug.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -133,6 +139,8 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 <input
                   type="text"
                   placeholder="ابحث عن قسم..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-10 w-full rounded-md border border-input bg-transparent pr-10 pl-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
@@ -149,14 +157,14 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
-                  {categories.length === 0 ? (
+                  {filteredCategories.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
-                        لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية.
+                        {searchQuery ? "لا توجد نتائج بحث مطابقة." : "لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية."}
                       </td>
                     </tr>
                   ) : (
-                    categories.map((category) => (
+                    filteredCategories.map((category) => (
                       <tr key={category.id} className="transition-colors hover:bg-muted/10">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">

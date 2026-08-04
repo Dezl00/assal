@@ -229,6 +229,7 @@ export async function deleteWidgetContentItem(id: string) {
         where: { name: item.title }
       })
       if (existingBrand) {
+        await db.product.updateMany({ where: { brandId: existingBrand.id }, data: { brandId: null } })
         await db.brand.delete({ where: { id: existingBrand.id } })
       }
     } else if (item?.widget?.type === "ProductList" && item.title) {
@@ -282,8 +283,8 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
       })
 
       if (disableRouting) {
-        // If routing is disabled, delete the existing brand if it exists
         if (existingBrand) {
+          await db.product.updateMany({ where: { brandId: existingBrand.id }, data: { brandId: null } })
           await db.brand.delete({ where: { id: existingBrand.id } })
         }
       } else {

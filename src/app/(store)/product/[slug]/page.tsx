@@ -50,11 +50,13 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   }
 }
 
+import { headers } from "next/headers"
+
 export default async function ProductDetailsPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
   const productSlug = decodeURIComponent(params.slug);
   const product = await db.product.findUnique({
-    where: { slug: productSlug },
+    where: { slug: productSlug, isActive: true },
     include: {
       images: { orderBy: { sortOrder: 'asc' } },
       category: {
@@ -67,15 +69,28 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
     }
   })
 
-  if (!product) {
+  if (!product || !product.isActive) {
     notFound()
   }
+
+  // Log product view asynchronously
+  const reqHeaders = await headers()
+  const ip = reqHeaders.get("x-forwarded-for") || reqHeaders.get("x-real-ip") || "unknown"
+  const userAgent = reqHeaders.get("user-agent") || "unknown"
+  db.productView.create({
+    data: {
+      productId: product.id,
+      ipAddress: ip,
+      userAgent: userAgent,
+    }
+  }).catch(e => console.error("Failed to log product view", e))
 
   // Fetch related products
   const relatedProducts = await db.product.findMany({
     where: { 
       categoryId: product.categoryId,
-      id: { not: product.id }
+      id: { not: product.id },
+      isActive: true
     },
     take: 4,
     include: { images: true, category: true }
