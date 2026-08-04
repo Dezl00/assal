@@ -33,8 +33,15 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [newItemImage, setNewItemImage] = useState("")
+  const [aboutUsImage, setAboutUsImage] = useState("")
 
   const [isDeleting, setIsDeleting] = useState(false)
+
+  React.useEffect(() => {
+    if (editingWidget?.type === "AboutUs") {
+      setAboutUsImage(editingWidget.settings?.image || "")
+    }
+  }, [editingWidget?.id])
 
   // Drag and Drop handlers
   function handleDragStart(e: React.DragEvent, id: string) {
@@ -122,6 +129,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         visionContent: formData.get("visionContent") as string,
         missionTitle: formData.get("missionTitle") as string,
         missionContent: formData.get("missionContent") as string,
+        image: formData.get("image") as string,
       }
     }
     
@@ -357,6 +365,14 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
 
                     {editingWidget.type === "AboutUs" && (
                       <div className="space-y-4 pt-4 border-t border-border/50">
+                        <div className="space-y-1.5">
+                          <input type="hidden" name="image" value={aboutUsImage} />
+                          <ImageUploader 
+                            label="صورة قسم من نحن" 
+                            value={aboutUsImage} 
+                            onChange={setAboutUsImage} 
+                          />
+                        </div>
                         <div className="space-y-1.5">
                           <label className="text-xs font-semibold">نص من نحن</label>
                           <textarea 

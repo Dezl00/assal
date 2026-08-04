@@ -31,13 +31,9 @@ export function AboutUs({ widget }: { widget?: any }) {
           {/* Image Content */}
           <div className="flex-1 w-full">
             <div className="relative aspect-[4/3] sm:aspect-square max-w-lg mx-auto flex items-center justify-center">
-              {/* Brand color circle behind the image */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 sm:w-[80%] sm:h-[80%] bg-primary rounded-full z-0 opacity-20"></div>
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/2 h-1/2 sm:w-[60%] sm:h-[60%] bg-primary rounded-full z-0"></div>
-              
               {/* Product Image */}
               <img 
-                src="/images/about-us.png" 
+                src={widget?.settings?.image || "/images/about-us.png"} 
                 alt="عن العسال جروب" 
                 className="w-full h-full object-contain relative z-10 scale-110"
               />
