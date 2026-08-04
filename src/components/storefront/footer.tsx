@@ -55,7 +55,7 @@ export function StorefrontFooter({ menuItems, themeConfig }: { menuItems: any[],
         
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-secondary-foreground/50">
-            © {new Date().getFullYear()} متجر {themeConfig?.storeName || "عسل"}. جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} {themeConfig?.storeName || "عسل"}. جميع الحقوق محفوظة.
           </p>
           <div className="flex gap-4">
             {/* Social Icons Placeholders */}

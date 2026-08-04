@@ -108,11 +108,21 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     
-    const data = {
+    const data: any = {
       title: formData.get("title") as string,
       status: formData.get("status") === "on",
       showDesktop: formData.get("showDesktop") === "on",
       showMobile: formData.get("showMobile") === "on",
+    }
+
+    if (editingWidget.type === "AboutUs") {
+      data.settings = {
+        content: formData.get("content") as string,
+        visionTitle: formData.get("visionTitle") as string,
+        visionContent: formData.get("visionContent") as string,
+        missionTitle: formData.get("missionTitle") as string,
+        missionContent: formData.get("missionContent") as string,
+      }
     }
     
     const res = await updateWidget(editingWidget.id, data)
@@ -344,6 +354,51 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         <Switch name="showMobile" defaultChecked={editingWidget.showMobile} />
                       </div>
                     </div>
+
+                    {editingWidget.type === "AboutUs" && (
+                      <div className="space-y-4 pt-4 border-t border-border/50">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold">نص من نحن</label>
+                          <textarea 
+                            name="content"
+                            defaultValue={editingWidget.settings?.content || ""}
+                            className="w-full rounded-md border border-input bg-background p-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[100px]"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold">عنوان الرؤية</label>
+                          <input 
+                            name="visionTitle"
+                            defaultValue={editingWidget.settings?.visionTitle || ""}
+                            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold">نص الرؤية</label>
+                          <textarea 
+                            name="visionContent"
+                            defaultValue={editingWidget.settings?.visionContent || ""}
+                            className="w-full rounded-md border border-input bg-background p-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[80px]"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold">عنوان الرسالة</label>
+                          <input 
+                            name="missionTitle"
+                            defaultValue={editingWidget.settings?.missionTitle || ""}
+                            className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold">نص الرسالة</label>
+                          <textarea 
+                            name="missionContent"
+                            defaultValue={editingWidget.settings?.missionContent || ""}
+                            className="w-full rounded-md border border-input bg-background p-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring min-h-[80px]"
+                          />
+                        </div>
+                      </div>
+                    )}
                     
                     <Button type="submit" disabled={isSubmitting} size="sm" className="w-full flex items-center justify-center gap-2">
                       {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "حفظ إعدادات الواجهة"}

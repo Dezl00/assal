@@ -322,7 +322,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 className="text-foreground"
                 onClick={() => setIsSearchOpen(true)}
               >
-                <Search className="w-7 h-7" />
+                <Search className="w-8 h-8" />
               </Button>
             </div>
 
@@ -330,7 +330,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             <div className="flex-shrink-0 flex items-center justify-center absolute left-1/2 -translate-x-1/2">
               <Link href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
-                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-14 w-auto object-contain" />
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-10 w-auto object-contain" />
                 ) : (
                   <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xl shadow-lg shadow-primary/20">ع</span>
                 )}
@@ -340,7 +340,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             {/* Left: Menu */}
             <div className="flex-1 flex justify-end">
               <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setMobileMenuOpen(true)}>
-                <MenuIcon className="w-7 h-7" />
+                <MenuIcon className="w-8 h-8" />
               </Button>
             </div>
             
