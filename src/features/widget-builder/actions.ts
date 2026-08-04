@@ -218,19 +218,28 @@ export async function deleteWidgetContentItem(id: string) {
 
 export async function updateWidgetContentItem(id: string, formData: FormData) {
   try {
-    const desktopImage = formData.get("desktopImage") as string || null
-    const mobileImage = formData.get("mobileImage") as string || null
-    const title = formData.get("title") as string || null
-    const subtitle = formData.get("subtitle") as string || null
-    const buttonText = formData.get("buttonText") as string || null
-    let buttonUrl = formData.get("buttonUrl") as string || null
+    const dataToUpdate: any = {}
+    
+    if (formData.has("desktopImage")) dataToUpdate.desktopImage = formData.get("desktopImage") as string
+    if (formData.has("mobileImage")) dataToUpdate.mobileImage = formData.get("mobileImage") as string
+    if (formData.has("title")) dataToUpdate.title = formData.get("title") as string
+    if (formData.has("subtitle")) dataToUpdate.subtitle = formData.get("subtitle") as string
+    if (formData.has("buttonText")) dataToUpdate.buttonText = formData.get("buttonText") as string
+    
+    let buttonUrl: string | null | undefined = undefined;
+    if (formData.has("buttonUrl")) {
+      buttonUrl = formData.get("buttonUrl") as string
+      dataToUpdate.buttonUrl = buttonUrl
+    }
+
+    const title = dataToUpdate.title
 
     const oldItem = await db.widgetContentItem.findUnique({
       where: { id },
       include: { widget: true }
     })
 
-    if (oldItem?.widget?.type === "BrandSlider" && title) {
+    if (oldItem?.widget?.type === "BrandSlider" && title !== undefined) {
       const disableRouting = (oldItem?.widget?.settings as any)?.disableRouting === true
       
       const slug = title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0621-\u064A0-9\-]+/g, '') + '-' + Math.random().toString(36).substring(2, 6)
@@ -252,30 +261,28 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
             where: { id: existingBrand.id },
             data: {
               name: title,
-              logoUrl: desktopImage || existingBrand.logoUrl
+              logoUrl: dataToUpdate.desktopImage || existingBrand.logoUrl
             }
           })
-          if (!buttonUrl) buttonUrl = `/brand/${existingBrand.slug}`
+          if (!buttonUrl) {
+            buttonUrl = `/brand/${existingBrand.slug}`
+            dataToUpdate.buttonUrl = buttonUrl
+          }
         } else {
           const brand = await db.brand.create({
             data: {
               name: title,
               slug: slug,
-              logoUrl: desktopImage,
+              logoUrl: dataToUpdate.desktopImage || oldItem.desktopImage,
             }
           })
-          if (!buttonUrl) buttonUrl = `/brand/${brand.slug}`
+          if (!buttonUrl) {
+            buttonUrl = `/brand/${brand.slug}`
+            dataToUpdate.buttonUrl = buttonUrl
+          }
         }
       }
     }
-
-    const dataToUpdate: any = {}
-    if (desktopImage !== null) dataToUpdate.desktopImage = desktopImage
-    if (mobileImage !== null) dataToUpdate.mobileImage = mobileImage
-    if (title !== null) dataToUpdate.title = title
-    if (subtitle !== null) dataToUpdate.subtitle = subtitle
-    if (buttonText !== null) dataToUpdate.buttonText = buttonText
-    if (buttonUrl !== null) dataToUpdate.buttonUrl = buttonUrl
 
     const item = await db.widgetContentItem.update({
       where: { id },
