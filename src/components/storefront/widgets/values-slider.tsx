@@ -1,8 +1,6 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
-import useEmblaCarousel from "embla-carousel-react"
-import Autoplay from "embla-carousel-autoplay"
+import React, { useEffect, useState, useMemo } from "react"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { Leaf, Lightbulb, Star, Award } from "lucide-react"
 
@@ -14,28 +12,34 @@ const DEFAULT_VALUES = [
 ]
 
 export function ValuesSlider({ widget }: { widget?: any }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { 
-      loop: true, 
-      align: "center",
-      direction: "rtl"
-    },
-    [Autoplay({ delay: 3000, stopOnInteraction: false })]
-  )
-
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [scrollSnaps, setScrollSnaps] = useState<number[]>([])
+  const items = widget?.items?.length > 0 ? widget.items : DEFAULT_VALUES
+  
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [itemsPerPage, setItemsPerPage] = useState(4)
 
   useEffect(() => {
-    if (!emblaApi) return
+    const handleResize = () => {
+      if (window.innerWidth < 640) setItemsPerPage(1)
+      else if (window.innerWidth < 768) setItemsPerPage(2)
+      else if (window.innerWidth < 1024) setItemsPerPage(3)
+      else setItemsPerPage(4)
+    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
-    setScrollSnaps(emblaApi.scrollSnapList())
-    emblaApi.on("select", () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap())
-    })
-  }, [emblaApi])
+  const totalPages = Math.ceil(items.length / itemsPerPage)
 
-  const items = widget?.items?.length > 0 ? widget.items : DEFAULT_VALUES
+  useEffect(() => {
+    if (totalPages <= 1) return
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % totalPages)
+    }, 3000)
+    return () => clearInterval(interval)
+  }, [totalPages])
+
+  const visibleItems = items.slice(currentIndex * itemsPerPage, (currentIndex + 1) * itemsPerPage)
 
   return (
     <div className="bg-primary py-16 text-primary-foreground overflow-hidden">
@@ -46,15 +50,16 @@ export function ValuesSlider({ widget }: { widget?: any }) {
           </div>
           
           <div className="relative max-w-5xl mx-auto">
-            <div className="overflow-hidden" ref={emblaRef} dir="rtl">
-              <div className="flex -ml-4">
-                {items.map((item: any, idx: number) => {
+            <div className="overflow-hidden" dir="rtl">
+              <div className="flex justify-center transition-all duration-500 ease-in-out">
+                {visibleItems.map((item: any, idx: number) => {
                   const Icon = item.icon || Leaf
                   
                   return (
                     <div 
                       key={item.id || idx} 
-                      className="flex-[0_0_50%] sm:flex-[0_0_33.333%] md:flex-[0_0_25%] min-w-0 pl-4"
+                      className="flex-1 min-w-0 px-4"
+                      style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%` }}
                     >
                       <div className="flex flex-col items-center justify-center text-center p-4">
                         <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-full flex items-center justify-center mb-4 text-primary shadow-lg transition-transform hover:scale-105">
@@ -64,7 +69,7 @@ export function ValuesSlider({ widget }: { widget?: any }) {
                             <Icon className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={1.5} />
                           )}
                         </div>
-                        <h3 className="text-xl sm:text-2xl font-bold">{item.title || item.name}</h3>
+                        <h3 className="text-xl sm:text-2xl font-bold text-white">{item.title || item.name}</h3>
                       </div>
                     </div>
                   )
@@ -73,20 +78,22 @@ export function ValuesSlider({ widget }: { widget?: any }) {
             </div>
 
             {/* Dots */}
-            <div className="flex justify-center gap-2 mt-8">
-              {scrollSnaps.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => emblaApi?.scrollTo(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                    index === selectedIndex 
-                      ? "bg-white w-6" 
-                      : "bg-white/50 hover:bg-white/80"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-8">
+                {Array.from({ length: totalPages }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentIndex 
+                        ? "bg-white w-6" 
+                        : "bg-white/50 hover:bg-white/80"
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </ScrollReveal>
       </div>
