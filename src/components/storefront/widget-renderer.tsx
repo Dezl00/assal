@@ -5,6 +5,8 @@ import { BannerGrid } from "./widgets/banner-grid"
 import { TextBlock } from "./widgets/text-block"
 import { BrandSlider } from "./widgets/brand-slider"
 import { CategoryGrid } from "./widgets/category-grid"
+import { AboutUs } from "./widgets/about-us"
+import { ValuesSlider } from "./widgets/values-slider"
 
 export function WidgetRenderer({ widget }: { widget: any }) {
   // Common visibility classes based on settings
@@ -47,6 +49,18 @@ export function WidgetRenderer({ widget }: { widget: any }) {
       return (
         <section className={`w-full ${visibilityClass}`}>
           <BrandSlider widget={widget} />
+        </section>
+      )
+    case "AboutUs":
+      return (
+        <section className={`w-full py-16 ${visibilityClass}`}>
+          <AboutUs widget={widget} />
+        </section>
+      )
+    case "ValuesSlider":
+      return (
+        <section className={`w-full ${visibilityClass}`}>
+          <ValuesSlider widget={widget} />
         </section>
       )
     default:

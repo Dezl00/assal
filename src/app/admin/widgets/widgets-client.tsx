@@ -16,6 +16,8 @@ const WIDGET_TYPES = [
   { id: "BrandSlider", name: "سلايدر الماركات", icon: ImagePlus, desc: "شريط متحرك لانهائي لشعارات الماركات" },
   { id: "CategoryGrid", name: "شبكة الأقسام", icon: LayoutTemplate, desc: "عرض الأقسام الرئيسية كشبكة صور" },
   { id: "TextBlock", name: "نص مخصص", icon: AlignLeft, desc: "مساحة لكتابة نص ترحيبي أو معلومات" },
+  { id: "AboutUs", name: "من نحن", icon: AlignLeft, desc: "نبذة تعريفية عن الشركة وتاريخها" },
+  { id: "ValuesSlider", name: "قيمنا (سلايدر)", icon: ImageIcon, desc: "سلايدر متحرك لعرض قيم ومميزات الشركة" },
 ]
 
 export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: any[], categories: any[] }) {
