@@ -6,13 +6,15 @@ import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Ima
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
-import { ImageUploader } from "@/components/ui/image-uploader"
+import { ProductPickerModal } from "@/components/admin/product-picker-modal"
+import { getCollectionProducts } from "@/features/widget-builder/actions"
 import { Switch } from "@/components/ui/switch"
 
 const WIDGET_TYPES = [
   { id: "HeroSlider", name: "سلايدر الصور", icon: ImageIcon, desc: "سلايدر متحرك للصور أعلى الصفحة" },
   { id: "FeaturedProducts", name: "المنتجات المميزة", icon: ShoppingBag, desc: "عرض مجموعة من المنتجات المختارة" },
   { id: "BannerGrid", name: "شبكة البنرات", icon: LayoutTemplate, desc: "بنرات إعلانية لعروض المتجر" },
+  { id: "ProductList", name: "قائمة منتجات", icon: ShoppingCart, desc: "عرض مجموعة من المنتجات في قائمة" },
   { id: "BrandSlider", name: "سلايدر شعارات", icon: ImagePlus, desc: "شريط متحرك لعرض الشعارات أو الشركاء" },
   { id: "CategoryGrid", name: "شبكة الأقسام", icon: LayoutTemplate, desc: "عرض الأقسام الرئيسية كشبكة صور" },
   { id: "TextBlock", name: "نص مخصص", icon: AlignLeft, desc: "مساحة لكتابة نص ترحيبي أو معلومات" },
@@ -33,7 +35,11 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [newItemImage, setNewItemImage] = useState("")
+  const [newItemMobileImage, setNewItemMobileImage] = useState("")
   const [aboutUsImage, setAboutUsImage] = useState("")
+
+  const [productPickerOpen, setProductPickerOpen] = useState(false)
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
 
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -138,6 +144,15 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         disableRouting: formData.get("disableRouting") === "on",
       }
     }
+    
+    if (editingWidget.type === "BannerGrid") {
+      data.settings = {
+        textPosition: formData.get("textPosition") as string || "bottom",
+        textAlign: formData.get("textAlign") as string || "center",
+        overlayEnabled: formData.get("overlayEnabled") === "on",
+        overlayOpacity: parseInt(formData.get("overlayOpacity") as string) || 40,
+      }
+    }
 
     const res = await updateWidget(editingWidget.id, data)
     setIsSubmitting(false)
@@ -150,7 +165,6 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
 
   async function handleToggleWidget(widget: any) {
     const newStatus = !widget.status;
-    // Optimistic update
     setWidgets(widgets.map(w => w.id === widget.id ? { ...w, status: newStatus } : w));
     if (editingWidget?.id === widget.id) {
       setEditingWidget({ ...editingWidget, status: newStatus });
@@ -160,7 +174,6 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     if (res.success) {
       toast.success(newStatus ? "تم تفعيل الواجهة" : "تم إلغاء تفعيل الواجهة");
     } else {
-      // Revert if error
       setWidgets(widgets.map(w => w.id === widget.id ? { ...w, status: !newStatus } : w));
       if (editingWidget?.id === widget.id) {
         setEditingWidget({ ...editingWidget, status: !newStatus });
@@ -209,9 +222,13 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set("desktopImage", newItemImage)
+    formData.set("mobileImage", newItemMobileImage)
+    
+    if (selectedProductIds.length > 0) {
+      formData.append("productIds", JSON.stringify(selectedProductIds))
+    }
     
     if (editingItemId) {
-      // Update existing item
       const res = await updateWidgetContentItem(editingItemId, formData)
       setIsSubmitting(false)
       if (res.success) {
@@ -225,7 +242,6 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         toast.error("فشل الحفظ")
       }
     } else {
-      // Create new item
       const res = await createWidgetContentItem(editingWidget.id, formData)
       setIsSubmitting(false)
       if (res.success) {
@@ -243,6 +259,19 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   function startEditItem(item: any) {
     setEditingItemId(item.id)
     setNewItemImage(item.desktopImage || "")
+    setNewItemMobileImage(item.mobileImage || "")
+    if (editingWidget?.type === "ProductList" && item.title) {
+      const collectionIdOrSlug = item.buttonUrl ? item.buttonUrl.replace('/collection/', '') : null;
+      if (collectionIdOrSlug) {
+        getCollectionProducts(collectionIdOrSlug).then(ids => {
+          setSelectedProductIds(ids)
+        }).catch(e => {
+          getCollectionProducts(collectionIdOrSlug).then(setSelectedProductIds)
+        })
+      }
+    } else {
+      setSelectedProductIds([])
+    }
     const form: any = document.getElementById("add-item-form")
     if (form) {
       if (form.elements["title"]) form.elements["title"].value = item.title || ""
@@ -379,6 +408,49 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                       )}
                     </div>
 
+                    {editingWidget.type === "BannerGrid" && (
+                      <div className="pt-4 mt-4 border-t border-border/50 space-y-4">
+                        <h4 className="font-semibold text-sm">إعدادات تصميم البنرات</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold">موضع النص</label>
+                            <select name="textPosition" defaultValue={editingWidget.settings?.textPosition || "bottom"} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                              <option value="top">أعلى</option>
+                              <option value="center">وسط</option>
+                              <option value="bottom">أسفل</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold">محاذاة النص</label>
+                            <select name="textAlign" defaultValue={editingWidget.settings?.textAlign || "center"} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                              <option value="right">يمين</option>
+                              <option value="center">وسط</option>
+                              <option value="left">يسار</option>
+                            </select>
+                          </div>
+                        </div>
+                        
+                        <div className="pt-2">
+                          <div className="flex items-center justify-between mb-4">
+                            <label className="text-sm font-semibold">تفعيل التظليل (Overlay)</label>
+                            <Switch name="overlayEnabled" defaultChecked={editingWidget.settings?.overlayEnabled ?? true} />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold">درجة التظليل (%)</label>
+                            <input 
+                              type="range" 
+                              name="overlayOpacity" 
+                              min="0" 
+                              max="100" 
+                              step="5"
+                              defaultValue={editingWidget.settings?.overlayOpacity ?? 40} 
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {editingWidget.type === "AboutUs" && (
                       <div className="space-y-4 pt-4 border-t border-border/50">
                         <div className="space-y-1.5">
@@ -437,7 +509,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                     </Button>
                   </form>
 
-                  {(editingWidget.type === "HeroSlider" || editingWidget.type === "BannerGrid" || editingWidget.type === "BrandSlider") && (
+                  {(editingWidget.type === "HeroSlider" || editingWidget.type === "BannerGrid" || editingWidget.type === "BrandSlider" || editingWidget.type === "ProductList") && (
                     <div className="pt-6 border-t border-border/50 space-y-4">
                       <h4 className="font-semibold text-sm">محتوى الواجهة</h4>
                       
@@ -500,22 +572,80 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         <div className="space-y-2">
                           <input 
                             name="title" 
-                            placeholder={editingWidget.type === "BrandSlider" ? "اسم الماركة (مطلوب لإنشاء الماركة)" : "العنوان النصي (اختياري)"} 
-                            required={editingWidget.type === "BrandSlider"}
+                            placeholder={editingWidget.type === "BrandSlider" ? "اسم الماركة (مطلوب لإنشاء الماركة)" : editingWidget.type === "ProductList" ? "اسم القائمة (مطلوب لإنشاء الرابط)" : "العنوان النصي (اختياري)"} 
+                            required={editingWidget.type === "BrandSlider" || editingWidget.type === "ProductList"}
                             className="h-9 w-full rounded border border-input bg-background px-2 text-xs" 
                           />
-                          <input 
-                            name="buttonUrl" 
-                            placeholder={editingWidget.type === "BrandSlider" ? "رابط التوجيه (يتم تلقائياً التوجيه لمنتجات الماركة)" : "رابط التوجيه عند الضغط"} 
-                            dir="ltr" 
-                            className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" 
-                          />
+                          
+                          {editingWidget.type === "BannerGrid" ? (
+                            <div className="flex gap-2">
+                              <select 
+                                name="redirectType" 
+                                className="h-9 w-1/3 rounded border border-input bg-background px-2 text-xs"
+                                onChange={(e) => {
+                                  const input = document.getElementById("buttonUrlInput") as HTMLInputElement;
+                                  if (input) {
+                                    if (e.target.value === "custom") {
+                                      input.placeholder = "الرابط المخصص";
+                                      input.value = "";
+                                    } else {
+                                      input.placeholder = "اكتب معرف الـ " + e.target.value + " أو الرابط النسبي";
+                                    }
+                                  }
+                                }}
+                              >
+                                <option value="custom">رابط مخصص</option>
+                                <option value="category">قسم (Category)</option>
+                                <option value="department">مجال (Department)</option>
+                                <option value="product">منتج (Product)</option>
+                                <option value="collection">قائمة منتجات (Collection)</option>
+                              </select>
+                              <input 
+                                id="buttonUrlInput"
+                                name="buttonUrl" 
+                                placeholder="الرابط المخصص" 
+                                dir="ltr" 
+                                className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs text-left" 
+                              />
+                            </div>
+                          ) : editingWidget.type !== "ProductList" ? (
+                            <input 
+                              name="buttonUrl" 
+                              placeholder={editingWidget.type === "BrandSlider" ? "رابط التوجيه (يتم تلقائياً التوجيه لمنتجات الماركة)" : "رابط التوجيه عند الضغط"} 
+                              dir="ltr" 
+                              className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" 
+                            />
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="text-xs text-muted-foreground p-2 bg-secondary/20 rounded mb-2">
+                                سيتم إنشاء مسار تلقائي لهذه القائمة بمجرد الحفظ.
+                              </div>
+                              <Button 
+                                type="button" 
+                                variant="outline" 
+                                onClick={() => setProductPickerOpen(true)}
+                                className="w-full h-9 text-xs"
+                              >
+                                <ShoppingBag className="w-4 h-4 mr-2" />
+                                تحديد المنتجات ({selectedProductIds.length})
+                              </Button>
+                            </div>
+                          )}
                         </div>
                         
-                        <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || !newItemImage}>
-                          {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث الشريحة" : "إضافة الشريحة")}
+                        <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || (editingWidget.type !== "ProductList" && !newItemImage)}>
+                          {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث التعديل" : "إضافة العنصر")}
                         </Button>
                       </form>
+                      
+                      {editingWidget.type === "ProductList" && (
+                        <ProductPickerModal 
+                          open={productPickerOpen}
+                          onOpenChange={setProductPickerOpen}
+                          initialSelectedIds={selectedProductIds}
+                          onSave={setSelectedProductIds}
+                        />
+                      )}
                     </div>
                   )}
                 </div>

@@ -8,6 +8,7 @@ import { CategoryGrid } from "./widgets/category-grid"
 import { AboutUs } from "./widgets/about-us"
 import { ValuesSlider } from "./widgets/values-slider"
 import { StoreFeatures } from "./widgets/store-features"
+import { ProductList } from "./widgets/product-list"
 
 export function WidgetRenderer({ widget }: { widget: any }) {
   // Common visibility classes based on settings
@@ -32,6 +33,12 @@ export function WidgetRenderer({ widget }: { widget: any }) {
       return (
         <section className={`w-full py-16 ${visibilityClass}`}>
           <FeaturedProducts widget={widget} />
+        </section>
+      )
+    case "ProductList":
+      return (
+        <section className={`w-full py-16 ${visibilityClass}`}>
+          <ProductList widget={widget} />
         </section>
       )
     case "BannerGrid":

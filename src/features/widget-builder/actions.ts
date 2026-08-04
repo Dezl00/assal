@@ -168,6 +168,32 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
       if (!buttonUrl) {
         buttonUrl = `/brand/${brand.slug}`
       }
+    } else if (widget?.type === "ProductList" && title) {
+      // Create Collection
+      const translated = await translateToEnglish(title);
+      let baseSlug = translated.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w0-9\-]+/g, '');
+      if (!baseSlug || baseSlug === '-') baseSlug = 'collection';
+      
+      let slug = baseSlug;
+      let counter = 1;
+      while (await db.collection.findUnique({ where: { slug } })) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      
+      const productIds = formData.get("productIds") as string;
+      const parsedProductIds = productIds ? JSON.parse(productIds) : [];
+      
+      const collection = await db.collection.create({
+        data: {
+          name: title,
+          slug: slug,
+          products: {
+            connect: parsedProductIds.map((id: string) => ({ id }))
+          }
+        }
+      })
+      if (!buttonUrl) buttonUrl = `/collection/${collection.slug}`
     }
 
     const item = await db.widgetContentItem.create({
@@ -204,6 +230,13 @@ export async function deleteWidgetContentItem(id: string) {
       })
       if (existingBrand) {
         await db.brand.delete({ where: { id: existingBrand.id } })
+      }
+    } else if (item?.widget?.type === "ProductList" && item.title) {
+      const existingCollection = await db.collection.findFirst({
+        where: { name: item.title }
+      })
+      if (existingCollection) {
+        await db.collection.delete({ where: { id: existingCollection.id } })
       }
     }
 
@@ -282,6 +315,41 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
           }
         }
       }
+    } else if (oldItem?.widget?.type === "ProductList" && title !== undefined) {
+      const slug = title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0621-\u064A0-9\-]+/g, '') + '-' + Math.random().toString(36).substring(2, 6)
+      const existingCollection = await db.collection.findFirst({ where: { name: oldItem.title || "" } })
+      
+      let newCollection;
+      if (existingCollection) {
+        newCollection = await db.collection.update({
+          where: { id: existingCollection.id },
+          data: { name: title }
+        })
+        if (!buttonUrl) {
+          buttonUrl = `/collection/${existingCollection.slug}`
+          dataToUpdate.buttonUrl = buttonUrl
+        }
+      } else {
+        newCollection = await db.collection.create({
+          data: { name: title, slug }
+        })
+        if (!buttonUrl) {
+          buttonUrl = `/collection/${newCollection.slug}`
+          dataToUpdate.buttonUrl = buttonUrl
+        }
+      }
+
+      if (formData.has("productIds")) {
+        const productIds = JSON.parse(formData.get("productIds") as string);
+        await db.collection.update({
+          where: { id: newCollection.id },
+          data: {
+            products: {
+              set: productIds.map((id: string) => ({ id }))
+            }
+          }
+        })
+      }
     }
 
     const item = await db.widgetContentItem.update({
@@ -295,6 +363,30 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
   } catch (error: any) {
     return { success: false, error: "Failed to update widget item" }
   }
+}
+
+export async function getProducts() {
+  const products = await db.product.findMany({
+    select: { id: true, name: true, price: true, categoryId: true },
+    orderBy: { createdAt: 'desc' }
+  })
+  return products
+}
+
+export async function getCategories() {
+  const categories = await db.category.findMany({
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'desc' }
+  })
+  return categories
+}
+
+export async function getCollectionProducts(collectionId: string) {
+  const collection = await db.collection.findUnique({
+    where: { id: collectionId },
+    include: { products: { select: { id: true } } }
+  })
+  return collection?.products.map(p => p.id) || []
 }
 
 export async function updateWidgetContentItemOrder(updates: { id: string, sortOrder: number }[]) {
