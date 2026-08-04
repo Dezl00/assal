@@ -44,7 +44,7 @@ export function AboutUs({ widget }: { widget?: any }) {
       </ScrollReveal>
 
       {/* Vision & Mission Section */}
-      <ScrollReveal variant="fade-up" delay={200}>
+      <ScrollReveal variant="fade-up" delay={0.2}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start pt-12 border-t border-border/10 relative z-10 bg-background/50 backdrop-blur-sm rounded-3xl p-8">
           
           {/* Vision */}
