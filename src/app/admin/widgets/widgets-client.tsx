@@ -331,7 +331,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     if (widget.type === "FeaturedProduct" && widget.settings?.productId) {
       setFeaturedProductId(widget.settings.productId)
     } else {
-      setFeaturedProductId(null)
+      setFeaturedProductId("")
     }
     // Auto scroll to sidebar on mobile
     if (window.innerWidth < 768) {
