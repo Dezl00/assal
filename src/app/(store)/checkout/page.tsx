@@ -2,6 +2,8 @@ import { auth } from "@/lib/auth"
 import CheckoutClient from "./checkout-client"
 import { db } from "@/lib/db"
 
+import { Suspense } from "react"
+
 export default async function CheckoutPage() {
   const session = await auth()
   
@@ -17,5 +19,9 @@ export default async function CheckoutPage() {
     }
   }
 
-  return <CheckoutClient user={userDetails} />
+  return (
+    <Suspense fallback={<div className="container mx-auto p-8 text-center">جاري تحميل صفحة الدفع...</div>}>
+      <CheckoutClient user={userDetails} />
+    </Suspense>
+  )
 }

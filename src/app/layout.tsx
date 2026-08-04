@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { db } from "@/lib/db";
 import NextTopLoader from 'nextjs-toploader';
 import { PageTracker } from "@/components/page-tracker";
+import { Suspense } from "react";
 
 const fallbackFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -88,7 +89,9 @@ export default async function RootLayout({
           speed={200}
           shadow="0 0 10px var(--color-primary, #b79045),0 0 5px var(--color-primary, #b79045)"
         />
-        <PageTracker />
+        <Suspense fallback={null}>
+          <PageTracker />
+        </Suspense>
         {children}
         <Toaster 
           position="top-center" 
