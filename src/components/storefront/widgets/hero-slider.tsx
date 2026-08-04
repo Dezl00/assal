@@ -50,7 +50,7 @@ export function HeroSlider({ widget }: { widget: any }) {
               <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-24 pb-16">
                 <div className="container mx-auto max-w-4xl text-center md:text-right">
                   {slide.title && (
-                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight animate-in slide-in-from-bottom-8 duration-700 drop-shadow-md">
+                    <h2 className="text-4xl md:text-6xl font-semibold text-white mb-4 leading-tight animate-in slide-in-from-bottom-8 duration-700 drop-shadow-md">
                       {slide.title}
                     </h2>
                   )}

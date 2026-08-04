@@ -68,7 +68,7 @@ export function StoreFeatures({ widget }: { widget?: any }) {
                             <Icon className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
                           )}
                         </div>
-                        <h3 className="font-bold text-lg md:text-xl mb-1.5 md:mb-2 text-foreground">{item.title || item.name}</h3>
+                        <h3 className="font-semibold text-lg md:text-xl mb-1.5 md:mb-2 text-foreground">{item.title || item.name}</h3>
                         <p className="text-sm md:text-base text-muted-foreground">{item.subtitle || item.description}</p>
                       </div>
                     </div>

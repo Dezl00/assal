@@ -111,7 +111,7 @@ export function BrandSlider({ widget }: { widget: any }) {
       {widget.title && widget.title !== "" && (
         <ScrollReveal variant="fade-up" duration={0.5}>
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold tracking-tight">{widget.title}</h2>
+            <h2 className="text-3xl font-semibold tracking-tight">{widget.title}</h2>
           </div>
         </ScrollReveal>
       )}

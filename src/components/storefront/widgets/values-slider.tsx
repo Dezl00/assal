@@ -51,7 +51,7 @@ export function ValuesSlider({ widget }: { widget?: any }) {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal variant="fade-up">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">{widget?.title || "قيمنا"}</h2>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4">{widget?.title || "قيمنا"}</h2>
           </div>
         </ScrollReveal>
           
@@ -79,7 +79,7 @@ export function ValuesSlider({ widget }: { widget?: any }) {
                                 <Icon className="w-12 h-12 sm:w-16 sm:h-16" strokeWidth={1.5} />
                               )}
                             </div>
-                            <h3 className="text-xl sm:text-2xl font-bold text-white">{item.title || item.name}</h3>
+                            <h3 className="text-xl sm:text-2xl font-medium text-white">{item.title || item.name}</h3>
                           </div>
                         </div>
                       )

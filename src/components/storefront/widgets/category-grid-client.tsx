@@ -11,7 +11,7 @@ export function CategoryGridClient({ widget, categories }: { widget: any, catego
       {widget.title && (
         <ScrollReveal variant="fade-up" duration={0.5}>
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">{widget.title}</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">{widget.title}</h2>
             {widget.subtitle && <p className="mt-4 text-muted-foreground">{widget.subtitle}</p>}
           </div>
         </ScrollReveal>
@@ -39,7 +39,7 @@ export function CategoryGridClient({ widget, categories }: { widget: any, catego
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <span className="text-3xl font-bold">{category.name.charAt(0)}</span>
+                    <span className="text-3xl font-semibold">{category.name.charAt(0)}</span>
                   </div>
                 )}
               </div>

@@ -14,15 +14,16 @@ export function AboutUs({ widget }: { widget?: any }) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Decorative background curves */}
-      <div className="absolute top-1/2 left-0 right-0 h-[600px] w-[150%] -translate-x-[25%] -translate-y-1/2 rounded-[100%] border-[2px] border-primary/20 -z-10 hidden md:block opacity-50"></div>
       
       <ScrollReveal variant="fade-up">
         <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-20">
           
           {/* Text Content */}
           <div className="flex-1 text-center md:text-right">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">{title}</h2>
+            <div className="inline-block px-4 py-1.5 mb-4 rounded-full bg-primary/10 text-primary text-sm font-semibold border border-primary/20">
+              نبذة عنا
+            </div>
+            <h2 className="text-3xl md:text-4xl font-semibold mb-6 text-foreground">{title}</h2>
             <p className="text-lg md:text-xl leading-relaxed text-muted-foreground">
               {content}
             </p>
@@ -45,12 +46,12 @@ export function AboutUs({ widget }: { widget?: any }) {
 
       {/* Vision & Mission Section */}
       <ScrollReveal variant="fade-up" delay={0.2}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start pt-12 border-t border-border/10 relative z-10 bg-background/50 backdrop-blur-sm rounded-3xl p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-start pt-12 relative z-10">
           
           {/* Vision */}
           <div className="flex flex-col items-center text-center group">
             <div className="flex items-center justify-center gap-4 mb-6">
-              <h3 className="text-3xl font-bold text-foreground">{visionTitle}</h3>
+              <h3 className="text-2xl md:text-3xl font-semibold text-foreground">{visionTitle}</h3>
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                 <Lightbulb className="w-8 h-8" strokeWidth={1.5} />
               </div>
@@ -63,7 +64,7 @@ export function AboutUs({ widget }: { widget?: any }) {
           {/* Mission */}
           <div className="flex flex-col items-center text-center group">
             <div className="flex items-center justify-center gap-4 mb-6">
-              <h3 className="text-3xl font-bold text-foreground">{missionTitle}</h3>
+              <h3 className="text-2xl md:text-3xl font-semibold text-foreground">{missionTitle}</h3>
               <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                 <Target className="w-8 h-8" strokeWidth={1.5} />
               </div>

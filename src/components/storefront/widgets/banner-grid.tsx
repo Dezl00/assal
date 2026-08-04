@@ -17,7 +17,7 @@ export function BannerGrid({ widget }: { widget: any }) {
       {widget.title && (
         <ScrollReveal variant="fade-up" duration={0.5}>
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">{widget.title}</h2>
+            <h2 className="text-3xl font-semibold tracking-tight text-foreground">{widget.title}</h2>
             {widget.subtitle && <p className="text-muted-foreground mt-2">{widget.subtitle}</p>}
           </div>
         </ScrollReveal>
@@ -41,7 +41,7 @@ export function BannerGrid({ widget }: { widget: any }) {
               />
               <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-500" />
               <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                <h3 className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
+                <h3 className="text-2xl md:text-3xl font-semibold text-white drop-shadow-lg group-hover:-translate-y-2 transition-transform duration-500">
                   {item.title}
                 </h3>
               </div>
