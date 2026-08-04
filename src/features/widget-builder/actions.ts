@@ -139,8 +139,9 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
 
     // Check if widget is BrandSlider
     const widget = await db.widget.findUnique({ where: { id: widgetId } })
+    const disableRouting = (widget?.settings as any)?.disableRouting === true
     
-    if (widget?.type === "BrandSlider" && title) {
+    if (widget?.type === "BrandSlider" && title && !disableRouting) {
       // Auto-sync: Create Brand
       const translated = await translateToEnglish(title);
       let baseSlug = translated.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w0-9\-]+/g, '');
@@ -192,6 +193,20 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
 
 export async function deleteWidgetContentItem(id: string) {
   try {
+    const item = await db.widgetContentItem.findUnique({
+      where: { id },
+      include: { widget: true }
+    })
+    
+    if (item?.widget?.type === "BrandSlider" && item.title) {
+      const existingBrand = await db.brand.findFirst({
+        where: { name: item.title }
+      })
+      if (existingBrand) {
+        await db.brand.delete({ where: { id: existingBrand.id } })
+      }
+    }
+
     await db.widgetContentItem.delete({ where: { id } })
     revalidatePath("/admin/widgets")
     revalidatePath("/")
@@ -216,32 +231,41 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
     })
 
     if (oldItem?.widget?.type === "BrandSlider" && title) {
+      const disableRouting = (oldItem?.widget?.settings as any)?.disableRouting === true
+      
       const slug = title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0621-\u064A0-9\-]+/g, '') + '-' + Math.random().toString(36).substring(2, 6)
       
-      // If the title changed, we create a new brand (since we don't have a direct link to the old brand ID)
-      // If the title is the same, we update the existing brand's logo
       const existingBrand = await db.brand.findFirst({
         where: { name: oldItem.title || "" }
       })
 
-      if (existingBrand) {
-        await db.brand.update({
-          where: { id: existingBrand.id },
-          data: {
-            name: title,
-            logoUrl: desktopImage || existingBrand.logoUrl
-          }
-        })
-        if (!buttonUrl) buttonUrl = `/brand/${existingBrand.slug}`
+      if (disableRouting) {
+        // If routing is disabled, delete the existing brand if it exists
+        if (existingBrand) {
+          await db.brand.delete({ where: { id: existingBrand.id } })
+        }
       } else {
-        const brand = await db.brand.create({
-          data: {
-            name: title,
-            slug: slug,
-            logoUrl: desktopImage,
-          }
-        })
-        if (!buttonUrl) buttonUrl = `/brand/${brand.slug}`
+        // If the title changed, we create a new brand (since we don't have a direct link to the old brand ID)
+        // If the title is the same, we update the existing brand's logo
+        if (existingBrand) {
+          await db.brand.update({
+            where: { id: existingBrand.id },
+            data: {
+              name: title,
+              logoUrl: desktopImage || existingBrand.logoUrl
+            }
+          })
+          if (!buttonUrl) buttonUrl = `/brand/${existingBrand.slug}`
+        } else {
+          const brand = await db.brand.create({
+            data: {
+              name: title,
+              slug: slug,
+              logoUrl: desktopImage,
+            }
+          })
+          if (!buttonUrl) buttonUrl = `/brand/${brand.slug}`
+        }
       }
     }
 
