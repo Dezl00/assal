@@ -15,6 +15,7 @@ export async function GET(
           include: {
             category: true,
             brand: true,
+            images: true,
           }
         }
       }

@@ -17,6 +17,7 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
         include: {
           category: true,
           brand: true,
+          images: true,
         }
       }
     }
