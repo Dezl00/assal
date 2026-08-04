@@ -7,7 +7,7 @@ export function AboutUs({ widget }: { widget?: any }) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <ScrollReveal animation="fade-up">
+      <ScrollReveal variant="fade-up">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">{title}</h2>
           <p className="text-lg md:text-xl leading-relaxed text-muted-foreground">

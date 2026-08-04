@@ -44,7 +44,7 @@ export function ValuesSlider({ widget }: { widget?: any }) {
   return (
     <div className="bg-primary py-16 text-primary-foreground overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <ScrollReveal animation="fade-up">
+        <ScrollReveal variant="fade-up">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">{widget?.title || "قيمنا"}</h2>
           </div>
