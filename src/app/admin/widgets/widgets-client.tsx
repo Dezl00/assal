@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus, Loader2 } from "lucide-react"
+import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus, Loader2, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
@@ -18,6 +18,7 @@ const WIDGET_TYPES = [
   { id: "TextBlock", name: "نص مخصص", icon: AlignLeft, desc: "مساحة لكتابة نص ترحيبي أو معلومات" },
   { id: "AboutUs", name: "من نحن", icon: AlignLeft, desc: "نبذة تعريفية عن الشركة وتاريخها" },
   { id: "ValuesSlider", name: "قيمنا (سلايدر)", icon: ImageIcon, desc: "سلايدر متحرك لعرض قيم ومميزات الشركة" },
+  { id: "StoreFeatures", name: "مميزات المتجر", icon: ShieldCheck, desc: "عرض مميزات المتجر مثل الشحن السريع وضمان الجودة" },
 ]
 
 export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: any[], categories: any[] }) {

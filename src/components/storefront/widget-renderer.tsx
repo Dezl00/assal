@@ -7,6 +7,7 @@ import { BrandSlider } from "./widgets/brand-slider"
 import { CategoryGrid } from "./widgets/category-grid"
 import { AboutUs } from "./widgets/about-us"
 import { ValuesSlider } from "./widgets/values-slider"
+import { StoreFeatures } from "./widgets/store-features"
 
 export function WidgetRenderer({ widget }: { widget: any }) {
   // Common visibility classes based on settings
@@ -61,6 +62,12 @@ export function WidgetRenderer({ widget }: { widget: any }) {
       return (
         <section className={`w-full ${visibilityClass}`}>
           <ValuesSlider widget={widget} />
+        </section>
+      )
+    case "StoreFeatures":
+      return (
+        <section className={`w-full ${visibilityClass}`}>
+          <StoreFeatures widget={widget} />
         </section>
       )
     default:
