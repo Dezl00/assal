@@ -67,7 +67,78 @@ export function OrdersClient({ orders }: { orders: any[] }) {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
+        {/* Mobile View */}
+        <div className="md:hidden divide-y divide-border/50">
+          {orders.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground">
+              لا توجد طلبات حتى الآن.
+            </div>
+          ) : (
+            orders.map((order) => (
+              <div key={order.id} className="p-4 space-y-4 transition-colors hover:bg-muted/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Box className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-bold text-foreground">
+                      #{order.id.slice(-6).toUpperCase()}
+                    </span>
+                  </div>
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-full appearance-none cursor-pointer outline-none ${statusColors[order.status] || "bg-gray-100 text-gray-800"}`}
+                  >
+                    {Object.entries(statusLabels).map(([val, label]) => (
+                      <option key={val} value={val}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="text-muted-foreground text-xs mb-1">العميل</p>
+                    <p className="font-medium truncate">{order.user?.name || order.user?.email || "عميل غير مسجل"}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-muted-foreground text-xs mb-1">الإجمالي</p>
+                    <p className="font-bold text-primary">{order.totalAmount.toFixed(2)} ج.م</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 text-xs hover:bg-primary/10 hover:text-primary"
+                      onClick={() => toast("تفاصيل الطلب ستتوفر قريباً")}
+                    >
+                      <Eye className="h-3.5 w-3.5 ml-1.5" />
+                      عرض
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        setOrderToDelete(order.id)
+                        setDeleteModalOpen(true)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-right">
             <thead className="border-b border-border/50 bg-muted/50 text-muted-foreground">
               <tr>

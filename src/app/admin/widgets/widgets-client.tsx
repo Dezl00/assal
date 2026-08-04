@@ -10,6 +10,7 @@ import { ImageUploader } from "@/components/ui/image-uploader"
 import { ProductPickerModal } from "@/components/admin/product-picker-modal"
 import { getCollectionProducts, getCategories, getCollections, getProducts } from "@/features/widget-builder/actions"
 import { Switch } from "@/components/ui/switch"
+import { cn } from "@/lib/utils"
 
 const WIDGET_TYPES = [
   { id: "HeroSlider", name: "سلايدر الصور", icon: ImageIcon, desc: "سلايدر متحرك للصور أعلى الصفحة" },
@@ -322,6 +323,26 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     }
   }
 
+  function startEditWidget(widget: any) {
+    setEditingWidget(widget)
+    setActiveTab("edit")
+    setEditingItemId(null)
+    setNewItemImage("")
+    setNewItemMobileImage("")
+    setSelectedProductIds([])
+    if (widget.type === "FeaturedProduct" && widget.settings?.productId) {
+      setFeaturedProductId(widget.settings.productId)
+    } else {
+      setFeaturedProductId(null)
+    }
+    // Auto scroll to sidebar on mobile
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        document.getElementById("widget-sidebar")?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+    }
+  }
+
   function cancelEditItem() {
     setEditingItemId(null)
     setNewItemImage("")
@@ -344,10 +365,10 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   }
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col md:flex-row gap-6 animate-in fade-in duration-500">
+    <div className="flex flex-col-reverse md:flex-row gap-6 animate-in fade-in duration-500">
       
       {/* Sidebar (Right) */}
-      <div className="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border border-border/50 bg-card rounded-xl h-full overflow-hidden">
+      <div id="widget-sidebar" className="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border border-border/50 bg-card rounded-xl md:h-[calc(100vh-8rem)] shadow-sm">
         {/* Sidebar Header Tabs */}
         <div className="flex items-center border-b border-border/50 bg-muted/20 shrink-0">
           <button 
@@ -774,7 +795,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       </div>
 
       {/* Main Preview Area (Left) */}
-      <div className="flex-1 flex flex-col border border-border/50 bg-card rounded-xl h-full overflow-hidden">
+      <div className="flex-1 flex flex-col border border-border/50 bg-card rounded-xl md:h-[calc(100vh-8rem)] min-h-[500px] overflow-hidden shadow-sm">
         <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/10 shrink-0">
           <h2 className="font-semibold">ترتيب واجهات الصفحة الرئيسية</h2>
           <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-medium">العدد: {widgets.length}</span>
