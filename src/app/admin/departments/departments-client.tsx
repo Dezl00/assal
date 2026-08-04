@@ -263,13 +263,11 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
 
       <ConfirmModal 
         isOpen={deleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
+        onCancel={() => setDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         title="حذف المجال"
         description="هل أنت متأكد من حذف هذا المجال؟ لا يمكن التراجع عن هذا الإجراء."
-        confirmText="حذف المجال"
-        cancelText="إلغاء"
-        variant="destructive"
+        isDestructive={true}
       />
     </div>
   )
