@@ -7,14 +7,14 @@ export function TextBlock({ widget }: { widget: any }) {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <ScrollReveal variant="blur-in" duration={0.7}>
+      <ScrollReveal variant="fade-up" duration={0.7}>
         <div className="max-w-3xl mx-auto text-center bg-secondary/30 rounded-3xl p-12 border border-border/50 relative overflow-hidden">
           {/* Decorative element */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
           
           <div className="relative z-10">
-            <ScrollReveal variant="zoom-in" delay={0.1} duration={0.5}>
+            <ScrollReveal variant="fade-up" delay={0.1} duration={0.5}>
               <span className="text-4xl mb-4 block">🍯</span>
             </ScrollReveal>
             {widget.title && (

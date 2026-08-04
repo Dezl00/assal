@@ -12,9 +12,6 @@ export function BannerGrid({ widget }: { widget: any }) {
   // If 1 item, full width. If 2, half. If 3+, grid.
   const gridCols = items.length === 1 ? 'grid-cols-1' : items.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-3'
 
-  // Different animation variants for variety
-  const bannerVariants = ["fade-right", "fade-up", "fade-left"] as const
-
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       {widget.title && (
@@ -30,7 +27,7 @@ export function BannerGrid({ widget }: { widget: any }) {
         {items.slice(0, 3).map((item: any, index: number) => (
           <ScrollReveal 
             key={item.id} 
-            variant={bannerVariants[index % 3] as any}
+            variant="fade-up"
             delay={index * 0.12}
             duration={0.7}
           >

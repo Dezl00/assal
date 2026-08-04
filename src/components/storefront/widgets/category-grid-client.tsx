@@ -21,7 +21,7 @@ export function CategoryGridClient({ widget, categories }: { widget: any, catego
         {categories.map((category, index) => (
           <ScrollReveal 
             key={category.id} 
-            variant="zoom-in" 
+            variant="fade-up" 
             delay={index * 0.08} 
             duration={0.5}
           >
