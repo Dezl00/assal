@@ -47,7 +47,6 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
 
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const [categories, setCategories] = useState<any[]>([])
   const [collections, setCollections] = useState<any[]>([])
   
   // BannerGrid routing states
@@ -55,7 +54,6 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [linkValue, setLinkValue] = useState("")
 
   React.useEffect(() => {
-    getCategories().then(setCategories)
     getCollections().then(setCollections)
   }, [])
 
