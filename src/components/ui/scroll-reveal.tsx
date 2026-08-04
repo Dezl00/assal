@@ -84,9 +84,11 @@ export function ScrollReveal({
   const styles = variantStyles[variant]
   const currentStyle = isVisible ? styles.to : styles.from
 
+  const Component = Tag as any
+
   return (
-    <Tag
-      ref={ref as any}
+    <Component
+      ref={ref}
       className={className}
       style={{
         ...currentStyle,
@@ -95,6 +97,6 @@ export function ScrollReveal({
       }}
     >
       {children}
-    </Tag>
+    </Component>
   )
 }
