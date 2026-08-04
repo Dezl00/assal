@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, AlignLeft, ChevronRight, X, ImagePlus, Loader2, ShieldCheck } from "lucide-react"
+import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, ShoppingCart, AlignLeft, ChevronRight, X, ImagePlus, Loader2, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
