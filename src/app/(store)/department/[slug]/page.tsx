@@ -1,12 +1,8 @@
 import React from "react"
 import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
-import { ProductGrid } from "@/components/storefront/product-grid"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
-import { FilterSidebar } from "@/components/storefront/filter-sidebar"
-import { StoreToolbar } from "@/components/storefront/store-toolbar"
-import { StorePagination } from "@/components/storefront/pagination"
 
 import type { Metadata } from "next"
 
@@ -68,91 +64,7 @@ export default async function DepartmentPage(props: Props) {
 
   if (!department) notFound()
 
-  // Build filter where clause
-  const brandSlugs = searchParams?.brand ? (searchParams.brand as string).split(",") : []
-  const categorySlug = searchParams?.category as string
-  const minPrice = searchParams?.minPrice ? parseFloat(searchParams.minPrice as string) : undefined
-  const maxPrice = searchParams?.maxPrice ? parseFloat(searchParams.maxPrice as string) : undefined
-  const sort = (searchParams?.sort as string) || "newest"
-  const page = searchParams?.page ? parseInt(searchParams.page as string) : 1
-  const limit = 20
 
-  let whereClause: any = { 
-    OR: [
-      { departmentId: department.id },
-      { category: { departmentId: department.id } }
-    ]
-  }
-
-  if (categorySlug) {
-    const filterCat = await db.category.findUnique({ where: { slug: categorySlug } })
-    if (filterCat) {
-      whereClause.categoryId = filterCat.id
-    }
-  }
-
-  if (brandSlugs.length > 0) {
-    const brands = await db.brand.findMany({ where: { slug: { in: brandSlugs } } })
-    if (brands.length > 0) {
-      whereClause.brandId = { in: brands.map(b => b.id) }
-    }
-  }
-
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    whereClause.price = {}
-    if (minPrice !== undefined) whereClause.price.gte = minPrice
-    if (maxPrice !== undefined) whereClause.price.lte = maxPrice
-  }
-
-  let orderByClause: any = { createdAt: "desc" }
-  if (sort === "price_asc") orderByClause = { price: "asc" }
-  else if (sort === "price_desc") orderByClause = { price: "desc" }
-
-  const [totalProducts, products, brands, allDepartmentCategories, priceAggregates] = await Promise.all([
-    db.product.count({ where: whereClause }),
-    db.product.findMany({
-      where: whereClause,
-      orderBy: orderByClause,
-      take: limit,
-      skip: (page - 1) * limit,
-      include: {
-        images: { orderBy: { sortOrder: 'asc' } },
-        category: true,
-      }
-    }),
-    db.brand.findMany({ 
-      where: { 
-        products: { 
-          some: { 
-            OR: [
-              { departmentId: department.id },
-              { category: { departmentId: department.id } }
-            ]
-          } 
-        } 
-      },
-      select: { id: true, name: true, slug: true } 
-    }),
-    db.category.findMany({
-      where: { departmentId: department.id },
-      select: { id: true, name: true, slug: true }
-    }),
-    db.product.aggregate({
-      where: { 
-        OR: [
-          { departmentId: department.id },
-          { category: { departmentId: department.id } }
-        ]
-      },
-      _min: { price: true },
-      _max: { price: true }
-    })
-  ])
-
-  const globalMinPrice = priceAggregates._min.price || 0
-  const globalMaxPrice = priceAggregates._max.price || 10000
-
-  const totalPages = Math.ceil(totalProducts / limit)
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -196,30 +108,6 @@ export default async function DepartmentPage(props: Props) {
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <FilterSidebar 
-          categories={allDepartmentCategories} 
-          brands={brands} 
-          globalMinPrice={globalMinPrice}
-          globalMaxPrice={globalMaxPrice}
-        />
-        
-        <div className="flex-1 min-w-0">
-          <StoreToolbar totalProducts={totalProducts} />
-          
-          {products.length > 0 ? (
-            <>
-              <ProductGrid products={products} />
-              <StorePagination totalPages={totalPages} currentPage={page} />
-            </>
-          ) : (
-            <div className="text-center py-20 bg-card rounded-2xl border border-border/50">
-              <h2 className="text-2xl font-bold text-foreground mb-2">لا توجد منتجات</h2>
-              <p className="text-muted-foreground">لم يتم العثور على منتجات تطابق معايير البحث.</p>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   )
 }

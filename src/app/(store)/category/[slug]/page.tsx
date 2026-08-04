@@ -186,18 +186,8 @@ export default async function CategoryPage(props: Props) {
         
         <div className="flex-1 min-w-0">
           <StoreToolbar totalProducts={totalProducts} hideToolbar={isMainCategory && category.children.length > 0} />
-          
-          {products.length > 0 ? (
-            <>
-              <ProductGrid products={products} />
-              <StorePagination totalPages={totalPages} currentPage={page} />
-            </>
-          ) : (
-            <div className="text-center py-20 bg-card rounded-2xl border border-border/50">
-              <h2 className="text-2xl font-bold text-foreground mb-2">لا توجد منتجات</h2>
-              <p className="text-muted-foreground">لم يتم العثور على منتجات تطابق معايير البحث.</p>
-            </div>
-          )}
+          <ProductGrid products={products} />
+          {products.length > 0 && <StorePagination totalPages={totalPages} currentPage={page} />}
         </div>
       </div>
     </div>
