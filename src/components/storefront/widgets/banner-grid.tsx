@@ -15,7 +15,7 @@ export function BannerGrid({ widget }: { widget: any }) {
   // Settings
   const textPosition = widget.settings?.textPosition || "bottom"
   const textAlign = widget.settings?.textAlign || "center"
-  const overlayEnabled = widget.settings?.overlayEnabled ?? true
+  const overlayEnabled = widget.settings?.overlayEnabled ?? false
   const overlayOpacity = widget.settings?.overlayOpacity ?? 40
 
   const flexPosition = 

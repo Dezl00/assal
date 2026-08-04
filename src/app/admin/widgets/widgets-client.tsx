@@ -8,7 +8,7 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
 import { ImageUploader } from "@/components/ui/image-uploader"
 import { ProductPickerModal } from "@/components/admin/product-picker-modal"
-import { getCollectionProducts } from "@/features/widget-builder/actions"
+import { getCollectionProducts, getCategories, getCollections, getProducts } from "@/features/widget-builder/actions"
 import { Switch } from "@/components/ui/switch"
 
 const WIDGET_TYPES = [
@@ -43,6 +43,18 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
 
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const [categories, setCategories] = useState<any[]>([])
+  const [collections, setCollections] = useState<any[]>([])
+  
+  // BannerGrid routing states
+  const [linkType, setLinkType] = useState("custom")
+  const [linkValue, setLinkValue] = useState("")
+
+  React.useEffect(() => {
+    getCategories().then(setCategories)
+    getCollections().then(setCollections)
+  }, [])
 
   React.useEffect(() => {
     if (editingWidget?.type === "AboutUs") {
@@ -228,6 +240,15 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     if (selectedProductIds.length > 0) {
       formData.append("productIds", JSON.stringify(selectedProductIds))
     }
+
+    if (editingWidget.type === "BannerGrid") {
+      let finalUrl = linkValue;
+      if (linkType === "category") finalUrl = `/category/${linkValue}`;
+      else if (linkType === "department") finalUrl = `/department/${linkValue}`;
+      else if (linkType === "product") finalUrl = `/product/${linkValue}`;
+      else if (linkType === "collection") finalUrl = `/collection/${linkValue}`;
+      formData.set("buttonUrl", finalUrl);
+    }
     
     if (editingItemId) {
       const res = await updateWidgetContentItem(editingItemId, formData)
@@ -273,6 +294,17 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     } else {
       setSelectedProductIds([])
     }
+
+    let type = "custom";
+    let val = item.buttonUrl || "";
+    if (val.startsWith("/category/")) { type = "category"; val = val.replace("/category/", ""); }
+    else if (val.startsWith("/department/")) { type = "department"; val = val.replace("/department/", ""); }
+    else if (val.startsWith("/product/")) { type = "product"; val = val.replace("/product/", ""); }
+    else if (val.startsWith("/collection/")) { type = "collection"; val = val.replace("/collection/", ""); }
+    
+    setLinkType(type);
+    setLinkValue(val);
+
     const form: any = document.getElementById("add-item-form")
     if (form) {
       if (form.elements["title"]) form.elements["title"].value = item.title || ""
@@ -283,6 +315,10 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   function cancelEditItem() {
     setEditingItemId(null)
     setNewItemImage("")
+    setNewItemMobileImage("")
+    setSelectedProductIds([])
+    setLinkType("custom")
+    setLinkValue("")
     const form: any = document.getElementById("add-item-form")
     if (form) form.reset()
   }
@@ -583,16 +619,10 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                               <select 
                                 name="redirectType" 
                                 className="h-9 w-1/3 rounded border border-input bg-background px-2 text-xs"
+                                value={linkType}
                                 onChange={(e) => {
-                                  const input = document.getElementById("buttonUrlInput") as HTMLInputElement;
-                                  if (input) {
-                                    if (e.target.value === "custom") {
-                                      input.placeholder = "الرابط المخصص";
-                                      input.value = "";
-                                    } else {
-                                      input.placeholder = "اكتب معرف الـ " + e.target.value + " أو الرابط النسبي";
-                                    }
-                                  }
+                                  setLinkType(e.target.value)
+                                  setLinkValue("")
                                 }}
                               >
                                 <option value="custom">رابط مخصص</option>
@@ -601,13 +631,51 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                                 <option value="product">منتج (Product)</option>
                                 <option value="collection">قائمة منتجات (Collection)</option>
                               </select>
-                              <input 
-                                id="buttonUrlInput"
-                                name="buttonUrl" 
-                                placeholder="الرابط المخصص" 
-                                dir="ltr" 
-                                className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs text-left" 
-                              />
+                              
+                              {linkType === "category" ? (
+                                <select
+                                  value={linkValue}
+                                  onChange={(e) => setLinkValue(e.target.value)}
+                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                  required
+                                >
+                                  <option value="">اختر القسم</option>
+                                  {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                </select>
+                              ) : linkType === "collection" ? (
+                                <select
+                                  value={linkValue}
+                                  onChange={(e) => setLinkValue(e.target.value)}
+                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                  required
+                                >
+                                  <option value="">اختر قائمة المنتجات</option>
+                                  {collections.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                </select>
+                              ) : linkType === "product" ? (
+                                <div className="w-2/3">
+                                  <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    className="w-full h-9 text-xs justify-between"
+                                    onClick={() => setProductPickerOpen(true)}
+                                  >
+                                    <span className="truncate">
+                                      {linkValue ? `تم تحديد منتج (${linkValue})` : "اختر منتجاً..."}
+                                    </span>
+                                  </Button>
+                                  <input type="hidden" name="buttonUrl" value={linkValue} required />
+                                </div>
+                              ) : (
+                                <input 
+                                  name="buttonUrl" 
+                                  value={linkValue}
+                                  onChange={(e) => setLinkValue(e.target.value)}
+                                  placeholder={linkType === "department" ? "اكتب معرف المجال" : "الرابط المخصص"} 
+                                  dir="ltr" 
+                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs text-left" 
+                                />
+                              )}
                             </div>
                           ) : editingWidget.type !== "ProductList" ? (
                             <input 
@@ -639,14 +707,23 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         </Button>
                       </form>
                       
-                      {editingWidget.type === "ProductList" && (
+                      {productPickerOpen && editingWidget.type === "BannerGrid" && linkType === "product" ? (
+                        <ProductPickerModal 
+                          open={productPickerOpen}
+                          onOpenChange={setProductPickerOpen}
+                          initialSelectedIds={linkValue ? [linkValue] : []}
+                          single={true}
+                          returnSlug={true}
+                          onSave={(ids) => setLinkValue(ids[0] || "")}
+                        />
+                      ) : productPickerOpen && editingWidget.type === "ProductList" ? (
                         <ProductPickerModal 
                           open={productPickerOpen}
                           onOpenChange={setProductPickerOpen}
                           initialSelectedIds={selectedProductIds}
                           onSave={setSelectedProductIds}
                         />
-                      )}
+                      ) : null}
                     </div>
                   )}
                 </div>

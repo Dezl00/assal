@@ -367,7 +367,7 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
 
 export async function getProducts() {
   const products = await db.product.findMany({
-    select: { id: true, name: true, price: true, categoryId: true },
+    select: { id: true, name: true, price: true, categoryId: true, slug: true },
     orderBy: { createdAt: 'desc' }
   })
   return products
@@ -375,10 +375,18 @@ export async function getProducts() {
 
 export async function getCategories() {
   const categories = await db.category.findMany({
-    select: { id: true, name: true },
+    select: { id: true, name: true, slug: true },
     orderBy: { createdAt: 'desc' }
   })
   return categories
+}
+
+export async function getCollections() {
+  const collections = await db.collection.findMany({
+    select: { id: true, name: true, slug: true },
+    orderBy: { createdAt: 'desc' }
+  })
+  return collections
 }
 
 export async function getCollectionProducts(collectionId: string) {

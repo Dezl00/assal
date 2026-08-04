@@ -13,9 +13,11 @@ interface ProductPickerModalProps {
   onOpenChange: (open: boolean) => void
   onSave: (productIds: string[]) => void
   initialSelectedIds?: string[]
+  single?: boolean
+  returnSlug?: boolean
 }
 
-export function ProductPickerModal({ open, onOpenChange, onSave, initialSelectedIds = [] }: ProductPickerModalProps) {
+export function ProductPickerModal({ open, onOpenChange, onSave, initialSelectedIds = [], single = false, returnSlug = false }: ProductPickerModalProps) {
   const [categories, setCategories] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("")
@@ -46,10 +48,14 @@ export function ProductPickerModal({ open, onOpenChange, onSave, initialSelected
     }
   }
 
-  const toggleProduct = (id: string) => {
+  const toggleProduct = (idOrSlug: string) => {
+    if (single) {
+      setSelectedIds(new Set([idOrSlug]))
+      return
+    }
     const next = new Set(selectedIds)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
+    if (next.has(idOrSlug)) next.delete(idOrSlug)
+    else next.add(idOrSlug)
     setSelectedIds(next)
   }
 
@@ -97,22 +103,25 @@ export function ProductPickerModal({ open, onOpenChange, onSave, initialSelected
 
             <ScrollArea className="flex-1 border rounded-md p-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {filteredProducts.map(product => (
-                  <div 
-                    key={product.id}
-                    className={`flex items-start space-x-3 space-x-reverse p-3 rounded-lg border cursor-pointer transition-colors ${selectedIds.has(product.id) ? 'bg-primary/5 border-primary' : 'hover:bg-muted'}`}
-                    onClick={() => toggleProduct(product.id)}
-                  >
-                    <Checkbox 
-                      checked={selectedIds.has(product.id)}
-                      onCheckedChange={() => toggleProduct(product.id)}
-                    />
-                    <div className="flex-1 space-y-1 text-sm">
-                      <p className="font-medium leading-none">{product.name}</p>
-                      <p className="text-muted-foreground text-xs">{product.price} ر.س</p>
+                {filteredProducts.map(product => {
+                  const val = returnSlug ? product.slug : product.id;
+                  return (
+                    <div 
+                      key={product.id}
+                      className={`flex items-start space-x-3 space-x-reverse p-3 rounded-lg border cursor-pointer transition-colors ${selectedIds.has(val) ? 'bg-primary/5 border-primary' : 'hover:bg-muted'}`}
+                      onClick={() => toggleProduct(val)}
+                    >
+                      <Checkbox 
+                        checked={selectedIds.has(val)}
+                        onCheckedChange={() => toggleProduct(val)}
+                      />
+                      <div className="flex-1 space-y-1 text-sm">
+                        <p className="font-medium leading-none">{product.name}</p>
+                        <p className="text-muted-foreground text-xs">{product.price} ر.س</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
                 {filteredProducts.length === 0 && (
                   <div className="col-span-full text-center p-8 text-muted-foreground">
                     لا توجد منتجات مطابقة للبحث
@@ -123,7 +132,11 @@ export function ProductPickerModal({ open, onOpenChange, onSave, initialSelected
 
             <div className="flex items-center justify-between pt-4 border-t">
               <div className="text-sm text-muted-foreground">
-                تم تحديد <span className="font-bold text-foreground">{selectedIds.size}</span> منتجات
+                {single ? (
+                  <>تم تحديد <span className="font-bold text-foreground">{selectedIds.size > 0 ? "منتج واحد" : "لا شيء"}</span></>
+                ) : (
+                  <>تم تحديد <span className="font-bold text-foreground">{selectedIds.size}</span> منتجات</>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
