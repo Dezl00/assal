@@ -6,6 +6,7 @@ import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Ima
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
+import { ImageUploader } from "@/components/ui/image-uploader"
 import { ProductPickerModal } from "@/components/admin/product-picker-modal"
 import { getCollectionProducts } from "@/features/widget-builder/actions"
 import { Switch } from "@/components/ui/switch"
