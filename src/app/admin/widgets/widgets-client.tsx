@@ -22,6 +22,7 @@ const WIDGET_TYPES = [
   { id: "AboutUs", name: "من نحن", icon: AlignLeft, desc: "نبذة تعريفية عن الشركة وتاريخها" },
   { id: "ValuesSlider", name: "قيمنا (سلايدر)", icon: ImageIcon, desc: "سلايدر متحرك لعرض قيم ومميزات الشركة" },
   { id: "StoreFeatures", name: "مميزات المتجر", icon: ShieldCheck, desc: "عرض مميزات المتجر مثل الشحن السريع وضمان الجودة" },
+  { id: "FeaturedProduct", name: "منتج مميز", icon: ShoppingBag, desc: "عرض منتج واحد بتصميم بارز" },
 ]
 
 export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: any[], categories: any[] }) {
@@ -38,6 +39,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   const [newItemImage, setNewItemImage] = useState("")
   const [newItemMobileImage, setNewItemMobileImage] = useState("")
   const [aboutUsImage, setAboutUsImage] = useState("")
+  const [featuredProductId, setFeaturedProductId] = useState("")
 
   const [productPickerOpen, setProductPickerOpen] = useState(false)
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
@@ -59,6 +61,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   React.useEffect(() => {
     if (editingWidget?.type === "AboutUs") {
       setAboutUsImage(editingWidget.settings?.image || "")
+    } else if (editingWidget?.type === "FeaturedProduct") {
+      setFeaturedProductId(editingWidget.settings?.productId || "")
     }
   }, [editingWidget?.id])
 
@@ -164,6 +168,12 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
         textAlign: formData.get("textAlign") as string || "center",
         overlayEnabled: formData.get("overlayEnabled") === "on",
         overlayOpacity: parseInt(formData.get("overlayOpacity") as string) || 40,
+      }
+    }
+
+    if (editingWidget.type === "FeaturedProduct") {
+      data.settings = {
+        productId: featuredProductId
       }
     }
 
@@ -488,6 +498,27 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                       </div>
                     )}
 
+                    {editingWidget.type === "FeaturedProduct" && (
+                      <div className="space-y-4 pt-4 border-t border-border/50">
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold">المنتج المميز</label>
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            className="w-full h-9 text-xs justify-between"
+                            onClick={() => {
+                              setLinkType("featured_product");
+                              setProductPickerOpen(true);
+                            }}
+                          >
+                            <span className="truncate">
+                              {featuredProductId ? `تم تحديد منتج` : "اختر منتجاً..."}
+                            </span>
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
                     {editingWidget.type === "AboutUs" && (
                       <div className="space-y-4 pt-4 border-t border-border/50">
                         <div className="space-y-1.5">
@@ -715,6 +746,15 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                           single={true}
                           returnSlug={true}
                           onSave={(ids) => setLinkValue(ids[0] || "")}
+                        />
+                      ) : productPickerOpen && editingWidget.type === "FeaturedProduct" ? (
+                        <ProductPickerModal 
+                          open={productPickerOpen}
+                          onOpenChange={setProductPickerOpen}
+                          initialSelectedIds={featuredProductId ? [featuredProductId] : []}
+                          single={true}
+                          returnSlug={true}
+                          onSave={(ids) => setFeaturedProductId(ids[0] || "")}
                         />
                       ) : productPickerOpen && editingWidget.type === "ProductList" ? (
                         <ProductPickerModal 

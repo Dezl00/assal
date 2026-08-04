@@ -19,14 +19,14 @@ export function BannerGrid({ widget }: { widget: any }) {
   const overlayOpacity = widget.settings?.overlayOpacity ?? 40
 
   const flexPosition = 
-    textPosition === "top" ? "items-start pt-8" : 
-    textPosition === "center" ? "items-center" : 
-    "items-end pb-8"
+    textPosition === "top" ? "justify-start" : 
+    textPosition === "center" ? "justify-center" : 
+    "justify-end"
   
   const textJustify = 
-    textAlign === "right" ? "justify-end text-right" : 
-    textAlign === "left" ? "justify-start text-left" : 
-    "justify-center text-center"
+    textAlign === "right" ? "items-start text-start" : 
+    textAlign === "left" ? "items-end text-end" : 
+    "items-center text-center"
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -61,12 +61,10 @@ export function BannerGrid({ widget }: { widget: any }) {
                   style={{ backgroundColor: `rgba(0,0,0,${overlayOpacity / 100})` }}
                 />
               )}
-              <div className={`absolute inset-0 flex ${flexPosition} p-6`}>
-                <div className={`w-full flex ${textJustify}`}>
-                  <h3 className="text-2xl md:text-3xl font-semibold text-white transition-transform duration-500 group-hover:-translate-y-2">
-                    {item.title}
-                  </h3>
-                </div>
+              <div className={`absolute inset-0 flex flex-col ${flexPosition} ${textJustify} p-6 md:p-8`}>
+                <h3 className="text-2xl md:text-3xl font-semibold text-white transition-transform duration-500 group-hover:-translate-y-2">
+                  {item.title}
+                </h3>
               </div>
             </Link>
           </ScrollReveal>

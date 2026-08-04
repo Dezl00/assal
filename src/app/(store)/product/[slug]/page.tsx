@@ -90,33 +90,33 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-        <Link href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
-        <ChevronRight className="w-4 h-4 rtl-flip" />
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8 overflow-hidden whitespace-nowrap">
+        <Link href="/" className="hover:text-primary transition-colors flex-shrink-0">الرئيسية</Link>
+        <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
         
         {dept && (
           <>
-            <Link href={`/department/${dept.slug}`} className="hover:text-primary transition-colors">
+            <Link href={`/department/${dept.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
               {dept.name}
             </Link>
-            <ChevronRight className="w-4 h-4 rtl-flip" />
+            <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
           </>
         )}
         
         {category.parent && (
           <>
-            <Link href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors">
+            <Link href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
               {category.parent.name}
             </Link>
-            <ChevronRight className="w-4 h-4 rtl-flip" />
+            <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
           </>
         )}
 
-        <Link href={`/category/${category.slug}`} className="hover:text-primary transition-colors">
+        <Link href={`/category/${category.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
           {category.name}
         </Link>
-        <ChevronRight className="w-4 h-4 rtl-flip" />
-        <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+        <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
+        <span className="text-foreground font-medium truncate min-w-0 flex-1 sm:flex-none sm:max-w-none">{product.name}</span>
       </nav>
 
       {/* Main Product Section */}
