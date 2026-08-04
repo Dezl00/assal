@@ -160,7 +160,6 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
               <ImageUploader 
                 value={imageUrl} 
                 onChange={setImageUrl} 
-                onRemove={() => setImageUrl("")} 
               />
             </div>
 
