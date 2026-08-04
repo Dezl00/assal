@@ -93,6 +93,18 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                 المنتجات
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               </Link>
+              
+              {departments.map((dept: any) => (
+                <Link 
+                  key={dept.id}
+                  href={`/department/${dept.slug}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between p-4 font-bold text-foreground hover:bg-secondary/50 transition-colors"
+                >
+                  {dept.name}
+                  <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                </Link>
+              ))}
 
               <Link 
                 href="/brands"
