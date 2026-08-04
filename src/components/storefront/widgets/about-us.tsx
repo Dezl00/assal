@@ -32,6 +32,9 @@ export function AboutUs({ widget }: { widget?: any }) {
           {/* Image Content */}
           <div className="flex-1 w-full">
             <div className="relative aspect-[4/3] sm:aspect-square max-w-lg mx-auto flex items-center justify-center">
+              {/* Brand color circle behind the image */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[75%] sm:w-[70%] sm:h-[70%] bg-primary rounded-full z-0 opacity-40"></div>
+              
               {/* Product Image */}
               <img 
                 src={widget?.settings?.image || "/images/about-us.png"} 
