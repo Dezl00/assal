@@ -265,7 +265,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       formData.append("productIds", JSON.stringify(selectedProductIds))
     }
 
-    if (editingWidget.type === "BannerGrid") {
+    if (editingWidget.type === "BannerGrid" || editingWidget.type === "HeroSlider") {
       let finalUrl = linkValue;
       if (linkType === "category") finalUrl = `/category/${linkValue}`;
       else if (linkType === "department") finalUrl = `/department/${linkValue}`;
@@ -341,6 +341,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       if (form.elements["buttonStyle"]) form.elements["buttonStyle"].value = item.settings?.buttonStyle || "solid"
       if (form.elements["buttonCustomBgColor"]) form.elements["buttonCustomBgColor"].value = item.settings?.buttonCustomBgColor || ""
       if (form.elements["buttonCustomTextColor"]) form.elements["buttonCustomTextColor"].value = item.settings?.buttonCustomTextColor || ""
+      if (form.elements["overlayOpacity"]) form.elements["overlayOpacity"].value = item.settings?.overlayOpacity ?? 40
     }
   }
 
@@ -767,8 +768,14 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                                   </select>
                                 </div>
                               </div>
+                              <div className="grid grid-cols-2 gap-2 mt-2">
+                                <div>
+                                  <label className="text-[10px] text-muted-foreground block mb-1">تعتيم الشريحة (الشفافية %)</label>
+                                  <input type="range" name="overlayOpacity" min="0" max="100" defaultValue="40" className="w-full h-9" />
+                                </div>
+                              </div>
                               
-                              <div className="grid grid-cols-2 gap-2">
+                              <div className="grid grid-cols-2 gap-2 mt-2">
                                 <div>
                                   <label className="text-[10px] text-muted-foreground block mb-1">لون خلفية الزر</label>
                                   <select name="buttonBgColor" value={btnBgColor} onChange={e => setBtnBgColor(e.target.value)} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">

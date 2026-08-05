@@ -205,6 +205,7 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
         buttonCustomBgColor: formData.get("buttonCustomBgColor") as string || "",
         buttonTextColor: formData.get("buttonTextColor") as string || "white",
         buttonCustomTextColor: formData.get("buttonCustomTextColor") as string || "",
+        overlayOpacity: formData.get("overlayOpacity") ? parseInt(formData.get("overlayOpacity") as string) : 40,
       };
     }
 
@@ -287,6 +288,7 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
         buttonCustomBgColor: formData.get("buttonCustomBgColor") as string || "",
         buttonTextColor: formData.get("buttonTextColor") as string || "white",
         buttonCustomTextColor: formData.get("buttonCustomTextColor") as string || "",
+        overlayOpacity: formData.get("overlayOpacity") ? parseInt(formData.get("overlayOpacity") as string) : 40,
       }
     }
 

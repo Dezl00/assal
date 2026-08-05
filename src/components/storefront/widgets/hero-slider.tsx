@@ -46,7 +46,12 @@ export function HeroSlider({ widget }: { widget: any }) {
                   backgroundImage: `url(${slide.desktopImage})`,
                 }}
               />
-              {/* Content Container (Removed dark gradient shadow) */}
+              {/* Overlay */}
+              <div 
+                className="absolute inset-0 bg-black"
+                style={{ opacity: (slide.settings?.overlayOpacity ?? 40) / 100 }}
+              />
+              {/* Content Container */}
               <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-24">
                 <div className={`container max-w-4xl ${
                   slide.settings?.alignment === "left" ? "mr-auto ml-0 text-left" : 
