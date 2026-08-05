@@ -16,7 +16,7 @@ export default async function AnalyticsPage() {
 
   const pageVisits = await prisma.pageVisit.findMany({
     where: { createdAt: { gte: thirtyDaysAgo } },
-    select: { createdAt: true, country: true, city: true }
+    select: { createdAt: true, country: true, city: true, path: true }
   })
   
   const productViews = await prisma.productView.findMany({
@@ -86,6 +86,18 @@ export default async function AnalyticsPage() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
 
+  const pathCounts = pageVisits.reduce((acc: any, v) => {
+    if (v.path) {
+      acc[v.path] = (acc[v.path] || 0) + 1
+    }
+    return acc
+  }, {})
+
+  const topPages = Object.entries(pathCounts)
+    .map(([path, count]) => ({ path, count: count as number }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10)
+
   return (
     <AnalyticsClient 
       chartData={chartData} 
@@ -98,6 +110,7 @@ export default async function AnalyticsPage() {
       topProducts={topProducts}
       topCountries={topCountries}
       topCities={topCities}
+      topPages={topPages}
     />
   )
 }

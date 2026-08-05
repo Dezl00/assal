@@ -1,11 +1,11 @@
 'use client'
 import React from 'react'
-import { ArrowUpRight, ArrowDownRight, Users, Eye, MapPin, Globe } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Users, Eye, MapPin, Globe, FileText, ShoppingBag, DollarSign, Activity } from 'lucide-react'
 
 export function AnalyticsClient({ 
   chartData, totalVisits, totalViews,
   todayVisits, yesterdayVisits, todayViews, yesterdayViews,
-  topProducts, topCountries, topCities
+  topProducts, topCountries, topCities, topPages
 }: any) {
   
   const maxVal = Math.max(...chartData.map((d: any) => Math.max(d.visits, d.views)), 1)
@@ -21,51 +21,74 @@ export function AnalyticsClient({
         <span className="text-foreground">الإحصائيات والتحليلات</span>
       </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {/* Total Visits */}
-        <div className="p-6 bg-primary/5 border border-primary/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-primary/10 transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-muted-foreground text-sm font-medium">إجمالي الزيارات (30 يوم)</span>
-            <Users className="text-primary w-5 h-5 opacity-50" />
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-indigo-50 text-indigo-950">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-200 text-indigo-700 shadow-sm">
+              <Users className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-indigo-800/80">إجمالي الزيارات (30 يوم)</p>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalVisits}</h3>
+            </div>
           </div>
-          <span className="text-4xl font-bold text-foreground">{totalVisits}</span>
         </div>
+
         {/* Total Views */}
-        <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-blue-500/10 transition-colors">
-          <div className="flex justify-between items-start mb-4">
-            <span className="text-muted-foreground text-sm font-medium">مشاهدات المنتجات (30 يوم)</span>
-            <Eye className="text-blue-500 w-5 h-5 opacity-50" />
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-emerald-50 text-emerald-950">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-200 text-emerald-700 shadow-sm">
+              <Eye className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-emerald-800/80">إجمالي المشاهدات (30 يوم)</p>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalViews}</h3>
+            </div>
           </div>
-          <span className="text-4xl font-bold text-foreground">{totalViews}</span>
         </div>
         
         {/* Today Visits */}
-        <div className="p-6 bg-green-500/5 border border-green-500/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-green-500/10 transition-colors">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-muted-foreground text-sm font-medium">زيارات اليوم</span>
-            <span className={`text-xs font-bold flex items-center ${visitsDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {visitsDiff >= 0 ? <ArrowUpRight className="w-3 h-3 ml-1" /> : <ArrowDownRight className="w-3 h-3 ml-1" />}
-              {Math.abs(visitsDiff)} عن الأمس
-            </span>
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-amber-50 text-amber-950">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-200 text-amber-700 shadow-sm">
+              <Activity className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-amber-800/80">زيارات اليوم</p>
+                <span className={`text-xs font-bold flex items-center ${visitsDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {visitsDiff >= 0 ? <ArrowUpRight className="w-3 h-3 ml-0.5" /> : <ArrowDownRight className="w-3 h-3 ml-0.5" />}
+                  {Math.abs(visitsDiff)}
+                </span>
+              </div>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{todayVisits}</h3>
+            </div>
           </div>
-          <span className="text-4xl font-bold text-primary">{todayVisits}</span>
         </div>
 
         {/* Today Views */}
-        <div className="p-6 bg-amber-500/5 border border-amber-500/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-amber-500/10 transition-colors">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-muted-foreground text-sm font-medium">مشاهدات اليوم</span>
-            <span className={`text-xs font-bold flex items-center ${viewsDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {viewsDiff >= 0 ? <ArrowUpRight className="w-3 h-3 ml-1" /> : <ArrowDownRight className="w-3 h-3 ml-1" />}
-              {Math.abs(viewsDiff)} عن الأمس
-            </span>
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-rose-50 text-rose-950">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-200 text-rose-700 shadow-sm">
+              <ShoppingBag className="h-6 w-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-rose-800/80">مشاهدات اليوم</p>
+                <span className={`text-xs font-bold flex items-center ${viewsDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {viewsDiff >= 0 ? <ArrowUpRight className="w-3 h-3 ml-0.5" /> : <ArrowDownRight className="w-3 h-3 ml-0.5" />}
+                  {Math.abs(viewsDiff)}
+                </span>
+              </div>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{todayViews}</h3>
+            </div>
           </div>
-          <span className="text-4xl font-bold text-blue-600">{todayViews}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="p-6 bg-card border border-border/40 rounded-xl shadow-sm lg:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="p-4 sm:p-6 bg-card border border-border/40 rounded-xl shadow-sm lg:col-span-2">
           <h2 className="text-lg font-semibold mb-6">النشاط اليومي (آخر 30 يوم)</h2>
           {chartData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-muted-foreground">لا توجد بيانات متاحة</div>
@@ -95,7 +118,7 @@ export function AnalyticsClient({
               ))}
             </div>
           )}
-          <div className="flex justify-center gap-6 mt-6">
+          <div className="flex justify-center gap-4 sm:gap-6 mt-6">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-primary rounded-full"></div>
               <span className="text-xs text-muted-foreground">زيارات المتجر</span>
@@ -108,14 +131,27 @@ export function AnalyticsClient({
         </div>
 
         <div className="space-y-6">
-          <div className="p-6 bg-orange-500/5 border border-orange-500/10 rounded-xl shadow-sm hover:bg-orange-500/10 transition-colors">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Eye className="w-5 h-5 text-amber-500"/> المنتجات الأكثر مشاهدة</h2>
+          <div className="p-4 sm:p-6 bg-card border border-border/50 rounded-xl shadow-sm">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">المنتجات الأكثر مشاهدة</h2>
             <div className="space-y-3">
               {topProducts.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
               {topProducts.map((p: any, i: number) => (
-                <div key={i} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
-                  <span className="truncate max-w-[200px]">{p.name}</span>
-                  <span className="font-bold bg-muted px-2 py-1 rounded text-xs">{p.count} مشاهدة</span>
+                <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
+                  <span className="truncate max-w-[200px] font-medium">{p.name}</span>
+                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{p.count} مشاهدة</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6 bg-card border border-border/50 rounded-xl shadow-sm">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">الصفحات الأكثر زيارة</h2>
+            <div className="space-y-3">
+              {topPages?.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
+              {topPages?.map((p: any, i: number) => (
+                <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
+                  <span className="truncate max-w-[200px] font-medium text-left" dir="ltr">{p.path}</span>
+                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{p.count} زيارة</span>
                 </div>
               ))}
             </div>
@@ -123,27 +159,27 @@ export function AnalyticsClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-xl shadow-sm hover:bg-blue-500/10 transition-colors">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-blue-500"/> البلدان</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="p-4 sm:p-6 bg-card border border-border/50 rounded-xl shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">البلدان</h2>
           <div className="space-y-3">
             {topCountries.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
             {topCountries.map((c: any, i: number) => (
-              <div key={i} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
-                <span>{c.name}</span>
-                <span className="font-bold bg-muted px-2 py-1 rounded text-xs">{c.count} زيارة</span>
+              <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
+                <span className="font-medium">{c.name}</span>
+                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{c.count} زيارة</span>
               </div>
             ))}
           </div>
         </div>
-        <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-xl shadow-sm hover:bg-red-500/10 transition-colors">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><MapPin className="w-5 h-5 text-red-500"/> المدن</h2>
+        <div className="p-4 sm:p-6 bg-card border border-border/50 rounded-xl shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">المدن</h2>
           <div className="space-y-3">
             {topCities.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
             {topCities.map((c: any, i: number) => (
-              <div key={i} className="flex justify-between items-center text-sm border-b pb-2 last:border-0 last:pb-0">
-                <span>{c.name}</span>
-                <span className="font-bold bg-muted px-2 py-1 rounded text-xs">{c.count} زيارة</span>
+              <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
+                <span className="font-medium">{c.name}</span>
+                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{c.count} زيارة</span>
               </div>
             ))}
           </div>

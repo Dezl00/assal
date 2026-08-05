@@ -1,9 +1,10 @@
 import React from "react"
+import Link from "next/link"
 import { Activity, Users, ShoppingBag, DollarSign } from "lucide-react"
 import { db } from "@/lib/db"
 
 export default async function AdminDashboardPage() {
-  const [totalSalesResult, newOrders, customers, activeProducts, topProductsData, topPages, recentActivities, theme] = await Promise.all([
+  const [totalSalesResult, newOrders, customers, activeProducts, topProductsData, latestOrders, theme] = await Promise.all([
     db.order.aggregate({
       _sum: { totalAmount: true },
       where: { status: { not: "CANCELLED" } }
@@ -21,13 +22,7 @@ export default async function AdminDashboardPage() {
       orderBy: { _count: { productId: 'desc' } },
       take: 5
     }),
-    db.pageVisit.groupBy({
-      by: ['path'],
-      _count: { path: true },
-      orderBy: { _count: { path: 'desc' } },
-      take: 5
-    }),
-    db.activityLog.findMany({
+    db.order.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: { user: true }
@@ -52,8 +47,8 @@ export default async function AdminDashboardPage() {
         <span className="text-foreground">الرئيسية</span>
       </nav>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-indigo-50 text-indigo-950">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-indigo-50 text-indigo-950">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-200 text-indigo-700 shadow-sm">
               <DollarSign className="h-6 w-6" />
@@ -65,7 +60,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-emerald-50 text-emerald-950">
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-emerald-50 text-emerald-950">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-200 text-emerald-700 shadow-sm">
               <ShoppingBag className="h-6 w-6" />
@@ -77,7 +72,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-amber-50 text-amber-950">
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-amber-50 text-amber-950">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-200 text-amber-700 shadow-sm">
               <Users className="h-6 w-6" />
@@ -89,7 +84,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-rose-50 text-rose-950">
+        <div className="rounded-2xl border-0 p-4 sm:p-6 shadow-md transition-all hover:scale-[1.02] bg-rose-50 text-rose-950">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-200 text-rose-700 shadow-sm">
               <Activity className="h-6 w-6" />
@@ -102,9 +97,9 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
         {/* Most Viewed Products */}
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
+        <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm">
           <h3 className="mb-4 text-lg font-semibold tracking-tight">المنتجات الأكثر مشاهدة</h3>
           <div className="flex flex-col gap-4">
             {topProducts.length > 0 ? topProducts.map((tv, idx) => (
@@ -118,41 +113,32 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Most Visited Pages */}
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold tracking-tight">الصفحات الأكثر زيارة</h3>
-          <div className="flex flex-col gap-4">
-            {topPages.length > 0 ? topPages.map((pv, idx) => (
-              <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
-                <span className="text-sm font-medium text-left" dir="ltr">{pv.path}</span>
-                <span className="text-sm font-bold text-muted-foreground bg-secondary/20 px-2 py-0.5 rounded">{pv._count.path} زيارة</span>
+        {/* Latest Orders */}
+        <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold tracking-tight">أحدث الطلبات</h3>
+            <Link href="/admin/orders" className="text-sm text-primary hover:underline font-medium">عرض الكل</Link>
+          </div>
+          <div className="flex flex-col gap-4 flex-1">
+            {latestOrders.length > 0 ? latestOrders.map((order) => (
+              <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0 gap-2">
+                <div className="flex flex-col">
+                  <span className="font-medium">طلب #{order.id.slice(-6).toUpperCase()}</span>
+                  <span className="text-sm text-muted-foreground">{order.user?.name || order.user?.email || "عميل زائر"}</span>
+                </div>
+                <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-2 sm:gap-1 text-sm">
+                  <span className="font-bold text-foreground">{order.totalAmount} ج.م</span>
+                  <Link href={`/admin/orders`} className="text-xs bg-primary/10 text-primary px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:bg-primary/20 transition-colors font-medium">
+                    تفاصيل الطلب
+                  </Link>
+                </div>
               </div>
             )) : (
-              <p className="text-sm text-muted-foreground text-center py-8">لا توجد بيانات بعد</p>
+              <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-background py-8">
+                <p className="text-sm text-muted-foreground">لا توجد طلبات مسجلة حتى الآن.</p>
+              </div>
             )}
           </div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-border/50 bg-card p-8 shadow-sm">
-        <h3 className="mb-6 text-lg font-semibold tracking-tight">الأنشطة الإدارية الأخيرة</h3>
-        <div className="flex flex-col gap-4">
-          {recentActivities.length > 0 ? recentActivities.map((activity) => (
-            <div key={activity.id} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
-              <div className="flex flex-col">
-                <span className="font-medium">{activity.action} {activity.entityType}</span>
-                {activity.details && <span className="text-sm text-muted-foreground">{(activity.details as any)?.message || JSON.stringify(activity.details)}</span>}
-              </div>
-              <div className="flex flex-col items-end text-sm text-muted-foreground">
-                <span>{activity.user?.name || activity.user?.email || "مدير النظام"}</span>
-                <span>{new Date(activity.createdAt).toLocaleString("ar-EG")}</span>
-              </div>
-            </div>
-          )) : (
-            <div className="flex h-32 flex-col items-center justify-center rounded-lg border border-dashed border-border/60 bg-background">
-              <p className="text-sm text-muted-foreground">لا توجد أنشطة مسجلة حتى الآن.</p>
-            </div>
-          )}
         </div>
       </div>
     </div>

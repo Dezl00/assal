@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useUIStore } from "@/store/ui-store"
 import { X, ChevronLeft } from "lucide-react"
 import { usePathname } from "next/navigation"
+import { FaFacebookF, FaInstagram, FaXTwitter, FaWhatsapp, FaTiktok, FaSnapchat } from "react-icons/fa6"
 
 export function MobileSidebar({ menuItems, themeConfig, categories = [], departments = [] }: { menuItems?: any[], themeConfig?: any, categories?: any[], departments?: any[] }) {
   const { isMobileMenuOpen, setMobileMenuOpen } = useUIStore()
@@ -255,6 +256,38 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
         
         {/* Footer actions */}
         <div className="p-6 border-t border-border/50 bg-muted/30">
+          <div className="flex flex-wrap justify-center gap-3 mb-4">
+            {themeConfig?.facebookUrl && (
+              <Link href={themeConfig.facebookUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+                <FaFacebookF className="w-5 h-5" />
+              </Link>
+            )}
+            {themeConfig?.instagramUrl && (
+              <Link href={themeConfig.instagramUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+                <FaInstagram className="w-5 h-5" />
+              </Link>
+            )}
+            {themeConfig?.twitterUrl && (
+              <Link href={themeConfig.twitterUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+                <FaXTwitter className="w-5 h-5" />
+              </Link>
+            )}
+            {themeConfig?.whatsappNumber && (
+              <Link href={`https://wa.me/${themeConfig.whatsappNumber}`} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+                <FaWhatsapp className="w-5 h-5" />
+              </Link>
+            )}
+            {themeConfig?.tiktokUrl && (
+              <Link href={themeConfig.tiktokUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+                <FaTiktok className="w-5 h-5" />
+              </Link>
+            )}
+            {themeConfig?.snapchatUrl && (
+              <Link href={themeConfig.snapchatUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+                <FaSnapchat className="w-5 h-5" />
+              </Link>
+            )}
+          </div>
           <p className="text-sm text-center text-muted-foreground">© {new Date().getFullYear()} {themeConfig?.storeName || "عسل"}. جميع الحقوق محفوظة.</p>
         </div>
       </div>
