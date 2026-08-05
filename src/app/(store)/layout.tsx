@@ -10,6 +10,8 @@ import { auth } from "@/lib/auth"
 import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
 import { PromoPopup } from "@/components/storefront/promo-popup"
 
+export const dynamic = "force-dynamic"
+
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   const user = session?.user || null

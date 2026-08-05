@@ -45,7 +45,8 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   // Real-world: Should map user.city to the DB cities. For this task, we assume the user picks it.
   const baseShippingCost = selectedCity ? selectedCity.shippingCost : 0
   
-  const isFreeShippingThresholdMet = settings?.freeShippingThreshold && total >= settings.freeShippingThreshold
+  const hasThreshold = settings?.freeShippingThreshold !== null && settings?.freeShippingThreshold !== undefined;
+  const isFreeShippingThresholdMet = hasThreshold && total >= settings.freeShippingThreshold!;
   const isFreeShippingCoupon = appliedCoupon?.type === "FREE_SHIPPING"
   
   const finalShippingCost = (isFreeShippingThresholdMet || isFreeShippingCoupon) ? 0 : baseShippingCost

@@ -85,7 +85,17 @@ export async function createProduct(data: z.infer<typeof ProductSchema>, imageId
     
     const product = await db.product.create({
       data: {
-        ...parsed,
+        name: parsed.name,
+        slug: parsed.slug,
+        sku: parsed.sku || null,
+        barcode: parsed.barcode || null,
+        description: parsed.description || null,
+        price: parsed.price,
+        discountPrice: parsed.discountPrice || null,
+        stock: parsed.stock,
+        categoryId: parsed.categoryId,
+        brandId: parsed.brandId || null,
+        recommendationMode: parsed.recommendationMode,
         images: {
           create: imageIds.map((id, index) => ({
             url: id, // Assuming `id` passed is the Cloudinary secure_url for simplicity in this action

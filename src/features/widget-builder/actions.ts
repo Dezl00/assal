@@ -114,10 +114,28 @@ export async function deleteWidget(id: string) {
 
 export async function updateWidget(id: string, data: any) {
   try {
+    const oldWidget = await db.widget.findUnique({ where: { id }, include: { items: true } })
     const widget = await db.widget.update({
       where: { id },
       data
     })
+    
+    // Cleanup if disableRouting was toggled ON for BrandSlider
+    if (widget.type === "BrandSlider") {
+      const oldDisable = (oldWidget?.settings as any)?.disableRouting === true
+      const newDisable = (widget.settings as any)?.disableRouting === true
+      if (!oldDisable && newDisable && oldWidget) {
+        for (const item of oldWidget.items) {
+          if (item.title) {
+            const existingBrand = await db.brand.findFirst({ where: { name: item.title } })
+            if (existingBrand) {
+              await db.product.updateMany({ where: { brandId: existingBrand.id }, data: { brandId: null } })
+              await db.brand.delete({ where: { id: existingBrand.id } })
+            }
+          }
+        }
+      }
+    }
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")

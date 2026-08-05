@@ -823,35 +823,44 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                               </select>
                               
                               {linkType === "category" ? (
-                                <select
-                                  value={linkValue}
-                                  onChange={(e) => setLinkValue(e.target.value)}
-                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
-                                  required
-                                >
-                                  <option value="">اختر القسم</option>
-                                  {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-                                </select>
+                                <>
+                                  <select
+                                    value={linkValue}
+                                    onChange={(e) => setLinkValue(e.target.value)}
+                                    className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                    required
+                                  >
+                                    <option value="">اختر القسم</option>
+                                    {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                  </select>
+                                  <input type="hidden" name="buttonUrl" value={linkValue ? `/category/${linkValue}` : ""} required />
+                                </>
                               ) : linkType === "collection" ? (
-                                <select
-                                  value={linkValue}
-                                  onChange={(e) => setLinkValue(e.target.value)}
-                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
-                                  required
-                                >
-                                  <option value="">اختر قائمة المنتجات</option>
-                                  {collections.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-                                </select>
+                                <>
+                                  <select
+                                    value={linkValue}
+                                    onChange={(e) => setLinkValue(e.target.value)}
+                                    className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                    required
+                                  >
+                                    <option value="">اختر قائمة المنتجات</option>
+                                    {collections.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                  </select>
+                                  <input type="hidden" name="buttonUrl" value={linkValue ? `/collection/${linkValue}` : ""} required />
+                                </>
                               ) : linkType === "department" ? (
-                                <select
-                                  value={linkValue}
-                                  onChange={(e) => setLinkValue(e.target.value)}
-                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
-                                  required
-                                >
-                                  <option value="">اختر المجال</option>
-                                  {departments.map(d => <option key={d.slug} value={d.slug}>{d.name}</option>)}
-                                </select>
+                                <>
+                                  <select
+                                    value={linkValue}
+                                    onChange={(e) => setLinkValue(e.target.value)}
+                                    className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                    required
+                                  >
+                                    <option value="">اختر المجال</option>
+                                    {departments.map(d => <option key={d.slug} value={d.slug}>{d.name}</option>)}
+                                  </select>
+                                  <input type="hidden" name="buttonUrl" value={linkValue ? `/department/${linkValue}` : ""} required />
+                                </>
                               ) : linkType === "product" ? (
                                 <div className="w-2/3">
                                   <Button 

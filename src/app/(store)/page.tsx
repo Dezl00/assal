@@ -1,5 +1,24 @@
 import { getWidgets } from "@/features/widget-builder/actions"
 import { WidgetRenderer } from "@/components/storefront/widget-renderer"
+import { db } from "@/lib/db"
+
+export const dynamic = "force-dynamic"
+
+export async function generateMetadata() {
+  const themeConfig = await db.themeConfig.findUnique({
+    where: { id: "default" }
+  })
+  
+  const logo = themeConfig?.logoUrl || "/logo.png" // Fallback to a default logo if none exists
+  
+  return {
+    title: themeConfig?.storeName || "متجر عسل",
+    description: "أهلاً بك في متجر عسل",
+    openGraph: {
+      images: [logo],
+    }
+  }
+}
 
 export default async function StorefrontPage() {
   const { widgets, success } = await getWidgets()

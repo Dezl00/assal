@@ -6,6 +6,8 @@ import { getOfferSettings } from "@/features/offers/actions"
 
 import { Suspense } from "react"
 
+export const dynamic = "force-dynamic"
+
 export default async function CheckoutPage() {
   const session = await auth()
   
