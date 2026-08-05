@@ -42,8 +42,8 @@ export async function generateMetadata(): Promise<Metadata> {
       images: [
         {
           url: logo,
-          width: 800,
-          height: 600,
+          width: 1200,
+          height: 630,
           alt: storeName,
         },
       ],
@@ -54,7 +54,14 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: storeName,
       description: storeDescription,
-      images: [logo],
+      images: [
+        {
+          url: logo,
+          width: 1200,
+          height: 630,
+          alt: storeName,
+        }
+      ],
     },
   };
 }
