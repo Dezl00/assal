@@ -6,6 +6,7 @@ import { deleteAccount, createAccount, updateAccount, updateAccountStatus } from
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { toast } from 'sonner'
 
 const PERMISSIONS_SCHEMA = [
   { 
