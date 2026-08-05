@@ -21,7 +21,7 @@ export async function getCoupons() {
   })
 }
 
-export async function createCoupon(data: { code: string; type: string; value: number; maxUses?: number; expiresAt?: Date; isActive?: boolean }) {
+export async function createCoupon(data: { code: string; type: string; value: number; maxUses?: number | null; expiresAt?: Date | null; isActive?: boolean }) {
   await checkAdmin()
   const exists = await db.coupon.findUnique({ where: { code: data.code } })
   if (exists) throw new Error("هذا الكود موجود مسبقاً")
@@ -31,7 +31,7 @@ export async function createCoupon(data: { code: string; type: string; value: nu
   return coupon
 }
 
-export async function updateCoupon(id: string, data: { code?: string; type?: string; value?: number; maxUses?: number; expiresAt?: Date; isActive?: boolean }) {
+export async function updateCoupon(id: string, data: { code?: string; type?: string; value?: number; maxUses?: number | null; expiresAt?: Date | null; isActive?: boolean }) {
   await checkAdmin()
   const coupon = await db.coupon.update({ where: { id }, data })
   revalidatePath('/admin/offers')
