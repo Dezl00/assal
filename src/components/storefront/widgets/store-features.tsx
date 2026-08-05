@@ -62,7 +62,7 @@ export function StoreFeatures({ widget }: { widget?: any }) {
                       style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%`, flexGrow: 1 }}
                     >
                       <div className="flex flex-col items-center justify-center text-center">
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-secondary-foreground/10 flex items-center justify-center text-secondary-foreground mb-4 md:mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:bg-secondary-foreground/20">
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-primary shadow-sm flex items-center justify-center text-primary-foreground mb-4 md:mb-6 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md group-hover:bg-primary/90">
                           {item.imageUrl ? (
                             <img src={item.imageUrl} alt={item.title || item.name} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
                           ) : (
