@@ -22,6 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
   const logo = theme?.logoUrl || "/favicon.ico";
   const favicon = theme?.faviconUrl || "/favicon.ico";
 
+  let ogImage = logo;
+  if (ogImage.includes("res.cloudinary.com") && ogImage.includes("/upload/")) {
+    // Add Cloudinary transformations: 1200x630, pad with white bg, convert to JPG, auto quality
+    // This ensures it falls under WhatsApp's 300KB limit and fits perfectly.
+    ogImage = ogImage.replace("/upload/", "/upload/w_1200,h_630,c_pad,b_white,f_jpg,q_auto/");
+  }
+
   return {
     metadataBase: new URL("https://assal1.vercel.app"), // Base URL for OG images
     title: {
@@ -41,7 +48,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: storeName,
       images: [
         {
-          url: logo,
+          url: ogImage,
           width: 1200,
           height: 630,
           alt: storeName,
@@ -56,7 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: storeDescription,
       images: [
         {
-          url: logo,
+          url: ogImage,
           width: 1200,
           height: 630,
           alt: storeName,
