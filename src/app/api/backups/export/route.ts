@@ -38,7 +38,8 @@ export async function GET() {
       db.order.findMany({ include: { items: true } }),
       db.user.findMany(),
       db.themeConfig.findUnique({ where: { id: "default" } }),
-      db.branch.findMany()
+      db.branch.findMany(),
+      db.widget.findMany({ include: { items: true } })
     ])
 
     const backupData = {
@@ -54,7 +55,8 @@ export async function GET() {
         orders,
         users,
         themeConfig,
-        branches
+        branches,
+        widgets
       }
     }
 

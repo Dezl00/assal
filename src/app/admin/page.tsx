@@ -54,49 +54,49 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white' }}>
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-indigo-50 text-indigo-950">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-200 text-indigo-700 shadow-sm">
               <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">إجمالي المبيعات</p>
+              <p className="text-sm font-medium text-indigo-800/80">إجمالي المبيعات</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{totalSales.toFixed(2)} ج.م</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white', filter: 'brightness(1.1)' }}>
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-emerald-50 text-emerald-950">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-200 text-emerald-700 shadow-sm">
               <ShoppingBag className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">الطلبات الجديدة</p>
+              <p className="text-sm font-medium text-emerald-800/80">الطلبات الجديدة</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{newOrders}</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white', filter: 'brightness(1.2)' }}>
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-amber-50 text-amber-950">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-200 text-amber-700 shadow-sm">
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">العملاء</p>
+              <p className="text-sm font-medium text-amber-800/80">العملاء</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{customers}</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white', filter: 'brightness(1.3)' }}>
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-rose-50 text-rose-950">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-200 text-rose-700 shadow-sm">
               <Activity className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-white/80">المنتجات النشطة</p>
+              <p className="text-sm font-medium text-rose-800/80">المنتجات النشطة</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{activeProducts}</h3>
             </div>
           </div>

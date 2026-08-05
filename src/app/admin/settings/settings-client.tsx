@@ -111,8 +111,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
               <div className="p-6 flex-1 space-y-8">
                 
-                {activeTab === "general" && (
-                  <div className="space-y-6 animate-in fade-in">
+                <div className={activeTab === "general" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">الإعدادات العامة</h2>
                     <div className="space-y-4 max-w-xl">
                       <div className="space-y-2">
@@ -124,11 +123,9 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                         <textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-1 focus:ring-primary" />
                       </div>
                     </div>
-                  </div>
-                )}
+                </div>
 
-                {activeTab === "appearance" && (
-                  <div className="space-y-6 animate-in fade-in">
+                <div className={activeTab === "appearance" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">المظهر والهوية</h2>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -165,11 +162,9 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                </div>
 
-                {activeTab === "social" && (
-                  <div className="space-y-6 animate-in fade-in">
+                <div className={activeTab === "social" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">التواصل الاجتماعي وواتساب</h2>
                     
                     <div className="max-w-xl space-y-5">
@@ -212,7 +207,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                       </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
 
               <div className="p-4 border-t border-border/50 bg-muted/20 flex justify-end">
