@@ -29,7 +29,7 @@ export function SecurityClient({ logs }: { logs: any[] }) {
                   <td className="p-4 text-xs" dir="ltr">{new Date(log.createdAt).toLocaleString('ar-EG')}</td>
                   <td className="p-4 font-medium">{log.user?.name || log.userId || 'نظام'}</td>
                   <td className="p-4">
-                    <span className={\px-2 py-1 rounded text-xs \\}>
+                    <span className={`px-2 py-1 rounded text-xs ${log.action === 'Delete' ? 'bg-red-100 text-red-700' : log.action === 'Create' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                       {log.action}
                     </span>
                   </td>

@@ -96,7 +96,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                   <td className="p-4 font-medium">{acc.name || 'بدون اسم'}</td>
                   <td className="p-4" dir="ltr">{acc.email}</td>
                   <td className="p-4">
-                    <span className={\px-2 py-1 rounded text-xs \\}>
+                    <span className={`px-2 py-1 rounded text-xs ${acc.role === 'ADMIN' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
                       {acc.role === 'ADMIN' ? 'مدير كامل' : 'مشرف'}
                     </span>
                   </td>

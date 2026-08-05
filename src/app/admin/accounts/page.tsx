@@ -1,4 +1,4 @@
-﻿import { prisma } from '@/lib/prisma'
+import { db as prisma } from '@/lib/db'
 import { AccountsClient } from './accounts-client'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'

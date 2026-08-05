@@ -1,5 +1,5 @@
-﻿import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { db as prisma } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     };
     
     const jsonString = JSON.stringify(data, null, 2);
-    const filename = \ackup-\.json\;
+    const filename = `backup-${new Date().toISOString().split('T')[0]}.json`;
     const size = Buffer.byteLength(jsonString, 'utf8');
     
     // Save backup record in DB

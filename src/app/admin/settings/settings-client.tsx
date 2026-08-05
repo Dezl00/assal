@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database } from "lucide-react"
+import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download } from "lucide-react"
 import { updateThemeConfig, createBranch, updateBranch, deleteBranch } from "@/features/settings/actions"
 import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"

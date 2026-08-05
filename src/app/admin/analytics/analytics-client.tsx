@@ -43,11 +43,11 @@ export function AnalyticsClient({ chartData, totalVisits, totalViews }: { chartD
                 <div className="w-full flex justify-center gap-1 items-end h-48">
                   <div 
                     className="w-3 bg-primary rounded-t-sm transition-all duration-500" 
-                    style={{ height: \\%\ }}
+                    style={{ height: `${(day.visits / maxVal) * 100}%` }}
                   />
                   <div 
                     className="w-3 bg-blue-500 rounded-t-sm transition-all duration-500" 
-                    style={{ height: \\%\ }}
+                    style={{ height: `${(day.views / maxVal) * 100}%` }}
                   />
                 </div>
                 <span className="text-[10px] text-muted-foreground rotate-45 origin-left mt-2">
