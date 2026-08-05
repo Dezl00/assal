@@ -30,7 +30,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const [products, categories, departments, brands, orders, users, themeConfig, branches] = await Promise.all([
+    const [products, categories, departments, brands, orders, users, themeConfig, branches, widgets] = await Promise.all([
       db.product.findMany({ include: { images: true } }),
       db.category.findMany(),
       db.department.findMany(),
