@@ -64,7 +64,7 @@ export function ProductList({ widget }: { widget: any }) {
         </ScrollReveal>
 
         {widget.settings?.displayMode === "carousel" ? (
-          <div className="-mx-4 sm:mx-0">
+          <div className="w-full">
             <SimilarProductsCarousel products={products.slice(0, 6)} />
           </div>
         ) : (

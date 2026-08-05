@@ -8,7 +8,7 @@ import { ChevronRight, ChevronLeft } from "lucide-react"
 
 export function SimilarProductsCarousel({ products }: { products: any[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "start", direction: "rtl", dragFree: true },
+    { loop: true, align: "start", direction: "rtl" },
     [Autoplay({ delay: 3000, stopOnInteraction: true })]
   )
 
@@ -59,14 +59,14 @@ export function SimilarProductsCarousel({ products }: { products: any[] }) {
       </div>
 
       <button
-        className="absolute top-[40%] -right-3 sm:-right-5 -translate-y-1/2 w-10 h-10 rounded-full bg-background/50 backdrop-blur-md shadow-md border border-border/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-background/90 hover:scale-105"
+        className="absolute top-[40%] right-2 sm:-right-5 -translate-y-1/2 w-10 h-10 rounded-full bg-background/50 backdrop-blur-md shadow-md border border-border/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-background/90 hover:scale-105"
         onClick={scrollPrev}
       >
         <ChevronRight className="w-5 h-5 text-foreground" />
       </button>
 
       <button
-        className="absolute top-[40%] -left-3 sm:-left-5 -translate-y-1/2 w-10 h-10 rounded-full bg-background/50 backdrop-blur-md shadow-md border border-border/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-background/90 hover:scale-105"
+        className="absolute top-[40%] left-2 sm:-left-5 -translate-y-1/2 w-10 h-10 rounded-full bg-background/50 backdrop-blur-md shadow-md border border-border/50 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-background/90 hover:scale-105"
         onClick={scrollNext}
       >
         <ChevronLeft className="w-5 h-5 text-foreground" />
