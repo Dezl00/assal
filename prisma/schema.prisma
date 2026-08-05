@@ -283,6 +283,8 @@ model PageVisit {
   path        String
   ipAddress   String?
   userAgent   String?
+  country     String?
+  city        String?
   createdAt   DateTime @default(now())
 }
 
@@ -291,6 +293,8 @@ model ProductView {
   productId   String
   ipAddress   String?
   userAgent   String?
+  country     String?
+  city        String?
   createdAt   DateTime @default(now())
 }
 

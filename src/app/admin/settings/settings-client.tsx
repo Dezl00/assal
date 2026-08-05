@@ -341,7 +341,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                     <p className="text-sm text-muted-foreground mt-1">تحذير: استعادة النسخة الاحتياطية ستقوم بحذف البيانات الحالية واستبدالها.</p>
                   </div>
                   <div>
-                     <input type="file" id="importFile" accept=".json" className="hidden" onChange={async (e) => {
+                     <input type="file" id="importFile" accept=".zip,.json" className="hidden" onChange={async (e) => {
                        const file = e.target.files?.[0];
                        if (!file) return;
                        if (!confirm("هل أنت متأكد من استعادة هذه النسخة؟ سيتم مسح كافة بيانات المتجر الحالية!")) return;

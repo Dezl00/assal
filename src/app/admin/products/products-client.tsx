@@ -214,9 +214,9 @@ export function ProductsClient({ products, categories, brands = [], departments 
       "السعر": p.price,
       "سعر التخفيض": p.discountPrice || "",
       "المخزون": p.stock,
-      "القسم (ID)": p.categoryId,
-      "المجال (ID)": p.departmentId || "",
-      "الماركة (ID)": p.brandId || "",
+      "القسم": categories.find(c => c.id === p.categoryId)?.name || "",
+      "المجال": departments.find(d => d.id === p.departmentId)?.name || "",
+      "الماركة": brands.find(b => b.id === p.brandId)?.name || "",
       "الوصف": p.description || "",
       "مفعل؟": p.isActive ? "نعم" : "لا"
     }))
@@ -244,11 +244,13 @@ export function ProductsClient({ products, categories, brands = [], departments 
         
         if (data.length > 0) {
           const parsedData = data.map((row: any) => ({
-            name: row["اسم المنتج"] || "",
+            name: row["الاسم"] || row["اسم المنتج"] || "",
             price: row["السعر"] ? parseFloat(row["السعر"]) : 0,
             costPrice: row["سعر التكلفة"] ? parseFloat(row["سعر التكلفة"]) : undefined,
             stock: row["المخزون"] ? parseInt(row["المخزون"]) : 0,
-            categoryId: categories.find(c => c.name === row["التصنيف"])?.id || null, // Map category name to ID if found
+            categoryId: categories.find(c => c.name === (row["القسم"] || row["التصنيف"]))?.id || categories[0]?.id || "", 
+            departmentId: departments.find(d => d.name === row["المجال"])?.id || undefined,
+            brandId: brands.find(b => b.name === row["الماركة"])?.id || undefined,
             description: row["الوصف"] || "",
             isActive: row["مفعل؟"] === "نعم"
           })).filter(p => p.name.trim() !== "");

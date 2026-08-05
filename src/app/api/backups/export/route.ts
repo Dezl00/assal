@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import JSZip from "jszip"
 
 export async function GET() {
   try {
@@ -38,27 +39,32 @@ export async function GET() {
     }
 
     const jsonString = JSON.stringify(backupData, null, 2)
-    const buffer = Buffer.from(jsonString, "utf-8")
+
+    const zip = new JSZip()
+    zip.file("backup.json", jsonString)
+    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" })
+
+    const filename = `assal-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.zip`
 
     // Log the backup
     await db.backup.create({
       data: {
-        filename: `backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
-        size: buffer.byteLength,
+        filename,
+        size: zipBuffer.byteLength,
         status: "COMPLETED"
       }
     })
 
-    return new NextResponse(buffer, {
+    return new NextResponse(zipBuffer, {
       status: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Content-Disposition": `attachment; filename="assal-backup-${new Date().toISOString().split('T')[0]}.json"`
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${filename}"`
       }
     })
 
   } catch (error) {
-    console.error("Backup failed", error)
-    return NextResponse.json({ error: "Failed to generate backup" }, { status: 500 })
+    console.error("Backup export failed", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

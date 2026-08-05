@@ -99,3 +99,17 @@
     background: linear-gradient(135deg, hsl(38 92% 50%), hsl(45 90% 45%));
   }
 }
+
+@layer base {
+  /* Chrome, Edge, Safari */
+  ::-webkit-scrollbar {
+      display: none;
+  }
+
+  /* Firefox, IE and Edge */
+  html, body {
+      overflow-y: scroll;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+  }
+}

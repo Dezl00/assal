@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import React from 'react'
 
 export function SecurityClient({ logs }: { logs: any[] }) {
@@ -29,11 +29,23 @@ export function SecurityClient({ logs }: { logs: any[] }) {
                   <td className="p-4 text-xs" dir="ltr">{new Date(log.createdAt).toLocaleString('ar-EG')}</td>
                   <td className="p-4 font-medium">{log.user?.name || log.userId || 'نظام'}</td>
                   <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-xs ${log.action === 'Delete' ? 'bg-red-100 text-red-700' : log.action === 'Create' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {log.action}
+                    <span className={`px-2 py-1 rounded text-xs ${log.action === 'Delete' || log.action === 'حذف' ? 'bg-red-100 text-red-700' : log.action === 'Create' || log.action === 'إنشاء' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                      {log.action === 'Create' ? 'إنشاء' : log.action === 'Update' ? 'تعديل' : log.action === 'Delete' ? 'حذف' : log.action === 'Login' ? 'تسجيل دخول' : log.action}
                     </span>
                   </td>
-                  <td className="p-4 font-mono text-xs">{log.entityType} ({log.entityId || 'N/A'})</td>
+                  <td className="p-4 font-mono text-xs text-right" dir="rtl">
+                    {
+                      log.entityType === 'Product' ? 'منتج' :
+                      log.entityType === 'Category' ? 'قسم' :
+                      log.entityType === 'Brand' ? 'ماركة' :
+                      log.entityType === 'Order' ? 'طلب' :
+                      log.entityType === 'Widget' ? 'مكون واجهة' :
+                      log.entityType === 'User' ? 'مستخدم' :
+                      log.entityType === 'Backup' ? 'نسخة احتياطية' :
+                      log.entityType === 'ThemeConfig' ? 'إعدادات المتجر' :
+                      log.entityType
+                    } <span className="text-muted-foreground mr-1">({log.entityId || '-'})</span>
+                  </td>
                   <td className="p-4 text-xs text-muted-foreground max-w-[200px] truncate">
                     {log.details ? JSON.stringify(log.details) : '-'}
                   </td>

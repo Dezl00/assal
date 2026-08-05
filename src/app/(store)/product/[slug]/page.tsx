@@ -11,6 +11,7 @@ import { ProductFeatures } from "@/components/storefront/product-features"
 import { ProductCard } from "@/components/storefront/product-card"
 
 import type { Metadata } from "next"
+import { logProductView } from "@/features/analytics/actions"
 
 // Generate metadata for SEO
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -74,16 +75,7 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
   }
 
   // Log product view asynchronously
-  const reqHeaders = await headers()
-  const ip = reqHeaders.get("x-forwarded-for") || reqHeaders.get("x-real-ip") || "unknown"
-  const userAgent = reqHeaders.get("user-agent") || "unknown"
-  db.productView.create({
-    data: {
-      productId: product.id,
-      ipAddress: ip,
-      userAgent: userAgent,
-    }
-  }).catch(e => console.error("Failed to log product view", e))
+  logProductView(product.id)
 
   // Fetch related products
   const relatedProducts = await db.product.findMany({
