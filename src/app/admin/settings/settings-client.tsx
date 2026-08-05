@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download } from "lucide-react"
 import { updateThemeConfig, createBranch, updateBranch, deleteBranch } from "@/features/settings/actions"
@@ -9,7 +10,6 @@ import { ImageUploader } from "@/components/ui/image-uploader"
 import { Switch } from "@/components/ui/switch"
 
 export function SettingsClient({ config, branches = [], backups = [] }: { config: any, branches?: any[], backups?: any[] }) {
-  const [activeTab, setActiveTab] = useState("general")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Branch states
@@ -77,13 +77,30 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
     else toast.error("فشل الحذف")
   }
 
-  const tabs = [
-    { id: "general", label: "عام", icon: <Store className="w-4 h-4" /> },
-    { id: "appearance", label: "المظهر والهوية", icon: <Palette className="w-4 h-4" /> },
-    { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" /> },
-    { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" /> },
-    { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" /> },
+  const { data: session } = useSession()
+  const permissions = session?.user?.permissions || []
+  const isAdmin = session?.user?.role === "ADMIN"
+
+  const hasPerm = (perm: string) => isAdmin || permissions.includes(perm)
+
+  const allTabs = [
+    { id: "general", label: "عام", icon: <Store className="w-4 h-4" />, perm: 'settings.general' },
+    { id: "appearance", label: "المظهر والهوية", icon: <Palette className="w-4 h-4" />, perm: 'settings.appearance' },
+    { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" />, perm: 'settings.social' },
+    { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" />, perm: 'settings.branches' },
+    { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" />, perm: 'settings.backups' },
   ]
+
+  const tabs = allTabs.filter(t => hasPerm(t.perm))
+
+  const [activeTab, setActiveTab] = useState(tabs[0]?.id || "general")
+
+  // Ensure activeTab is valid if permissions change
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.find(t => t.id === activeTab)) {
+      setActiveTab(tabs[0].id)
+    }
+  }, [permissions, tabs, activeTab])
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

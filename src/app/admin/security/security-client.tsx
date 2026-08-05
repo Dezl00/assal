@@ -6,7 +6,16 @@ import { toast } from 'sonner'
 import { Loader2, User as UserIcon, Shield } from 'lucide-react'
 
 export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser: any }) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'logs'>('profile')
+  const permissions = currentUser?.permissions || []
+  const isAdmin = currentUser?.role === 'ADMIN'
+  const hasPerm = (perm: string) => isAdmin || permissions.includes(perm)
+
+  const allowedTabs = [
+    ...(hasPerm('security.profile') ? ['profile'] : []),
+    ...(hasPerm('security.logs') ? ['logs'] : [])
+  ]
+
+  const [activeTab, setActiveTab] = useState(allowedTabs[0] || 'profile')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleProfileUpdate(e: React.FormEvent<HTMLFormElement>) {
@@ -22,23 +31,25 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
     }
   }
   return (
-    <div className="space-y-6 animate-in fade-in">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>الرئيسية</span>
           <span>/</span>
-          <span className="text-foreground">سجل الأمان والأنشطة</span>
+          <span className="text-foreground">الأمان والحساب</span>
         </nav>
       </div>
 
-      <div className="flex border-b border-border/50 mb-6">
-        <button 
-          onClick={() => setActiveTab('profile')}
-          className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'profile' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-        >
-          <UserIcon className="w-4 h-4" /> إعدادات الحساب
-        </button>
-        {(currentUser?.role === 'ADMIN' || (currentUser?.permissions || []).includes('security.view')) && (
+      <div className="flex border-b border-border/50">
+        {hasPerm('security.profile') && (
+          <button 
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'profile' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            <UserIcon className="w-4 h-4" /> إعدادات الحساب
+          </button>
+        )}
+        {hasPerm('security.logs') && (
           <button 
             onClick={() => setActiveTab('logs')}
             className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
@@ -74,7 +85,7 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
         </div>
       )}
 
-      {activeTab === 'logs' && (currentUser?.role === 'ADMIN' || (currentUser?.permissions || []).includes('security.view')) && (
+      {activeTab === 'logs' && hasPerm('security.logs') && (
         <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
           <table className="w-full text-sm text-right">

@@ -12,53 +12,35 @@ const PERMISSIONS_SCHEMA = [
     id: 'products', 
     label: 'المنتجات',
     subPermissions: [
-      { id: 'view', label: 'عرض' },
-      { id: 'add', label: 'إضافة' },
-      { id: 'edit', label: 'تعديل' },
-      { id: 'delete', label: 'حذف' }
+      { id: 'view', label: 'الوصول لقائمة المنتجات' },
+      { id: 'add', label: 'إضافة منتج جديد' },
+      { id: 'edit', label: 'تعديل بيانات المنتجات' },
+      { id: 'delete', label: 'حذف المنتجات' }
     ]
   },
   { 
     id: 'orders', 
     label: 'الطلبات',
     subPermissions: [
-      { id: 'view', label: 'عرض' },
-      { id: 'edit', label: 'تعديل وتغيير حالة الطلب' },
-      { id: 'delete', label: 'حذف' }
+      { id: 'view', label: 'الوصول لقائمة الطلبات' },
+      { id: 'edit', label: 'تعديل حالة الطلب' },
+      { id: 'delete', label: 'حذف الطلبات' }
     ]
   },
   { 
     id: 'customers', 
     label: 'العملاء',
     subPermissions: [
-      { id: 'view', label: 'عرض' },
-      { id: 'edit', label: 'تعديل' },
-      { id: 'delete', label: 'حذف' }
+      { id: 'view', label: 'الوصول لقائمة العملاء' },
+      { id: 'edit', label: 'تعديل بيانات العملاء' },
+      { id: 'delete', label: 'حذف العملاء' }
     ]
   },
   { 
     id: 'categories', 
     label: 'الأقسام والمجالات',
     subPermissions: [
-      { id: 'view', label: 'عرض' },
-      { id: 'add', label: 'إضافة' },
-      { id: 'edit', label: 'تعديل' },
-      { id: 'delete', label: 'حذف' }
-    ]
-  },
-  { 
-    id: 'widgets', 
-    label: 'واجهة المتجر والتصميم',
-    subPermissions: [
-      { id: 'view', label: 'عرض' },
-      { id: 'edit', label: 'تعديل وتخصيص' }
-    ]
-  },
-  { 
-    id: 'accounts', 
-    label: 'الحسابات والصلاحيات',
-    subPermissions: [
-      { id: 'view', label: 'عرض' },
+      { id: 'view', label: 'الوصول للأقسام والمجالات' },
       { id: 'add', label: 'إضافة' },
       { id: 'edit', label: 'تعديل' },
       { id: 'delete', label: 'حذف' }
@@ -66,17 +48,54 @@ const PERMISSIONS_SCHEMA = [
   },
   { 
     id: 'settings', 
-    label: 'إعدادات المتجر',
+    label: 'الإعدادات',
     subPermissions: [
-      { id: 'view', label: 'عرض' },
-      { id: 'edit', label: 'تعديل' }
+      { id: 'general', label: 'الإعدادات العامة' },
+      { id: 'appearance', label: 'المظهر والهوية' },
+      { id: 'social', label: 'التواصل الاجتماعي' },
+      { id: 'branches', label: 'الفروع والمواقع' },
+      { id: 'backups', label: 'النسخ الاحتياطي' }
+    ]
+  },
+  { 
+    id: 'widgets', 
+    label: 'واجهة المتجر والتصميم',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للواجهات' },
+      { id: 'edit', label: 'تعديل وتخصيص الواجهات' }
+    ]
+  },
+  { 
+    id: 'shipping-payment', 
+    label: 'الدفع والشحن',
+    subPermissions: [
+      { id: 'shipping', label: 'إعدادات الشحن' },
+      { id: 'payment', label: 'طرق الدفع' }
+    ]
+  },
+  { 
+    id: 'accounts', 
+    label: 'الحسابات والصلاحيات',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للحسابات' },
+      { id: 'add', label: 'إضافة حسابات' },
+      { id: 'edit', label: 'تعديل الحسابات والصلاحيات' },
+      { id: 'delete', label: 'حذف الحسابات' }
+    ]
+  },
+  { 
+    id: 'analytics', 
+    label: 'الإحصائيات والتقارير',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للإحصائيات' }
     ]
   },
   { 
     id: 'security', 
     label: 'سجل الأمان والأنشطة',
     subPermissions: [
-      { id: 'view', label: 'عرض السجل' }
+      { id: 'profile', label: 'الملف الشخصي' },
+      { id: 'logs', label: 'الوصول لسجل الأمان' }
     ]
   }
 ]
