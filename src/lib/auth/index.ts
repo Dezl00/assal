@@ -42,6 +42,8 @@ export const authConfig: NextAuthConfig = {
 
         if (!user || !user.passwordHash) return null
 
+        if (user.isActive === false) return null
+
         // In a real app, compare hashes:
         // const isValid = await bcrypt.compare(credentials.password as string, user.passwordHash)
         const isValid = credentials.password === user.passwordHash // Simplified for immediate startup

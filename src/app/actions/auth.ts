@@ -57,6 +57,10 @@ export async function loginUser(formData: FormData) {
       return { error: "رقم الهاتف أو كلمة المرور غير صحيحة" }
     }
 
+    if (user.isActive === false) {
+      return { error: "تم تعطيل هذا الحساب. يرجى مراجعة الإدارة" }
+    }
+
     return { success: true, role: user.role, permissions: user.permissions }
   } catch (error) {
     console.error("Login check error:", error)

@@ -175,13 +175,14 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                           </td>
                           <td className="px-4 py-4 font-bold">{coupon.value} {coupon.type === "PERCENTAGE" ? "%" : "ج.م"}</td>
                           <td className="px-4 py-4">
-                            <label className="flex items-center gap-2 cursor-pointer w-max">
+                            <label className="flex items-center gap-2 cursor-pointer w-max relative">
                               <input 
                                 type="checkbox" 
                                 checked={coupon.isActive}
                                 onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
-                                className="w-4 h-4 rounded text-primary focus:ring-primary"
+                                className="sr-only peer"
                               />
+                              <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto"></div>
                               <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
                             </label>
                           </td>
@@ -331,13 +332,16 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium">كود الخصم المرتبط</label>
-                          <input 
-                            type="text" 
+                          <select 
                             value={settings.promoPopupCode || ""}
                             onChange={(e) => setSettings({ ...settings, promoPopupCode: e.target.value })}
                             className="w-full h-10 bg-background border border-input rounded-md px-3 text-sm focus:border-primary uppercase dir-ltr"
-                            placeholder="WELCOME"
-                          />
+                          >
+                            <option value="">-- بدون كود خصم --</option>
+                            {coupons.map((c: any) => (
+                              <option key={c.id} value={c.code}>{c.code}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-medium">تأخير الظهور (ثواني)</label>

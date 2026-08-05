@@ -11,25 +11,13 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
   const hasPerm = (perm: string) => isAdmin || permissions.includes(perm)
 
   const allowedTabs = [
-    ...(hasPerm('security.profile') ? ['profile'] : []),
     ...(hasPerm('security.logs') ? ['logs'] : [])
   ]
 
-  const [activeTab, setActiveTab] = useState(allowedTabs[0] || 'profile')
+  const [activeTab, setActiveTab] = useState(allowedTabs[0] || 'logs')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function handleProfileUpdate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setIsSubmitting(true)
-    const formData = new FormData(e.currentTarget)
-    const res = await updateProfile(formData)
-    setIsSubmitting(false)
-    if (res.success) {
-      toast.success('تم تحديث البيانات بنجاح')
-    } else {
-      toast.error(res.error || 'فشل التحديث')
-    }
-  }
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -41,14 +29,7 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
       </div>
 
       <div className="flex border-b border-border/50">
-        {hasPerm('security.profile') && (
-          <button 
-            onClick={() => setActiveTab('profile')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'profile' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-          >
-            <UserIcon className="w-4 h-4" /> إعدادات الحساب
-          </button>
-        )}
+
         {hasPerm('security.logs') && (
           <button 
             onClick={() => setActiveTab('logs')}
@@ -59,31 +40,6 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
         )}
       </div>
 
-      {activeTab === 'profile' && (
-        <div className="max-w-xl">
-          <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">
-            <div className="p-6 border-b border-border/50 bg-muted/5">
-              <h2 className="text-lg font-semibold">تعديل بيانات الحساب</h2>
-              <p className="text-sm text-muted-foreground mt-1">تحديث اسمك أو كلمة المرور الخاصة بك.</p>
-            </div>
-            <div className="p-6">
-              <form onSubmit={handleProfileUpdate} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الاسم</label>
-                  <input name="name" type="text" required defaultValue={currentUser?.name || ''} className="w-full h-10 px-3 border rounded-md" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">كلمة المرور الجديدة <span className="text-muted-foreground text-xs">(اختياري)</span></label>
-                  <input name="password" type="password" className="w-full h-10 px-3 border rounded-md" />
-                </div>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديلات'}
-                </Button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       {activeTab === 'logs' && hasPerm('security.logs') && (
         <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">

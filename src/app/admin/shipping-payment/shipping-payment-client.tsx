@@ -171,9 +171,9 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col md:flex-row gap-6 relative items-start">
         {/* Tabs Sidebar */}
-        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide md:sticky md:top-4 border-b md:border-b-0 border-border/50 -mx-4 px-4 md:mx-0 md:px-0">
           <button
             onClick={() => setActiveTab('shipping')}
             className={`shrink-0 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'shipping' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground hover:text-foreground'}`}
@@ -196,10 +196,10 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
           {activeTab === 'shipping' && (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
               {/* Governorates Sidebar */}
-              <div className="lg:col-span-1 border border-border/50 rounded-xl bg-card overflow-hidden flex flex-col max-h-[600px] shadow-sm">
-                <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/20">
+              <div className="lg:col-span-1 border border-border/50 rounded-xl bg-card overflow-hidden flex flex-col lg:max-h-[85vh] lg:sticky lg:top-4 shadow-sm">
+                <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/5">
                   <h3 className="font-bold">المحافظات</h3>
-                  <Button size="icon" variant="ghost" onClick={() => setIsAddingGov(!isAddingGov)} className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                  <Button size="icon" variant="ghost" onClick={() => setIsAddingGov(!isAddingGov)} className="h-8 w-8 text-muted-foreground">
                     {isAddingGov ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </Button>
                 </div>
@@ -250,9 +250,8 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
                         <h3 className="text-lg font-bold">المدن والتسعيرة - {activeGov.name}</h3>
                         <p className="text-sm text-muted-foreground mt-1">أضف المدن لتحديد سعر الشحن الخاص بكل منها.</p>
                       </div>
-                      <Button onClick={() => setIsAddingCity(!isAddingCity)} variant={isAddingCity ? "secondary" : "default"} className="gap-2 shrink-0">
-                        {isAddingCity ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                        {isAddingCity ? "إلغاء الإضافة" : "إضافة مدينة"}
+                      <Button onClick={() => setIsAddingCity(!isAddingCity)} variant={isAddingCity ? "ghost" : "default"} className="gap-2 shrink-0">
+                        {isAddingCity ? <><X className="w-4 h-4" /> إلغاء الإضافة</> : <><Plus className="w-4 h-4" /> إضافة مدينة</>}
                       </Button>
                     </div>
 
@@ -348,9 +347,8 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
                     <h2 className="text-lg font-semibold">طرق الدفع المتاحة</h2>
                     <p className="text-sm text-muted-foreground">أضف طرق دفع لعملائك لإتمام طلباتهم.</p>
                   </div>
-                  <Button onClick={() => { resetPaymentForm(); setIsPaymentFormVisible(!isPaymentFormVisible); }} className="gap-2" variant={isPaymentFormVisible && !editingPayment ? "secondary" : "default"}>
-                    {isPaymentFormVisible && !editingPayment ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {isPaymentFormVisible && !editingPayment ? "إلغاء" : "إضافة طريقة الدفع"}
+                  <Button onClick={() => { resetPaymentForm(); setIsPaymentFormVisible(!isPaymentFormVisible); }} className="gap-2" variant={isPaymentFormVisible && !editingPayment ? "ghost" : "default"}>
+                    {isPaymentFormVisible && !editingPayment ? <><X className="w-4 h-4" /> إلغاء</> : <><Plus className="w-4 h-4" /> إضافة طريقة الدفع</>}
                   </Button>
                 </div>
 
@@ -405,7 +403,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
 
               {/* Payment Sticky Form */}
               <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isPaymentFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
-                <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col">
+                <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
                   <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold tracking-tight">{editingPayment ? "تعديل طريقة الدفع" : "إضافة طريقة جديدة"}</h2>

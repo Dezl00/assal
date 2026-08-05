@@ -26,6 +26,7 @@ model User {
   orders        Order[]
   activityLogs  ActivityLog[]
   permissions   String[]  @default([])
+  isActive      Boolean   @default(true)
 }
 
 model Widget {

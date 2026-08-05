@@ -2,10 +2,10 @@
 import React, { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, Edit, Trash2, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
-import { createAccount, updateAccount, deleteAccount } from '@/features/accounts/actions'
-import { toast } from 'sonner'
+import { deleteAccount, createAccount, updateAccount, updateAccountStatus } from "@/features/accounts/actions"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
 import { ConfirmModal } from '@/components/ui/confirm-modal'
-import { Checkbox } from '@/components/ui/checkbox'
 
 const PERMISSIONS_SCHEMA = [
   { 
@@ -164,6 +164,11 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
     setDeleteModalOpen(false)
   }
 
+  async function handleUpdateStatus(id: string, active: boolean) {
+    const res = await updateAccountStatus(id, active)
+    if (!res.success) toast.error(res.error || 'فشل تحديث الحالة')
+  }
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedPermissions(allPermissionKeys)
@@ -209,7 +214,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
         </Button>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 relative items-start">
+      <div className="flex flex-col lg:flex-row-reverse gap-6 relative items-start">
         {/* Table Area */}
         <div className="flex-1 w-full order-last lg:order-first">
           <div className="border rounded-xl bg-card overflow-hidden shadow-sm">
@@ -239,7 +244,11 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                             <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700 font-medium">بدون صلاحيات</span>
                           )}
                         </td>
-                        <td className="p-4 flex gap-2">
+                        <td className="p-4 flex gap-2 items-center justify-end">
+                          <Switch 
+                            checked={acc.isActive !== false} 
+                            onCheckedChange={(checked) => handleUpdateStatus(acc.id, checked)}
+                          />
                           <Button variant="ghost" size="icon" onClick={() => { 
                             setEditingItem(acc); 
                             setSelectedPermissions(acc.permissions || []);
@@ -263,8 +272,8 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
           </div>
         </div>
 
-        {/* Sticky Form Side */}
-        <div className={`w-full lg:w-[450px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
+        {/* Form Area */}
+        <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
           <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between shrink-0">
               <div>

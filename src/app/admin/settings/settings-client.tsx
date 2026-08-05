@@ -5,9 +5,11 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download } from "lucide-react"
 import { updateThemeConfig, createBranch, updateBranch, deleteBranch } from "@/features/settings/actions"
+import { updateProfile } from "@/features/accounts/actions"
 import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"
 import { Switch } from "@/components/ui/switch"
+import { User as UserIcon } from "lucide-react"
 
 export function SettingsClient({ config, branches = [], backups = [] }: { config: any, branches?: any[], backups?: any[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -77,9 +79,24 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
     else toast.error("فشل الحذف")
   }
 
-  const { data: session } = useSession()
-  const permissions = session?.user?.permissions || []
-  const isAdmin = session?.user?.role === "ADMIN"
+  const { data: session, update: updateSession } = useSession()
+  const currentUser = session?.user
+  const permissions = currentUser?.permissions || []
+  const isAdmin = currentUser?.role === "ADMIN"
+
+  async function handleProfileSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const res = await updateProfile(formData)
+    setIsSubmitting(false)
+    if (res.success) {
+      toast.success('تم تحديث البيانات بنجاح')
+      updateSession()
+    } else {
+      toast.error(res.error || 'فشل التحديث')
+    }
+  }
 
   const hasPerm = (perm: string) => isAdmin || permissions.includes(perm)
 
@@ -89,6 +106,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
     { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" />, perm: 'settings.social' },
     { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" />, perm: 'settings.branches' },
     { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" />, perm: 'settings.backups' },
+    { id: "profile", label: "إعدادات حسابي", icon: <UserIcon className="w-4 h-4" />, perm: 'settings.general' }, // Available to anyone who can access settings
   ]
 
   const tabs = allTabs.filter(t => hasPerm(t.perm))
@@ -124,7 +142,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
         {/* Content Area */}
         <div className="flex-1 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
           {/* Config Forms */}
-          {activeTab !== "branches" && activeTab !== "backups" && (
+          {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
               <div className="p-6 flex-1 space-y-8">
                 
@@ -140,6 +158,26 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                         <textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-1 focus:ring-primary" />
                       </div>
                     </div>
+                </div>
+
+                <div className={activeTab === "profile" ? "block space-y-6 animate-in fade-in" : "hidden"}>
+                  <h2 className="text-lg font-semibold border-b border-border/50 pb-2">تعديل بيانات الحساب</h2>
+                  <div className="space-y-4 max-w-xl">
+                    <p className="text-sm text-muted-foreground">تحديث اسمك أو كلمة المرور الخاصة بك.</p>
+                    <form onSubmit={handleProfileSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">الاسم</label>
+                        <input name="name" type="text" required defaultValue={currentUser?.name || ''} className="w-full h-10 px-3 border rounded-md" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">كلمة المرور الجديدة <span className="text-muted-foreground text-xs">(اختياري)</span></label>
+                        <input name="password" type="password" className="w-full h-10 px-3 border rounded-md" />
+                      </div>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديلات الشخصية'}
+                      </Button>
+                    </form>
+                  </div>
                 </div>
 
                 <div className={activeTab === "appearance" ? "block space-y-6 animate-in fade-in" : "hidden"}>
@@ -234,7 +272,33 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
             </form>
           )}
 
-          {/* Branches Tab */}
+          {activeTab === "profile" && (
+            <div className="flex flex-col h-full">
+              <div className="p-6 flex-1 space-y-8">
+                <div className="block space-y-6 animate-in fade-in">
+                  <h2 className="text-lg font-semibold border-b border-border/50 pb-2">تعديل بيانات الحساب</h2>
+                  <div className="space-y-4 max-w-xl">
+                    <p className="text-sm text-muted-foreground">تحديث اسمك أو كلمة المرور الخاصة بك.</p>
+                    <form onSubmit={handleProfileSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">الاسم</label>
+                        <input name="name" type="text" required defaultValue={currentUser?.name || ''} className="w-full h-10 px-3 border rounded-md" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">كلمة المرور الجديدة <span className="text-muted-foreground text-xs">(اختياري)</span></label>
+                        <input name="password" type="password" className="w-full h-10 px-3 border rounded-md" />
+                      </div>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديلات الشخصية'}
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Branches Section */}
           {activeTab === "branches" && (
             <div className="p-6 h-full flex flex-col animate-in fade-in">
               <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-4">

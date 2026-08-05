@@ -69,6 +69,20 @@ export async function updateAccount(id: string, data: FormData) {
   }
 }
 
+export async function updateAccountStatus(id: string, isActive: boolean) {
+  const session = await auth()
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const hasPerm = session?.user?.permissions?.includes('accounts.edit')
+  if (!isAdmin && !hasPerm) throw new Error('Unauthorized')
+
+  await prisma.user.update({
+    where: { id },
+    data: { isActive }
+  })
+  revalidatePath('/admin/accounts')
+  return { success: true }
+}
+
 export async function deleteAccount(id: string) {
   const session = await auth()
   const isAdmin = session?.user?.role === 'ADMIN'
@@ -102,6 +116,23 @@ export async function updateProfile(data: FormData) {
       where: { id: session.user.id },
       data: updateData
     })
+  } catch(e) {
+    return { success: false, error: 'فشل التحديث' }
+  }
+}
+
+export async function updateAccountStatus(id: string, isActive: boolean) {
+  const session = await auth()
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const hasPerm = session?.user?.permissions?.includes('accounts.edit')
+  if (!isAdmin && !hasPerm) return { success: false, error: 'Unauthorized' }
+
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { isActive }
+    })
+    revalidatePath('/admin/accounts')
     return { success: true }
   } catch(e) {
     return { success: false, error: 'فشل التحديث' }
