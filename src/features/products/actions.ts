@@ -7,7 +7,7 @@ export async function createProduct(formData: FormData) {
   try {
     const name = formData.get("name") as string
     let slug = formData.get("slug") as string
-    let sku = formData.get("sku") as string
+    let sku: string | null = formData.get("sku") as string || null
     
     if (!slug) {
       // Find the next available sequential number
@@ -28,7 +28,7 @@ export async function createProduct(formData: FormData) {
       slug = nextId.toString();
     }
     
-    if (!sku) sku = `SKU-${Date.now()}`
+
     const price = parseFloat(formData.get("price") as string)
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null
     const stock = parseInt(formData.get("stock") as string)
@@ -132,10 +132,9 @@ export async function updateProduct(id: string, formData: FormData) {
   try {
     const name = formData.get("name") as string
     let slug = formData.get("slug") as string
-    let sku = formData.get("sku") as string
-
+    let sku: string | null = formData.get("sku") as string || null
+    
     if (!slug) slug = `product-${Date.now()}`
-    if (!sku) sku = `SKU-${Date.now()}`
     const price = parseFloat(formData.get("price") as string)
     const discountPrice = formData.get("discountPrice") ? parseFloat(formData.get("discountPrice") as string) : null
     const stock = parseInt(formData.get("stock") as string)

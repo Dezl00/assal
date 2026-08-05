@@ -68,7 +68,7 @@ export async function deleteCategory(id: string) {
 const ProductSchema = z.object({
   name: z.string().min(2),
   slug: z.string().min(2),
-  sku: z.string().min(2),
+  sku: z.string().optional().nullable(),
   barcode: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   price: z.number().min(0),
