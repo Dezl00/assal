@@ -106,7 +106,7 @@ export default async function AdminDashboardPage() {
               <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
                 <div className="flex items-center gap-3">
                   {tv.product.images && tv.product.images[0] ? (
-                    <img src={tv.product.images[0]} alt={tv.product.name} className="w-10 h-10 rounded-md object-cover border border-border/50" />
+                    <img src={((tv.product.images[0] as any).url) || (tv.product.images[0] as any)} alt={tv.product.name} className="w-10 h-10 rounded-md object-cover border border-border/50" />
                   ) : (
                     <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground border border-border/50">صورة</div>
                   )}
