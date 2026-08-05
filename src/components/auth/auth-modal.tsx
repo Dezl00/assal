@@ -69,7 +69,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
     setLoading(true)
     
     const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
+    const phone = formData.get("phone") as string
     const password = formData.get("password") as string
 
     try {
@@ -82,12 +82,12 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
 
       const result = await signIn("credentials", {
         redirect: false,
-        email,
+        phone,
         password,
       })
 
       if (result?.error) {
-        setError("البريد الإلكتروني أو كلمة المرور غير صحيحة")
+        setError("رقم الهاتف أو كلمة المرور غير صحيحة")
       } else {
         setAuthModalOpen(false)
         
@@ -116,7 +116,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const email = formData.get("email") as string
+    const phone = formData.get("phone") as string
     const password = formData.get("password") as string
 
     try {
@@ -132,7 +132,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
         // Auto login after successful registration
         const signInResult = await signIn("credentials", {
           redirect: false,
-          email,
+          phone,
           password,
         })
 

@@ -41,9 +41,24 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   const selectedGov = governorates.find((g: any) => g.id === selectedGovId)
   const selectedCity = selectedGov?.cities.find((c: any) => c.id === selectedCityId)
   
-  // Default to 0, unless city is selected. If using saved address and no city selected, assume 0 for now or require re-selection.
-  // Real-world: Should map user.city to the DB cities. For this task, we assume the user picks it.
-  const baseShippingCost = selectedCity ? selectedCity.shippingCost : 0
+  let baseShippingCost = 0
+  let isShippingCalculated = false
+
+  if (useNewAddress) {
+    if (selectedCity) {
+      baseShippingCost = selectedCity.shippingCost
+      isShippingCalculated = true
+    }
+  } else if (user?.city) {
+    for (const gov of governorates) {
+      const c = gov.cities.find((city: any) => city.name === user.city)
+      if (c) {
+        baseShippingCost = c.shippingCost
+        isShippingCalculated = true
+        break
+      }
+    }
+  }
   
   const hasThreshold = settings?.freeShippingThreshold !== null && settings?.freeShippingThreshold !== undefined;
   const isFreeShippingThresholdMet = hasThreshold && total >= settings.freeShippingThreshold!;
@@ -389,7 +404,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
               <div className="flex gap-2">
                 <input 
                   type="text" 
-                  placeholder="كود الخصم (إن وجد)" 
+                  placeholder="كود الخصم" 
                   value={couponCodeInput}
                   onChange={(e) => setCouponCodeInput(e.target.value)}
                   disabled={!!appliedCoupon}
@@ -440,7 +455,9 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
 
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
-                {finalShippingCost === 0 ? (
+                {!isShippingCalculated ? (
+                  <span className="font-semibold text-muted-foreground">يحدد حسب العنوان</span>
+                ) : finalShippingCost === 0 ? (
                   <span className="font-semibold text-primary">مجاني</span>
                 ) : (
                   <span className="font-semibold">{finalShippingCost.toFixed(2)} ج.م</span>
