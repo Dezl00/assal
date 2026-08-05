@@ -73,6 +73,9 @@ model WidgetContentItem {
   // For specific redirects (Brand, Category, Product)
   redirectType String?
   redirectId   String?
+  
+  // Custom Settings (Alignment, Colors, Button Styles)
+  settings     Json?
 }
 
 model MediaAsset {

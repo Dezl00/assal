@@ -54,6 +54,10 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
   // BannerGrid routing states
   const [linkType, setLinkType] = useState("custom")
   const [linkValue, setLinkValue] = useState("")
+  
+  // HeroSlider states
+  const [btnBgColor, setBtnBgColor] = useState("primary")
+  const [btnTextColor, setBtnTextColor] = useState("white")
 
   React.useEffect(() => {
     getCollections().then(setCollections)
@@ -324,11 +328,19 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     
     setLinkType(type);
     setLinkValue(val);
+    setBtnBgColor(item.settings?.buttonBgColor || "primary");
+    setBtnTextColor(item.settings?.buttonTextColor || "white");
 
     const form: any = document.getElementById("add-item-form")
     if (form) {
       if (form.elements["title"]) form.elements["title"].value = item.title || ""
       if (form.elements["buttonUrl"]) form.elements["buttonUrl"].value = item.buttonUrl || ""
+      if (form.elements["subtitle"]) form.elements["subtitle"].value = item.subtitle || ""
+      if (form.elements["buttonText"]) form.elements["buttonText"].value = item.buttonText || ""
+      if (form.elements["alignment"]) form.elements["alignment"].value = item.settings?.alignment || "center"
+      if (form.elements["buttonStyle"]) form.elements["buttonStyle"].value = item.settings?.buttonStyle || "solid"
+      if (form.elements["buttonCustomBgColor"]) form.elements["buttonCustomBgColor"].value = item.settings?.buttonCustomBgColor || ""
+      if (form.elements["buttonCustomTextColor"]) form.elements["buttonCustomTextColor"].value = item.settings?.buttonCustomTextColor || ""
     }
   }
 
@@ -359,6 +371,8 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
     setSelectedProductIds([])
     setLinkType("custom")
     setLinkValue("")
+    setBtnBgColor("primary")
+    setBtnTextColor("white")
     const form: any = document.getElementById("add-item-form")
     if (form) form.reset()
   }
@@ -731,7 +745,59 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                             className="h-9 w-full rounded border border-input bg-background px-2 text-xs" 
                           />
                           
-                          {editingWidget.type === "BannerGrid" ? (
+                          {editingWidget.type === "HeroSlider" && (
+                            <div className="space-y-2 mt-2 border-t border-border/50 pt-2 pb-2">
+                              <input name="subtitle" placeholder="الوصف النصي (اختياري)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                              <input name="buttonText" placeholder="نص الزر (اختياري - افتراضي: تسوق الآن)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="text-[10px] text-muted-foreground block mb-1">المحاذاة</label>
+                                  <select name="alignment" className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                    <option value="center">في المنتصف</option>
+                                    <option value="right">لليمين</option>
+                                    <option value="left">لليسار</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="text-[10px] text-muted-foreground block mb-1">شكل الزر</label>
+                                  <select name="buttonStyle" className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                    <option value="solid">ممتلئ (Solid)</option>
+                                    <option value="outline">مفرغ (Outline)</option>
+                                  </select>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <label className="text-[10px] text-muted-foreground block mb-1">لون خلفية الزر</label>
+                                  <select name="buttonBgColor" value={btnBgColor} onChange={e => setBtnBgColor(e.target.value)} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                    <option value="primary">اللون الأساسي</option>
+                                    <option value="secondary">اللون الثانوي</option>
+                                    <option value="white">أبيض</option>
+                                    <option value="custom">مخصص...</option>
+                                  </select>
+                                  {btnBgColor === "custom" && (
+                                    <input type="color" name="buttonCustomBgColor" className="w-full h-9 mt-1 rounded border border-input p-1 cursor-pointer" />
+                                  )}
+                                </div>
+                                <div>
+                                  <label className="text-[10px] text-muted-foreground block mb-1">لون نص الزر</label>
+                                  <select name="buttonTextColor" value={btnTextColor} onChange={e => setBtnTextColor(e.target.value)} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                    <option value="white">أبيض</option>
+                                    <option value="primary">اللون الأساسي</option>
+                                    <option value="secondary">اللون الثانوي</option>
+                                    <option value="custom">مخصص...</option>
+                                  </select>
+                                  {btnTextColor === "custom" && (
+                                    <input type="color" name="buttonCustomTextColor" className="w-full h-9 mt-1 rounded border border-input p-1 cursor-pointer" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {editingWidget.type === "BannerGrid" || editingWidget.type === "HeroSlider" ? (
                             <div className="flex gap-2">
                               <select 
                                 name="redirectType" 
@@ -824,7 +890,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                         </Button>
                       </form>
                       
-                      {productPickerOpen && editingWidget.type === "BannerGrid" && linkType === "product" ? (
+                      {productPickerOpen && (editingWidget.type === "BannerGrid" || editingWidget.type === "HeroSlider") && linkType === "product" ? (
                         <ProductPickerModal 
                           open={productPickerOpen}
                           onOpenChange={setProductPickerOpen}

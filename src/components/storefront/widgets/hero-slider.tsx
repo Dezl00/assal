@@ -47,19 +47,68 @@ export function HeroSlider({ widget }: { widget: any }) {
                 }}
               />
               {/* Content Container (Removed dark gradient shadow) */}
-              <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-24 pb-16">
-                <div className="container mx-auto max-w-4xl text-center md:text-right">
+              <div className="absolute inset-0 flex flex-col justify-center p-8 md:p-24">
+                <div className={`container max-w-4xl ${
+                  slide.settings?.alignment === "left" ? "mr-auto ml-0 text-left" : 
+                  slide.settings?.alignment === "right" ? "ml-auto mr-0 text-right" : 
+                  "mx-auto text-center"
+                }`}>
                   {slide.title && (
-                    <h2 className="text-4xl md:text-6xl font-semibold text-white mb-4 leading-tight animate-in slide-in-from-bottom-8 duration-700 drop-shadow-md">
+                    <h2 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight animate-in slide-in-from-bottom-8 duration-700 drop-shadow-lg">
                       {slide.title}
                     </h2>
+                  )}
+                  {slide.subtitle && (
+                    <p className="text-lg md:text-2xl text-white/90 mb-8 max-w-3xl animate-in slide-in-from-bottom-10 duration-700 delay-75 drop-shadow-md inline-block">
+                      {slide.subtitle}
+                    </p>
                   )}
                   {slide.buttonUrl && (
                     <div className="animate-in slide-in-from-bottom-12 duration-700 delay-150">
                       <Link href={getValidLink(slide.buttonUrl)}>
-                        <Button size="lg" className="gold-gradient text-white border-0 px-8 text-lg hover:scale-105 transition-transform shadow-md">
-                          تسوق الآن
-                        </Button>
+                        {(() => {
+                          const isOutline = slide.settings?.buttonStyle === "outline";
+                          let bgStyle: any = {};
+                          let textStyle: any = {};
+                          let className = "px-8 text-lg hover:scale-105 transition-all duration-300 shadow-lg border-2 ";
+                          
+                          // Handle Colors
+                          const bgColor = slide.settings?.buttonBgColor || "primary";
+                          const customBg = slide.settings?.buttonCustomBgColor;
+                          const txtColor = slide.settings?.buttonTextColor || "white";
+                          const customTxt = slide.settings?.buttonCustomTextColor;
+
+                          if (isOutline) {
+                            className += "bg-transparent hover:bg-white/10 backdrop-blur-sm ";
+                            if (bgColor === "primary") className += "border-primary text-primary ";
+                            else if (bgColor === "secondary") className += "border-secondary text-secondary ";
+                            else if (bgColor === "white") className += "border-white text-white hover:text-white ";
+                            else if (bgColor === "custom" && customBg) {
+                              bgStyle = { borderColor: customBg, color: customBg };
+                            }
+                          } else {
+                            // Solid
+                            if (bgColor === "primary") className += "bg-primary border-primary hover:brightness-110 ";
+                            else if (bgColor === "secondary") className += "bg-secondary border-secondary hover:brightness-110 ";
+                            else if (bgColor === "white") className += "bg-white border-white hover:bg-gray-100 ";
+                            else if (bgColor === "custom" && customBg) {
+                              bgStyle = { backgroundColor: customBg, borderColor: customBg };
+                            }
+                            
+                            if (txtColor === "primary") className += "text-primary ";
+                            else if (txtColor === "secondary") className += "text-secondary ";
+                            else if (txtColor === "white") className += "text-white ";
+                            else if (txtColor === "custom" && customTxt) {
+                              textStyle = { color: customTxt };
+                            }
+                          }
+
+                          return (
+                            <Button size="lg" className={className} style={{ ...bgStyle, ...textStyle }}>
+                              {slide.buttonText || "تسوق الآن"}
+                            </Button>
+                          );
+                        })()}
                       </Link>
                     </div>
                   )}

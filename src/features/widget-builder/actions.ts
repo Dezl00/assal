@@ -196,6 +196,18 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
       if (!buttonUrl) buttonUrl = `/collection/${collection.slug}`
     }
 
+    let settings: any = null;
+    if (widget?.type === "HeroSlider") {
+      settings = {
+        alignment: formData.get("alignment") as string || "center",
+        buttonStyle: formData.get("buttonStyle") as string || "solid",
+        buttonBgColor: formData.get("buttonBgColor") as string || "primary",
+        buttonCustomBgColor: formData.get("buttonCustomBgColor") as string || "",
+        buttonTextColor: formData.get("buttonTextColor") as string || "white",
+        buttonCustomTextColor: formData.get("buttonCustomTextColor") as string || "",
+      };
+    }
+
     const item = await db.widgetContentItem.create({
       data: {
         widgetId,
@@ -205,7 +217,8 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
         subtitle,
         buttonText,
         buttonUrl,
-        sortOrder
+        sortOrder,
+        settings
       }
     })
 
@@ -264,6 +277,17 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
     if (formData.has("buttonUrl")) {
       buttonUrl = formData.get("buttonUrl") as string
       dataToUpdate.buttonUrl = buttonUrl
+    }
+    
+    if (formData.has("alignment")) {
+      dataToUpdate.settings = {
+        alignment: formData.get("alignment") as string || "center",
+        buttonStyle: formData.get("buttonStyle") as string || "solid",
+        buttonBgColor: formData.get("buttonBgColor") as string || "primary",
+        buttonCustomBgColor: formData.get("buttonCustomBgColor") as string || "",
+        buttonTextColor: formData.get("buttonTextColor") as string || "white",
+        buttonCustomTextColor: formData.get("buttonCustomTextColor") as string || "",
+      }
     }
 
     const title = dataToUpdate.title
