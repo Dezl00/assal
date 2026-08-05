@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { await prisma.user.updateMany({ where: { phone: null }, data: { phone: '01000000000' } }); console.log('Done'); } main();  

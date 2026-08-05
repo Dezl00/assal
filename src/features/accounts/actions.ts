@@ -20,7 +20,7 @@ export async function createAccount(data: FormData) {
     await prisma.user.create({
       data: {
         name: data.get('name') as string,
-        email: data.get('email') as string,
+        phone: data.get('phone') as string,
         role: data.get('role') as any,
         permissions: permissions,
         passwordHash: passwordHash || null,
@@ -29,7 +29,7 @@ export async function createAccount(data: FormData) {
     revalidatePath('/admin/accounts')
     return { success: true }
   } catch(e) {
-    return { success: false, error: 'فشل الإنشاء (ربما البريد مستخدم)' }
+    return { success: false, error: 'فشل الإنشاء (ربما الهاتف مستخدم)' }
   }
 }
 
@@ -49,7 +49,7 @@ export async function updateAccount(id: string, data: FormData) {
     
     const updateData: any = {
       name: data.get('name') as string,
-      email: data.get('email') as string,
+      phone: data.get('phone') as string,
       role: data.get('role') as any,
       permissions: permissions,
     }

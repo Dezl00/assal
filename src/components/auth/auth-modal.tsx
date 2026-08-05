@@ -235,8 +235,8 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
           {tab === "login" ? (
             <form className="space-y-4" onSubmit={handleLogin}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">البريد الإلكتروني</label>
-                <Input type="email" name="email" required placeholder="name@example.com" className="h-12" dir="ltr" />
+                <label className="text-sm font-medium text-foreground">رقم الهاتف</label>
+                <Input type="tel" name="phone" required placeholder="010..." className="h-12" dir="ltr" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">كلمة المرور</label>
@@ -256,8 +256,8 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
                 <Input type="text" name="name" required placeholder="أحمد محمد" className="h-12" />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">البريد الإلكتروني</label>
-                <Input type="email" name="email" required placeholder="name@example.com" className="h-12" dir="ltr" />
+                <label className="text-sm font-medium text-foreground">رقم الهاتف</label>
+                <Input type="tel" name="phone" required placeholder="010..." className="h-12" dir="ltr" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">كلمة المرور</label>

@@ -218,7 +218,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                 <thead className="bg-muted/50 border-b">
                   <tr>
                     <th className="p-4 font-medium">الاسم</th>
-                    <th className="p-4 font-medium">البريد الإلكتروني</th>
+                    <th className="p-4 font-medium">رقم الهاتف</th>
                     <th className="p-4 font-medium">الصلاحيات</th>
                     <th className="p-4 font-medium">الإجراءات</th>
                   </tr>
@@ -229,7 +229,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                     return (
                       <tr key={acc.id} className="border-b last:border-0 hover:bg-muted/20">
                         <td className="p-4 font-medium">{acc.name || 'بدون اسم'}</td>
-                        <td className="p-4" dir="ltr">{acc.email}</td>
+                        <td className="p-4" dir="ltr">{acc.phone}</td>
                         <td className="p-4">
                           {permCount === allPermissionKeys.length ? (
                             <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-700 font-medium">مدير بنظام كامل</span>
@@ -285,8 +285,8 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                     <input name="name" type="text" required defaultValue={editingItem?.name || ''} className="w-full h-10 px-3 border rounded-md" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">البريد الإلكتروني</label>
-                    <input name="email" type="email" required defaultValue={editingItem?.email || ''} className="w-full h-10 px-3 border rounded-md" dir="ltr" />
+                    <label className="text-sm font-medium">رقم الهاتف</label>
+                    <input name="phone" type="tel" required defaultValue={editingItem?.phone || ''} className="w-full h-10 px-3 border rounded-md" dir="ltr" placeholder="010..." />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">كلمة المرور {editingItem && <span className="text-muted-foreground text-xs">(اتركه فارغاً لعدم التغيير)</span>}</label>

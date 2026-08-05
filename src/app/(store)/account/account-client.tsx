@@ -125,7 +125,7 @@ export function AccountClient({ user }: { user: any }) {
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium">البريد الإلكتروني</label>
-                    <input type="email" defaultValue={user.email} disabled className="w-full h-12 px-4 bg-muted border border-border/50 rounded-xl opacity-70 cursor-not-allowed" />
+                    <input name="email" type="email" defaultValue={user.email || ''} className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" dir="ltr" />
                   </div>
                 </div>
 
@@ -133,8 +133,8 @@ export function AccountClient({ user }: { user: any }) {
                   <h3 className="text-lg font-semibold text-primary border-b border-border/50 pb-2">بيانات التوصيل الأساسية</h3>
                   
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">رقم الهاتف</label>
-                    <input name="phone" type="tel" dir="ltr" defaultValue={user.phone || ''} className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-right" />
+                    <label className="text-sm font-medium">رقم الهاتف (يُستخدم لتسجيل الدخول)</label>
+                    <input type="tel" dir="ltr" defaultValue={user.phone || ''} disabled className="w-full h-12 px-4 bg-muted border border-border/50 rounded-xl opacity-70 cursor-not-allowed text-right" />
                   </div>
                   
                   <div className="space-y-2">

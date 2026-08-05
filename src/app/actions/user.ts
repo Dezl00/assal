@@ -6,19 +6,20 @@ import { auth } from "@/lib/auth"
 export async function updateUserAccount(formData: FormData) {
   const session = await auth()
   
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return { error: "غير مصرح لك بإجراء هذا التعديل" }
   }
 
   const name = formData.get("name") as string
   const phone = formData.get("phone") as string
+  const email = formData.get("email") as string
   const address = formData.get("address") as string
   const password = formData.get("password") as string
   const newPassword = formData.get("newPassword") as string
 
   try {
     const user = await db.user.findUnique({
-      where: { email: session.user.email }
+      where: { id: session.user.id }
     })
 
     if (!user) {
@@ -28,6 +29,7 @@ export async function updateUserAccount(formData: FormData) {
     let updatedData: any = {
       name: name || user.name,
       phone: phone || user.phone,
+      email: email !== undefined ? email : user.email,
       address: address || user.address,
     }
 

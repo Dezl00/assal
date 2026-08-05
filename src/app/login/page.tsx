@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState("admin@assal.com")
-  const [password, setPassword] = useState("admin123")
+  const [phone, setPhone] = useState("")
+  const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       const result = await signIn("credentials", {
         redirect: false,
-        email,
+        phone,
         password,
       })
 
@@ -55,14 +55,15 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">البريد الإلكتروني</label>
+            <label className="text-sm font-medium">رقم الهاتف</label>
             <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required
               className="text-left"
               dir="ltr"
+              placeholder="010..."
             />
           </div>
 
