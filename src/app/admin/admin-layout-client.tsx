@@ -62,7 +62,13 @@ function AdminLayoutInner({
   ]
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background admin-scope">
+      <style dangerouslySetInnerHTML={{__html: `
+        .admin-scope {
+          --color-primary: var(--color-admin-bg);
+          --color-ring: var(--color-admin-bg);
+        }
+      `}} />
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-72 border-l border-border/10 bg-admin text-white transition-all flex-col fixed inset-y-0 right-0 z-50">
         <div className="flex h-16 items-center px-6 border-b border-border/10 shrink-0">
