@@ -1,6 +1,6 @@
 "use client"
 import React, { useState } from "react"
-import { Plus, Edit2, Trash2, Ticket, Settings, Save } from "lucide-react"
+import { Plus, Edit2, Trash2, Ticket, Settings, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import {
@@ -13,33 +13,64 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
   const [settings, setSettings] = useState(initialSettings)
 
   // -- Coupon Handlers --
-  const handleAddCoupon = async () => {
-    const code = prompt("أدخل كود الخصم (مثال: SAVE20):")
-    if (!code) return
-    const typeStr = prompt("نوع الخصم (1=نسبة, 2=مبلغ ثابت, 3=شحن مجاني):", "1")
-    if (!typeStr) return
-    
-    let type = "PERCENTAGE"
-    if (typeStr === "2") type = "FIXED"
-    if (typeStr === "3") type = "FREE_SHIPPING"
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [editingCoupon, setEditingCoupon] = useState<any>(null)
+  
+  const [couponForm, setCouponForm] = useState({
+    code: "",
+    type: "PERCENTAGE",
+    value: 10,
+    maxUses: null as number | null
+  })
 
-    const valueStr = prompt("قيمة الخصم (النسبة أو المبلغ):", "10")
-    const value = parseFloat(valueStr || "0")
+  const openCouponSidebar = (coupon?: any) => {
+    if (coupon) {
+      setEditingCoupon(coupon)
+      setCouponForm({
+        code: coupon.code,
+        type: coupon.type,
+        value: coupon.value,
+        maxUses: coupon.maxUses
+      })
+    } else {
+      setEditingCoupon(null)
+      setCouponForm({
+        code: "",
+        type: "PERCENTAGE",
+        value: 10,
+        maxUses: null
+      })
+    }
+    setIsSidebarOpen(true)
+  }
 
-    const toastId = toast.loading("جاري الإضافة...")
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!couponForm.code.trim()) {
+      toast.error("يرجى إدخال كود الخصم")
+      return
+    }
+
+    const toastId = toast.loading(editingCoupon ? "جاري الحفظ..." : "جاري الإضافة...")
     try {
-      const res = await createCoupon({ code: code.toUpperCase(), type, value })
-      setCoupons([res, ...coupons])
-      toast.success("تم الإضافة بنجاح", { id: toastId })
+      if (editingCoupon) {
+        const res = await updateCoupon(editingCoupon.id, couponForm)
+        setCoupons(coupons.map((c: any) => c.id === editingCoupon.id ? res : c))
+      } else {
+        const res = await createCoupon({ ...couponForm, code: couponForm.code.toUpperCase() })
+        setCoupons([res, ...coupons])
+      }
+      toast.success("تم بنجاح", { id: toastId })
+      setIsSidebarOpen(false)
     } catch (e: any) {
       toast.error(e.message || "حدث خطأ", { id: toastId })
     }
   }
 
-  const handleUpdateCoupon = async (id: string, data: any) => {
+  const handleUpdateCouponStatus = async (id: string, isActive: boolean) => {
     const toastId = toast.loading("جاري الحفظ...")
     try {
-      const res = await updateCoupon(id, data)
+      const res = await updateCoupon(id, { isActive })
       setCoupons(coupons.map((c: any) => c.id === id ? res : c))
       toast.success("تم الحفظ بنجاح", { id: toastId })
     } catch (e: any) {
@@ -101,7 +132,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
               <h3 className="font-bold">كوبونات الخصم</h3>
               <p className="text-sm text-muted-foreground">أضف كوبونات وأكواد خصم لعملائك.</p>
             </div>
-            <Button onClick={handleAddCoupon} className="gap-2">
+            <Button onClick={() => openCouponSidebar()} className="gap-2">
               <Plus className="w-4 h-4" />
               كوبون جديد
             </Button>
@@ -131,16 +162,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                     </td>
                     <td className="px-4 py-4 font-bold">{coupon.value} {coupon.type === "PERCENTAGE" ? "%" : "ج.م"}</td>
                     <td className="px-4 py-4">
-                      <input 
-                        type="number" 
-                        defaultValue={coupon.maxUses || ""}
-                        placeholder="غير محدود"
-                        className="w-20 bg-muted border border-border/50 rounded px-2 py-1 outline-none focus:border-primary text-center"
-                        onBlur={(e) => {
-                          const val = e.target.value ? parseInt(e.target.value) : null;
-                          if (val !== coupon.maxUses) handleUpdateCoupon(coupon.id, { maxUses: val });
-                        }}
-                      />
+                      {coupon.maxUses === null ? "غير محدود" : coupon.maxUses}
                     </td>
                     <td className="px-4 py-4">{coupon.usedCount}</td>
                     <td className="px-4 py-4">
@@ -148,7 +170,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                         <input 
                           type="checkbox" 
                           checked={coupon.isActive}
-                          onChange={(e) => handleUpdateCoupon(coupon.id, { isActive: e.target.checked })}
+                          onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
                           className="w-4 h-4 rounded text-primary focus:ring-primary"
                         />
                         <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
@@ -156,6 +178,9 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => openCouponSidebar(coupon)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                         <button onClick={() => handleDeleteCoupon(coupon.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -264,6 +289,88 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
             </Button>
           </div>
         </form>
+      )}
+      {/* Sliding Sidebar for Coupon Form */}
+      {isSidebarOpen && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 right-0 md:right-72 w-96 max-w-[calc(100vw-2rem)] bg-card border-l border-border/50 shadow-2xl z-50 p-6 flex flex-col animate-in slide-in-from-right-1/2">
+            <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-6">
+              <h2 className="text-xl font-bold">{editingCoupon ? "تعديل الكوبون" : "كوبون جديد"}</h2>
+              <button onClick={() => setIsSidebarOpen(false)} className="text-muted-foreground hover:bg-muted p-1 rounded-md">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveCoupon} className="flex-1 overflow-y-auto space-y-4 px-1">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">كود الخصم</label>
+                <input 
+                  type="text" 
+                  value={couponForm.code}
+                  onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value })}
+                  className="w-full h-10 bg-background border border-input rounded-md px-3 text-sm focus:ring-2 focus:ring-primary outline-none uppercase font-mono"
+                  placeholder="مثال: SAVE20"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">نوع الخصم</label>
+                <select 
+                  value={couponForm.type}
+                  onChange={(e) => setCouponForm({ ...couponForm, type: e.target.value })}
+                  className="w-full h-10 bg-background border border-input rounded-md px-3 text-sm focus:ring-2 focus:ring-primary outline-none"
+                >
+                  <option value="PERCENTAGE">نسبة مئوية (%)</option>
+                  <option value="FIXED">مبلغ ثابت (ج.م)</option>
+                  <option value="FREE_SHIPPING">شحن مجاني</option>
+                </select>
+              </div>
+
+              {couponForm.type !== "FREE_SHIPPING" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold">قيمة الخصم</label>
+                  <input 
+                    type="number" 
+                    value={couponForm.value}
+                    onChange={(e) => setCouponForm({ ...couponForm, value: parseFloat(e.target.value) })}
+                    className="w-full h-10 bg-background border border-input rounded-md px-3 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    placeholder="مثال: 10"
+                    min="0"
+                    step="0.01"
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">الحد الأقصى لمرات الاستخدام</label>
+                <input 
+                  type="number" 
+                  value={couponForm.maxUses || ""}
+                  onChange={(e) => setCouponForm({ ...couponForm, maxUses: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full h-10 bg-background border border-input rounded-md px-3 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  placeholder="اتركه فارغاً للاستخدام غير المحدود"
+                  min="1"
+                />
+              </div>
+            </form>
+
+            <div className="pt-4 border-t border-border/50 mt-4 flex gap-2">
+              <Button onClick={handleSaveCoupon} className="flex-1 gap-2">
+                <Save className="w-4 h-4" />
+                حفظ
+              </Button>
+              <Button onClick={() => setIsSidebarOpen(false)} variant="outline" className="flex-1">
+                إلغاء
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   )
