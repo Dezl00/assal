@@ -120,6 +120,7 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
             </tbody>
           </table>
         </div>
+        </div>
       )}
     </div>
   )
