@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, ChevronLeft } from "lucide-react"
 import { getValidLink } from "@/lib/utils"
@@ -39,12 +40,13 @@ export function HeroSlider({ widget }: { widget: any }) {
               style={{ transform: `translateX(${offset}%)` }}
               dir="rtl"
             >
-              {/* Fallback to desktopImage if mobileImage is missing */}
-              <div 
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ 
-                  backgroundImage: `url(${slide.desktopImage})`,
-                }}
+              <Image 
+                src={slide.desktopImage}
+                alt={slide.title || "Hero Slide"}
+                fill
+                priority={index === 0}
+                className="object-cover object-center"
+                sizes="100vw"
               />
               {/* Overlay */}
               <div 

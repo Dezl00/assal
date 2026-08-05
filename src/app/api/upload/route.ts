@@ -20,10 +20,21 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
+    const isSvg = file.type === "image/svg+xml"
+    const uploadOptions: any = {
+      folder: "assal_store",
+    }
+    
+    // Auto convert to WEBP and reduce size maintaining quality, except for SVG
+    if (!isSvg) {
+      uploadOptions.format = "webp"
+      uploadOptions.quality = "auto"
+    }
+
     // Upload to Cloudinary using a Promise
     const uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: "assal_store" },
+        uploadOptions,
         (error, result) => {
           if (error) reject(error)
           else resolve(result)

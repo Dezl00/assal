@@ -1,6 +1,7 @@
 "use client"
 import React, { useRef, useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { ShoppingBag, Loader2 } from "lucide-react"
 import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
@@ -101,18 +102,20 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
 
       <Link href={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
         {product.images[0] ? (
-          <img 
+          <Image 
             src={product.images[0].url} 
             alt={product.name}
-            loading="lazy"
-            className="object-contain w-full h-full p-2 transition-transform duration-700 group-hover/card:scale-110"
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-contain p-2 transition-transform duration-700 group-hover/card:scale-110"
           />
         ) : storeLogo ? (
-          <img 
+          <Image 
             src={storeLogo} 
             alt={product.name}
-            loading="lazy"
-            className="object-contain w-full h-full p-8 opacity-10 grayscale transition-transform duration-700 group-hover/card:scale-110"
+            fill
+            sizes="(max-width: 768px) 50vw, 25vw"
+            className="object-contain p-8 opacity-10 grayscale transition-transform duration-700 group-hover/card:scale-110"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-muted-foreground/50">
