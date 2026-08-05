@@ -23,7 +23,7 @@ export function AnalyticsClient({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Visits */}
-        <div className="p-6 bg-card border rounded-xl shadow-sm flex flex-col justify-between">
+        <div className="p-6 bg-primary/5 border border-primary/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-primary/10 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <span className="text-muted-foreground text-sm font-medium">إجمالي الزيارات (30 يوم)</span>
             <Users className="text-primary w-5 h-5 opacity-50" />
@@ -31,7 +31,7 @@ export function AnalyticsClient({
           <span className="text-4xl font-bold text-foreground">{totalVisits}</span>
         </div>
         {/* Total Views */}
-        <div className="p-6 bg-card border rounded-xl shadow-sm flex flex-col justify-between">
+        <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-blue-500/10 transition-colors">
           <div className="flex justify-between items-start mb-4">
             <span className="text-muted-foreground text-sm font-medium">مشاهدات المنتجات (30 يوم)</span>
             <Eye className="text-blue-500 w-5 h-5 opacity-50" />
@@ -40,7 +40,7 @@ export function AnalyticsClient({
         </div>
         
         {/* Today Visits */}
-        <div className="p-6 bg-card border rounded-xl shadow-sm flex flex-col justify-between">
+        <div className="p-6 bg-green-500/5 border border-green-500/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-green-500/10 transition-colors">
           <div className="flex justify-between items-start mb-2">
             <span className="text-muted-foreground text-sm font-medium">زيارات اليوم</span>
             <span className={`text-xs font-bold flex items-center ${visitsDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -52,7 +52,7 @@ export function AnalyticsClient({
         </div>
 
         {/* Today Views */}
-        <div className="p-6 bg-card border rounded-xl shadow-sm flex flex-col justify-between">
+        <div className="p-6 bg-amber-500/5 border border-amber-500/10 rounded-xl shadow-sm flex flex-col justify-between hover:bg-amber-500/10 transition-colors">
           <div className="flex justify-between items-start mb-2">
             <span className="text-muted-foreground text-sm font-medium">مشاهدات اليوم</span>
             <span className={`text-xs font-bold flex items-center ${viewsDiff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -65,7 +65,7 @@ export function AnalyticsClient({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="p-6 bg-card border rounded-xl shadow-sm lg:col-span-2">
+        <div className="p-6 bg-card border border-border/40 rounded-xl shadow-sm lg:col-span-2">
           <h2 className="text-lg font-semibold mb-6">النشاط اليومي (آخر 30 يوم)</h2>
           {chartData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-muted-foreground">لا توجد بيانات متاحة</div>
@@ -108,7 +108,7 @@ export function AnalyticsClient({
         </div>
 
         <div className="space-y-6">
-          <div className="p-6 bg-card border rounded-xl shadow-sm">
+          <div className="p-6 bg-orange-500/5 border border-orange-500/10 rounded-xl shadow-sm hover:bg-orange-500/10 transition-colors">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Eye className="w-5 h-5 text-amber-500"/> المنتجات الأكثر مشاهدة</h2>
             <div className="space-y-3">
               {topProducts.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
@@ -124,7 +124,7 @@ export function AnalyticsClient({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="p-6 bg-card border rounded-xl shadow-sm">
+        <div className="p-6 bg-blue-500/5 border border-blue-500/10 rounded-xl shadow-sm hover:bg-blue-500/10 transition-colors">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><Globe className="w-5 h-5 text-blue-500"/> البلدان</h2>
           <div className="space-y-3">
             {topCountries.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
@@ -136,7 +136,7 @@ export function AnalyticsClient({
             ))}
           </div>
         </div>
-        <div className="p-6 bg-card border rounded-xl shadow-sm">
+        <div className="p-6 bg-red-500/5 border border-red-500/10 rounded-xl shadow-sm hover:bg-red-500/10 transition-colors">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2"><MapPin className="w-5 h-5 text-red-500"/> المدن</h2>
           <div className="space-y-3">
             {topCities.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}

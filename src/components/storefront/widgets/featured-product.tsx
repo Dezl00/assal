@@ -29,7 +29,10 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
 
   if (!product) return null
 
-  const mainImage = product.images[0]?.url || "/placeholder-product.jpg"
+  const themeConfig = await db.themeConfig.findUnique({ where: { id: "default" } })
+  const fallbackLogo = themeConfig?.logoUrl
+
+  const mainImage = product.images[0]?.url || fallbackLogo || "/placeholder-product.jpg"
   const finalPrice = product.discountPrice ?? product.price
   const hasDiscount = product.discountPrice !== null && product.discountPrice < product.price
   

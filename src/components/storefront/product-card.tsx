@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState } from "react"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
 import { useCartStore } from "@/store/cart-store"
+import { useUIStore } from "@/store/ui-store"
 
 interface ProductCardProps {
   product: {
@@ -21,6 +22,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, disableAnimation = false, index = 0 }: ProductCardProps) {
   const { addItem } = useCartStore()
+  const { storeLogo } = useUIStore()
   const cardRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(disableAnimation)
   
@@ -95,6 +97,13 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
             alt={product.name}
             loading="lazy"
             className="object-contain w-full h-full p-2 transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : storeLogo ? (
+          <img 
+            src={storeLogo} 
+            alt={product.name}
+            loading="lazy"
+            className="object-contain w-full h-full p-8 opacity-10 grayscale transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-muted-foreground/50">

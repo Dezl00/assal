@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import { ProductCard } from "@/components/storefront/product-card"
 import { ChevronLeft } from "lucide-react"
+import { SimilarProductsCarousel } from "@/components/storefront/product/similar-products-carousel"
 
 export function ProductList({ widget }: { widget: any }) {
   const [products, setProducts] = useState<any[]>([])
@@ -62,13 +63,19 @@ export function ProductList({ widget }: { widget: any }) {
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-          {products.slice(0, 5).map((product, index) => (
-            <ScrollReveal key={product.id} variant="fade-up" delay={index * 0.1}>
-              <ProductCard product={product} />
-            </ScrollReveal>
-          ))}
-        </div>
+        {widget.settings?.displayMode === "carousel" ? (
+          <div className="-mx-4 sm:mx-0">
+            <SimilarProductsCarousel products={products.slice(0, 6)} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {products.slice(0, 6).map((product, index) => (
+              <ScrollReveal key={product.id} variant="fade-up" delay={index * 0.1}>
+                <ProductCard product={product} />
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   )

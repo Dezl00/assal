@@ -87,10 +87,10 @@ export function StoreFeatures({ widget }: { widget?: any }) {
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`h-3 rounded-full transition-all duration-300 ${
                   index === currentIndex 
-                    ? "bg-secondary-foreground w-6" 
-                    : "bg-secondary-foreground/30 hover:bg-secondary-foreground/60"
+                    ? "bg-primary w-6" 
+                    : "bg-secondary-foreground/30 hover:bg-secondary-foreground/60 w-3"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />

@@ -27,7 +27,10 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    if (themeConfig?.logoUrl) {
+      useUIStore.getState().setStoreLogo(themeConfig.logoUrl)
+    }
+  }, [themeConfig?.logoUrl])
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -54,7 +57,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/40 transition-all duration-300 shadow-sm">
+      <header className="fixed top-0 left-0 right-0 z-[100] w-full bg-background/95 backdrop-blur-md border-b border-border/40 transition-all duration-300 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* DESKTOP HEADER */}
           <div className="hidden md:flex h-20 items-center justify-between gap-6">
@@ -316,14 +319,12 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             
             {/* Right: Search */}
             <div className="flex-1 flex justify-start">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-foreground"
+              <button 
+                className="p-1.5 text-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
                 onClick={() => setIsSearchOpen(true)}
               >
-                <Search className="w-8 h-8" />
-              </Button>
+                <Search className="w-7 h-7" strokeWidth={1.5} />
+              </button>
             </div>
 
             {/* Center: Logo */}
@@ -339,14 +340,16 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
 
             {/* Left: Menu */}
             <div className="flex-1 flex justify-end">
-              <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setMobileMenuOpen(true)}>
-                <MenuIcon className="w-8 h-8" />
-              </Button>
+              <button className="p-1.5 text-foreground hover:bg-accent hover:text-accent-foreground rounded-md transition-colors" onClick={() => setMobileMenuOpen(true)}>
+                <MenuIcon className="w-7 h-7" strokeWidth={1.5} />
+              </button>
             </div>
             
           </div>
         </div>
       </header>
+      {/* Spacer to prevent content from going under fixed header */}
+      <div className="h-20 md:h-20 w-full shrink-0"></div>
 
       {/* Mobile Search Overlay */}
       {isSearchOpen && (

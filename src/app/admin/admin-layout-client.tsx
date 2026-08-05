@@ -163,7 +163,7 @@ function AdminLayoutInner({
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col md:mr-72 min-h-screen">
-        <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-background px-4 md:px-8 shrink-0 sticky top-0 z-30">
+        <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-background px-4 md:px-8 shrink-0 fixed top-0 left-0 right-0 md:right-72 z-[60]">
           
           {/* Mobile Header Left */}
           <div className="flex items-center gap-3 md:hidden">
@@ -213,6 +213,8 @@ function AdminLayoutInner({
              </div>
           </div>
         </header>
+        {/* Spacer for fixed header */}
+        <div className="h-14 md:h-16 w-full shrink-0"></div>
         <div className="flex-1 overflow-x-hidden p-4 md:p-8 pb-20 md:pb-8">
           {children}
         </div>

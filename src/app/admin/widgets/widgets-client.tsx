@@ -175,6 +175,12 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
       }
     }
 
+    if (editingWidget.type === "ProductList") {
+      data.settings = {
+        displayMode: formData.get("displayMode") as string || "grid",
+      }
+    }
+
     if (editingWidget.type === "FeaturedProduct") {
       data.settings = {
         productId: featuredProductId
@@ -580,6 +586,22 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                             onSave={(ids) => setFeaturedProductId(ids[0] || "")}
                           />
                         )}
+                      </div>
+                    )}
+
+                    {editingWidget.type === "ProductList" && (
+                      <div className="space-y-4 pt-4 border-t border-border/50">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-semibold">طريقة العرض</label>
+                          <select 
+                            name="displayMode" 
+                            defaultValue={editingWidget.settings?.displayMode || "grid"}
+                            className="w-full h-9 rounded-md border border-input bg-background px-3 text-xs focus:ring-1 focus:ring-primary"
+                          >
+                            <option value="grid">شبكة (Grid)</option>
+                            <option value="carousel">شريط تمرير (Carousel)</option>
+                          </select>
+                        </div>
                       </div>
                     )}
 

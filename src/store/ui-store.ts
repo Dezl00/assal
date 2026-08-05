@@ -7,6 +7,8 @@ interface UIState {
   setMobileMenuOpen: (isOpen: boolean) => void
   isFilterSidebarOpen: boolean
   setFilterSidebarOpen: (isOpen: boolean) => void
+  storeLogo: string | null
+  setStoreLogo: (url: string | null) => void
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -18,4 +20,7 @@ export const useUIStore = create<UIState>((set) => ({
   
   isFilterSidebarOpen: false,
   setFilterSidebarOpen: (isOpen) => set({ isFilterSidebarOpen: isOpen }),
+  
+  storeLogo: null,
+  setStoreLogo: (url) => set({ storeLogo: url }),
 }))
