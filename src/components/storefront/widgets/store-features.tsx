@@ -99,5 +99,6 @@ export function StoreFeatures({ widget }: { widget?: any }) {
         )}
       </div>
     </div>
+    </div>
   )
 }

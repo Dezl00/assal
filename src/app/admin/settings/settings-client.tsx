@@ -205,10 +205,9 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                         <label className="text-sm font-medium">رابط سناب شات</label>
                         <input name="snapchatUrl" type="url" defaultValue={config.snapchatUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
                       </div>
-                      </div>
                     </div>
+                  </div>
                 </div>
-              </div>
 
               <div className="p-4 border-t border-border/50 bg-muted/20 flex justify-end">
                 <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
