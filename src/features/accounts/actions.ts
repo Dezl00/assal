@@ -120,6 +120,7 @@ export async function updateProfile(data: FormData) {
       where: { id: session.user.id },
       data: updateData
     })
+    return { success: true, error: undefined }
   } catch(e) {
     return { success: false, error: 'فشل التحديث' }
   }

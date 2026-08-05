@@ -90,11 +90,11 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
     const formData = new FormData(e.currentTarget)
     const res = await updateProfile(formData)
     setIsSubmitting(false)
-    if (res.success) {
+    if (res?.success) {
       toast.success('تم تحديث البيانات بنجاح')
       updateSession()
     } else {
-      toast.error(res.error || 'فشل التحديث')
+      toast.error(res?.error || 'فشل التحديث')
     }
   }
 
