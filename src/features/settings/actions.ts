@@ -49,7 +49,8 @@ export async function updateThemeConfig(formData: FormData) {
     revalidatePath("/")
     return { success: true }
   } catch (error: any) {
-    return { success: false, error: "Failed to save settings" }
+    console.error("Save settings error:", error)
+    return { success: false, error: "فشل حفظ الاعدادات: " + (error?.message || String(error)) }
   }
 }
 
