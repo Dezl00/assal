@@ -12,8 +12,8 @@ export function BrandSlider({ widget }: { widget: any }) {
   
   // Embla Carousel hook
   const [emblaRef, emblaApi] = useEmblaCarousel(
-    { loop: true, align: "center", direction: "rtl", dragFree: true },
-    [Autoplay({ delay: 3000, stopOnInteraction: true })]
+    { loop: true, align: "start", direction: "rtl", slidesToScroll: 1 },
+    [Autoplay({ delay: 3000, stopOnInteraction: false })]
   )
 
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -70,14 +70,14 @@ export function BrandSlider({ widget }: { widget: any }) {
                     <img 
                       src={item.desktopImage} 
                       alt={item.title || "Brand Logo"} 
-                      className="h-14 sm:h-16 w-auto object-contain transition-all duration-300 opacity-80 hover:opacity-100 filter grayscale hover:grayscale-0"
+                      className="h-14 sm:h-16 w-auto object-contain transition-all duration-300"
                     />
                   </Link>
                 ) : (
                   <img 
                     src={item.desktopImage} 
                     alt={item.title || "Brand Logo"} 
-                    className="h-14 sm:h-16 w-auto object-contain transition-all duration-300 opacity-80 hover:opacity-100 filter grayscale hover:grayscale-0"
+                    className="h-14 sm:h-16 w-auto object-contain transition-all duration-300"
                   />
                 )}
               </div>
