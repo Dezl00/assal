@@ -89,10 +89,11 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">إدارة المجالات</h1>
-          <p className="text-muted-foreground mt-1">أضف مجالات وتصنيفات المتجر الكبرى (مثل الملابس، العطور، الخ)</p>
-        </div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">إدارة المجالات</span>
+        </nav>
         {/* On mobile we show the Add button, on desktop the form is always visible on the side */}
         <Button onClick={handleAddDepartmentClick} className="gap-2 lg:hidden">
           {isFormVisible && !editingDepartment ? (

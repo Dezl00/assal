@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, Edit, Trash2, X, Loader2, ShieldCheck, ShieldAlert } from 'lucide-react'
@@ -50,10 +50,11 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">الحسابات والأدوار</h1>
-          <p className="text-muted-foreground mt-1">إدارة حسابات المدراء والمشرفين والصلاحيات</p>
-        </div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">الحسابات والأدوار</span>
+        </nav>
         <Button onClick={() => { resetForm(); setIsFormVisible(!isFormVisible) }} className="lg:hidden gap-2">
           {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة حساب</>}
         </Button>

@@ -48,10 +48,9 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">الرئيسية</h1>
-        <p className="mt-2 text-muted-foreground">نظرة عامة على أداء المتجر والمبيعات.</p>
-      </div>
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <span className="text-foreground">الرئيسية</span>
+      </nav>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02] bg-indigo-50 text-indigo-950">

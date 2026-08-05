@@ -115,10 +115,11 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">الأقسام</h1>
-          <p className="text-muted-foreground mt-1">إدارة تصنيفات المنتجات والأقسام الفرعية.</p>
-        </div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">الأقسام</span>
+        </nav>
         <div className="flex items-center gap-3 lg:hidden">
            <Button onClick={handleAddCategoryClick} className="gap-2">
              <PlusCircle className="h-4 w-4" />

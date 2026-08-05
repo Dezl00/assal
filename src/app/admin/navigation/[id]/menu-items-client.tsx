@@ -77,8 +77,13 @@ export function MenuItemsClient({ menu }: { menu: any }) {
               <ArrowRight className="h-4 w-4 rtl-flip" /> العودة للقوائم
             </Link>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">روابط القائمة: {menu.name}</h1>
-          <p className="text-muted-foreground mt-1">إضافة وتعديل وترتيب الروابط داخل هذه القائمة.</p>
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+            <span>الرئيسية</span>
+            <span>/</span>
+            <span>القوائم</span>
+            <span>/</span>
+            <span className="text-foreground">روابط {menu.name}</span>
+          </nav>
         </div>
         <div className="flex items-center gap-3 lg:hidden">
            <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2">

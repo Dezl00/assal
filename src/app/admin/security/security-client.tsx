@@ -5,10 +5,11 @@ export function SecurityClient({ logs }: { logs: any[] }) {
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">سجل الأمان والأنشطة</h1>
-          <p className="text-muted-foreground mt-1">تتبع أنشطة المدراء في لوحة التحكم (آخر 100 نشاط)</p>
-        </div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">سجل الأمان والأنشطة</span>
+        </nav>
       </div>
 
       <div className="border rounded-lg bg-card overflow-hidden">

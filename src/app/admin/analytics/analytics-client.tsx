@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import React from 'react'
 import { ArrowUpRight, ArrowDownRight, Users, Eye, MapPin, Globe } from 'lucide-react'
 
@@ -15,10 +15,11 @@ export function AnalyticsClient({
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">الإحصائيات والتحليلات</h1>
-        <p className="text-muted-foreground mt-1">متابعة زيارات المتجر ومشاهدات المنتجات باحترافية</p>
-      </div>
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <span>الرئيسية</span>
+        <span>/</span>
+        <span className="text-foreground">الإحصائيات والتحليلات</span>
+      </nav>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Visits */}

@@ -50,10 +50,11 @@ export function OrdersClient({ orders }: { orders: any[] }) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">الطلبات</h1>
-          <p className="text-muted-foreground mt-1">إدارة طلبات العملاء وحالات الشحن.</p>
-        </div>
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">الطلبات</span>
+        </nav>
       </div>
 
       <div className="rounded-xl border border-border/50 bg-card shadow-sm">
