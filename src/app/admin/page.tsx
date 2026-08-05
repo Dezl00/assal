@@ -3,7 +3,7 @@ import { Activity, Users, ShoppingBag, DollarSign } from "lucide-react"
 import { db } from "@/lib/db"
 
 export default async function AdminDashboardPage() {
-  const [totalSalesResult, newOrders, customers, activeProducts, topProductsData, topPages, recentActivities] = await Promise.all([
+  const [totalSalesResult, newOrders, customers, activeProducts, topProductsData, topPages, recentActivities, theme] = await Promise.all([
     db.order.aggregate({
       _sum: { totalAmount: true },
       where: { status: { not: "CANCELLED" } }
