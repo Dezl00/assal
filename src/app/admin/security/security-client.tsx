@@ -38,7 +38,7 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
         >
           <UserIcon className="w-4 h-4" /> إعدادات الحساب
         </button>
-        {currentUser?.role === 'ADMIN' && (
+        {(currentUser?.role === 'ADMIN' || (currentUser?.permissions || []).includes('security.view')) && (
           <button 
             onClick={() => setActiveTab('logs')}
             className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
@@ -74,7 +74,7 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
         </div>
       )}
 
-      {activeTab === 'logs' && currentUser?.role === 'ADMIN' && (
+      {activeTab === 'logs' && (currentUser?.role === 'ADMIN' || (currentUser?.permissions || []).includes('security.view')) && (
         <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
           <table className="w-full text-sm text-right">

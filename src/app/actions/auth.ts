@@ -57,7 +57,7 @@ export async function loginUser(formData: FormData) {
       return { error: "البريد الإلكتروني أو كلمة المرور غير صحيحة" }
     }
 
-    return { success: true, role: user.role }
+    return { success: true, role: user.role, permissions: user.permissions }
   } catch (error) {
     console.error("Login check error:", error)
     return { error: "حدث خطأ أثناء تسجيل الدخول" }

@@ -95,7 +95,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
         if (pathname === "/checkout") {
           router.refresh()
         } else {
-          if (check.role === "ADMIN") {
+          if (check.role === "ADMIN" || check.role === "MANAGER" || (check.permissions && check.permissions.length > 0)) {
             router.push("/admin")
           } else {
             router.push("/account")

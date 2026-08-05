@@ -34,24 +34,25 @@ function AdminLayoutInner({
 }) {
   const pathname = usePathname()
   const { data: session } = useSession()
-  const isManager = session?.user?.role === "MANAGER"
+  const permissions = session?.user?.permissions || []
+  const isAdmin = session?.user?.role === "ADMIN"
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const hasPerm = (perm: string) => isAdmin || permissions.includes(perm)
+
   const navItems = [
-    { name: "الرئيسية", href: "/admin", icon: LayoutDashboard },
-    { name: "الطلبات", href: "/admin/orders", icon: ShoppingBag },
-    { name: "العملاء", href: "/admin/customers", icon: FolderTree },
-    { name: "المجالات", href: "/admin/departments", icon: LayoutDashboard },
-    { name: "الأقسام", href: "/admin/categories", icon: ListTree },
-    { name: "المنتجات", href: "/admin/products", icon: ShoppingBag },
-    ...(isManager ? [] : [
-      { name: "الإحصائيات", href: "/admin/analytics", icon: LayoutDashboard },
-      { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate },
-      { name: "الحسابات والأدوار", href: "/admin/accounts", icon: FolderTree },
-      { name: "سجل الأمان", href: "/admin/security", icon: LayoutDashboard },
-      { name: "الإعدادات", href: "/admin/settings", icon: Settings },
-    ])
-  ]
+    { name: "الرئيسية", href: "/admin", icon: LayoutDashboard, show: true },
+    { name: "الطلبات", href: "/admin/orders", icon: ShoppingBag, show: hasPerm('orders.view') },
+    { name: "العملاء", href: "/admin/customers", icon: FolderTree, show: hasPerm('customers.view') },
+    { name: "المجالات", href: "/admin/departments", icon: LayoutDashboard, show: hasPerm('categories.view') },
+    { name: "الأقسام", href: "/admin/categories", icon: ListTree, show: hasPerm('categories.view') },
+    { name: "المنتجات", href: "/admin/products", icon: ShoppingBag, show: hasPerm('products.view') },
+    { name: "الإحصائيات", href: "/admin/analytics", icon: LayoutDashboard, show: hasPerm('analytics.view') },
+    { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate, show: hasPerm('widgets.view') },
+    { name: "الحسابات والصلاحيات", href: "/admin/accounts", icon: FolderTree, show: hasPerm('accounts.view') },
+    { name: "سجل الأمان", href: "/admin/security", icon: LayoutDashboard, show: hasPerm('security.view') },
+    { name: "الإعدادات", href: "/admin/settings", icon: Settings, show: hasPerm('settings.view') },
+  ].filter(item => item.show)
 
   // For bottom nav, we only show top 4 most important for mobile
   const bottomNavItems = [

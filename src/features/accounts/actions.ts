@@ -5,7 +5,9 @@ import { revalidatePath } from 'next/cache'
 
 export async function createAccount(data: FormData) {
   const session = await auth()
-  if (session?.user?.role !== 'ADMIN') return { success: false, error: 'Unauthorized' }
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const hasPerm = session?.user?.permissions?.includes('accounts.add')
+  if (!isAdmin && !hasPerm) return { success: false, error: 'Unauthorized' }
 
   try {
     let permissions = []
@@ -33,7 +35,9 @@ export async function createAccount(data: FormData) {
 
 export async function updateAccount(id: string, data: FormData) {
   const session = await auth()
-  if (session?.user?.role !== 'ADMIN') return { success: false, error: 'Unauthorized' }
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const hasPerm = session?.user?.permissions?.includes('accounts.edit')
+  if (!isAdmin && !hasPerm) return { success: false, error: 'Unauthorized' }
 
   try {
     let permissions = []
@@ -67,7 +71,9 @@ export async function updateAccount(id: string, data: FormData) {
 
 export async function deleteAccount(id: string) {
   const session = await auth()
-  if (session?.user?.role !== 'ADMIN') return { success: false, error: 'Unauthorized' }
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const hasPerm = session?.user?.permissions?.includes('accounts.delete')
+  if (!isAdmin && !hasPerm) return { success: false, error: 'Unauthorized' }
 
   try {
     await prisma.user.delete({ where: { id } })
