@@ -23,24 +23,28 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
   const [newCityName, setNewCityName] = useState("")
   const [newCityCost, setNewCityCost] = useState("0")
 
-  const [isAddingPayment, setIsAddingPayment] = useState(false)
-  const [newPayment, setNewPayment] = useState({ name: "", type: "VODAFONE_CASH" })
+  // Payment form states
+  const [isPaymentFormVisible, setIsPaymentFormVisible] = useState(false)
+  const [editingPayment, setEditingPayment] = useState<any>(null)
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false)
 
   const [deleteModal, setDeleteModal] = useState<{ type: 'gov' | 'city' | 'payment', id: string, name?: string } | null>(null)
 
   // -- Governorate Handlers --
   const handleAddGov = async () => {
     if (!newGovName.trim()) return
-    const toastId = toast.loading("جاري الإضافة...")
+    const name = newGovName
+    setIsAddingGov(false)
+    setNewGovName("")
+    
+    // Optimistic UI could be tricky if we don't have ID, so we wait for creation but without toast block
     try {
-      const res = await createGovernorate({ name: newGovName })
-      setGovernorates([...governorates, { ...res, cities: [] }])
-      setActiveGovId(res.id)
-      setIsAddingGov(false)
-      setNewGovName("")
-      toast.success("تم الإضافة بنجاح", { id: toastId })
+      const res = await createGovernorate({ name })
+      setGovernorates((prev: any) => [...prev, { ...res, cities: [] }])
+      if (!activeGovId) setActiveGovId(res.id)
+      toast.success("تم إضافة المحافظة بنجاح")
     } catch (e: any) {
-      toast.error(e.message || "حدث خطأ", { id: toastId })
+      toast.error(e.message || "حدث خطأ أثناء الإضافة")
     }
   }
 
@@ -48,372 +52,422 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
   const handleAddCity = async (govId: string) => {
     if (!newCityName.trim() || !newCityCost) return
     const shippingCost = parseFloat(newCityCost)
+    const name = newCityName
     
-    const toastId = toast.loading("جاري الإضافة...")
+    setIsAddingCity(false)
+    setNewCityName("")
+    setNewCityCost("0")
+
     try {
-      const res = await createCity({ name: newCityName, shippingCost, governorateId: govId })
-      setGovernorates(governorates.map((g: any) => {
+      const res = await createCity({ name, shippingCost, governorateId: govId })
+      setGovernorates((prev: any) => prev.map((g: any) => {
         if (g.id === govId) return { ...g, cities: [...g.cities, res] }
         return g
       }))
-      setIsAddingCity(false)
-      setNewCityName("")
-      setNewCityCost("0")
-      toast.success("تم الإضافة بنجاح", { id: toastId })
+      toast.success("تم إضافة المدينة بنجاح")
     } catch (e: any) {
-      toast.error(e.message || "حدث خطأ", { id: toastId })
+      toast.error(e.message || "حدث خطأ أثناء الإضافة")
     }
   }
 
   const handleEditCity = async (city: any, newCost: number) => {
-    const toastId = toast.loading("جاري التحديث...")
+    // Optimistic update
+    setGovernorates((prev: any) => prev.map((g: any) => {
+      if (g.id === city.governorateId) {
+        return { ...g, cities: g.cities.map((c: any) => c.id === city.id ? { ...c, shippingCost: newCost } : c) }
+      }
+      return g
+    }))
+    
     try {
-      const res = await updateCity(city.id, { shippingCost: newCost })
-      setGovernorates(governorates.map((g: any) => {
-        if (g.id === city.governorateId) {
-          return { ...g, cities: g.cities.map((c: any) => c.id === city.id ? res : c) }
-        }
-        return g
-      }))
-      toast.success("تم التحديث بنجاح", { id: toastId })
+      await updateCity(city.id, { shippingCost: newCost })
+      toast.success("تم التحديث بنجاح")
     } catch (e: any) {
-      toast.error(e.message || "حدث خطأ", { id: toastId })
+      // Revert if error (simplification: refetch or just alert)
+      toast.error(e.message || "حدث خطأ، يرجى تحديث الصفحة")
     }
   }
 
   // -- Payment Method Handlers --
-  const handleAddPayment = async () => {
-    if (!newPayment.name.trim()) return
-    const toastId = toast.loading("جاري الإضافة...")
-    try {
-      const res = await createPaymentMethod(newPayment)
-      setPaymentMethods([...paymentMethods, res])
-      setIsAddingPayment(false)
-      setNewPayment({ name: "", type: "VODAFONE_CASH" })
-      toast.success("تم الإضافة بنجاح", { id: toastId })
-    } catch (e: any) {
-      toast.error(e.message || "حدث خطأ", { id: toastId })
-    }
+  const resetPaymentForm = () => {
+    setEditingPayment(null)
+    const formEl = document.getElementById("payment-form") as HTMLFormElement
+    if (formEl) formEl.reset()
   }
 
-  const handleUpdatePayment = async (id: string, data: any) => {
-    const toastId = toast.loading("جاري الحفظ...")
-    try {
-      const res = await updatePaymentMethod(id, data)
-      setPaymentMethods(paymentMethods.map((p: any) => p.id === id ? res : p))
-      toast.success("تم الحفظ بنجاح", { id: toastId })
-    } catch (e: any) {
-      toast.error(e.message || "حدث خطأ", { id: toastId })
+  const openEditPayment = (payment: any) => {
+    setEditingPayment(payment)
+    setIsPaymentFormVisible(true)
+    setTimeout(() => {
+      const formEl = document.getElementById("payment-form") as HTMLFormElement
+      if (formEl) {
+        formEl.methodName.value = payment.name
+        formEl.type.value = payment.type
+        if (payment.type !== 'CASH_ON_DELIVERY') {
+          formEl.accountName.value = payment.accountName || ""
+          formEl.accountNumber.value = payment.accountNumber || ""
+        }
+      }
+    }, 50)
+  }
+
+  const handlePaymentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsSubmittingPayment(true)
+    const formData = new FormData(e.currentTarget)
+    const type = formData.get("type") as string
+    const data = {
+      name: formData.get("methodName") as string,
+      type,
+      accountName: type !== 'CASH_ON_DELIVERY' ? formData.get("accountName") as string : null,
+      accountNumber: type !== 'CASH_ON_DELIVERY' ? formData.get("accountNumber") as string : null,
     }
+
+    try {
+      if (editingPayment) {
+        const res = await updatePaymentMethod(editingPayment.id, data)
+        setPaymentMethods((prev: any) => prev.map((p: any) => p.id === editingPayment.id ? res : p))
+        toast.success("تم التعديل بنجاح")
+      } else {
+        const res = await createPaymentMethod(data)
+        setPaymentMethods((prev: any) => [...prev, res])
+        toast.success("تمت الإضافة بنجاح")
+      }
+      resetPaymentForm()
+      setIsPaymentFormVisible(false)
+    } catch (err: any) {
+      toast.error(err.message || "حدث خطأ")
+    }
+    setIsSubmittingPayment(false)
   }
 
   const confirmDelete = async () => {
     if (!deleteModal) return
     const { type, id } = deleteModal
-    const toastId = toast.loading("جاري الحذف...")
+    setDeleteModal(null)
+    
     try {
       if (type === 'gov') {
-        await deleteGovernorate(id)
+        const previous = [...governorates]
         const newGovs = governorates.filter((g: any) => g.id !== id)
         setGovernorates(newGovs)
         if (activeGovId === id) setActiveGovId(newGovs[0]?.id || null)
+        await deleteGovernorate(id).catch(() => setGovernorates(previous))
       } else if (type === 'city') {
+        setGovernorates((prev: any) => prev.map((g: any) => ({ ...g, cities: g.cities.filter((c: any) => c.id !== id) })))
         await deleteCity(id)
-        setGovernorates(governorates.map((g: any) => {
-          return { ...g, cities: g.cities.filter((c: any) => c.id !== id) }
-        }))
       } else if (type === 'payment') {
-        await deletePaymentMethod(id)
-        setPaymentMethods(paymentMethods.filter((p: any) => p.id !== id))
+        const previous = [...paymentMethods]
+        setPaymentMethods((prev: any) => prev.filter((p: any) => p.id !== id))
+        await deletePaymentMethod(id).catch(() => setPaymentMethods(previous))
       }
-      toast.success("تم الحذف بنجاح", { id: toastId })
+      toast.success("تم الحذف بنجاح")
     } catch (e: any) {
-      toast.error(e.message || "حدث خطأ", { id: toastId })
-    } finally {
-      setDeleteModal(null)
+      toast.error(e.message || "حدث خطأ أثناء الحذف")
     }
   }
 
   const activeGov = governorates.find((g: any) => g.id === activeGovId)
 
   return (
-    <div className="space-y-6 animate-in fade-in pb-12">
-      <div className="flex border-b border-border/50">
-        <button
-          onClick={() => setActiveTab('shipping')}
-          className={`flex-1 py-4 text-sm font-semibold transition-all border-b-2 ${activeTab === 'shipping' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:bg-muted/50'}`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <MapPin className="w-4 h-4" />
-            الشحن والمحافظات
-          </div>
-        </button>
-        <button
-          onClick={() => setActiveTab('payment')}
-          className={`flex-1 py-4 text-sm font-semibold transition-all border-b-2 ${activeTab === 'payment' ? 'border-primary text-primary bg-primary/5' : 'border-transparent text-muted-foreground hover:bg-muted/50'}`}
-        >
-          <div className="flex items-center justify-center gap-2">
-            <CreditCard className="w-4 h-4" />
-            طرق الدفع
-          </div>
-        </button>
-      </div>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Tabs Sidebar */}
+        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          <button
+            onClick={() => setActiveTab('shipping')}
+            className={`shrink-0 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'shipping' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground hover:text-foreground'}`}
+          >
+            <MapPin className="w-5 h-5" />
+            <span className="whitespace-nowrap">الشحن والمحافظات</span>
+          </button>
+          
+          <button
+            onClick={() => setActiveTab('payment')}
+            className={`shrink-0 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'payment' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground hover:text-foreground'}`}
+          >
+            <CreditCard className="w-5 h-5" />
+            <span className="whitespace-nowrap">طرق الدفع</span>
+          </button>
+        </div>
 
-      {activeTab === 'shipping' && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-1 border border-border/50 rounded-xl bg-card overflow-hidden flex flex-col max-h-[600px]">
-            <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/20">
-              <h3 className="font-bold">المحافظات</h3>
-              <Button size="icon" variant="ghost" onClick={() => setIsAddingGov(true)} className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            {isAddingGov && (
-              <div className="p-3 border-b border-border/50 bg-muted/20 space-y-2">
-                <input 
-                  type="text"
-                  placeholder="اسم المحافظة..."
-                  value={newGovName}
-                  onChange={e => setNewGovName(e.target.value)}
-                  className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
-                  autoFocus
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 h-8 text-xs" onClick={handleAddGov}>حفظ</Button>
-                  <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => setIsAddingGov(false)}>إلغاء</Button>
+        {/* Content Area */}
+        <div className="flex-1">
+          {activeTab === 'shipping' && (
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+              {/* Governorates Sidebar */}
+              <div className="lg:col-span-1 border border-border/50 rounded-xl bg-card overflow-hidden flex flex-col max-h-[600px] shadow-sm">
+                <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/20">
+                  <h3 className="font-bold">المحافظات</h3>
+                  <Button size="icon" variant="ghost" onClick={() => setIsAddingGov(!isAddingGov)} className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                    {isAddingGov ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                  </Button>
                 </div>
-              </div>
-            )}
-
-            <div className="overflow-y-auto flex-1 p-2 space-y-1">
-              {governorates.map((g: any) => (
-                <div 
-                  key={g.id} 
-                  className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${activeGovId === g.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}
-                  onClick={() => setActiveGovId(g.id)}
-                >
-                  <span className="font-medium text-sm truncate">{g.name}</span>
-                  <div className="flex items-center opacity-70 hover:opacity-100">
-                    <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ type: 'gov', id: g.id, name: g.name }); }} className="p-1 hover:text-red-300">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {governorates.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">لا توجد محافظات</p>}
-            </div>
-          </div>
-
-          <div className="md:col-span-3 border border-border/50 rounded-xl bg-card">
-            {activeGov ? (
-              <>
-                <div className="p-4 sm:p-6 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="text-lg font-bold">المدن والتسعيرة - {activeGov.name}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">أضف المدن التابعة لهذه المحافظة لتحديد سعر الشحن الخاص بها.</p>
-                  </div>
-                  {!isAddingCity && (
-                    <Button onClick={() => setIsAddingCity(true)} className="gap-2 shrink-0">
-                      <Plus className="w-4 h-4" />
-                      إضافة مدينة
-                    </Button>
-                  )}
-                </div>
-
-                {isAddingCity && (
-                  <div className="p-4 bg-muted/20 border-b border-border/50 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold">اسم المدينة</label>
-                      <input 
-                        type="text" 
-                        value={newCityName}
-                        onChange={e => setNewCityName(e.target.value)}
-                        className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
-                        placeholder="مثال: مدينة نصر"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-semibold">سعر الشحن (ج.م)</label>
-                      <input 
-                        type="number" 
-                        value={newCityCost}
-                        onChange={e => setNewCityCost(e.target.value)}
-                        className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
-                      />
-                    </div>
+                
+                {isAddingGov && (
+                  <div className="p-3 border-b border-border/50 bg-muted/10 space-y-2 animate-in slide-in-from-top-2">
+                    <input 
+                      type="text"
+                      placeholder="اسم المحافظة..."
+                      value={newGovName}
+                      onChange={e => setNewGovName(e.target.value)}
+                      className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
+                      autoFocus
+                      onKeyDown={(e) => { if(e.key === 'Enter') handleAddGov() }}
+                    />
                     <div className="flex gap-2">
-                      <Button onClick={() => handleAddCity(activeGov.id)} className="flex-1">حفظ</Button>
-                      <Button variant="outline" onClick={() => setIsAddingCity(false)}>إلغاء</Button>
+                      <Button size="sm" className="flex-1 h-8 text-xs" onClick={handleAddGov}>حفظ</Button>
+                      <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => setIsAddingGov(false)}>إلغاء</Button>
                     </div>
                   </div>
                 )}
 
-                <div className="p-4 sm:p-6">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-right">
-                      <thead className="bg-muted/50 text-muted-foreground">
-                        <tr>
-                          <th className="px-4 py-3 rounded-r-lg">المدينة</th>
-                          <th className="px-4 py-3">سعر الشحن (ج.م)</th>
-                          <th className="px-4 py-3 rounded-l-lg w-24 text-center">الإجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activeGov.cities.map((city: any) => (
-                          <tr key={city.id} className="border-b border-border/30 hover:bg-muted/20">
-                            <td className="px-4 py-4 font-medium">{city.name}</td>
-                            <td className="px-4 py-4 font-bold text-primary">
-                              <input 
-                                type="number"
-                                defaultValue={city.shippingCost}
-                                onBlur={(e) => {
-                                  const val = parseFloat(e.target.value)
-                                  if (val !== city.shippingCost && !isNaN(val)) handleEditCity(city, val)
-                                }}
-                                className="w-24 bg-transparent border-b border-border/50 text-center outline-none focus:border-primary ml-1 px-1 py-0.5"
-                              />
-                              ج.م
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="flex items-center justify-center gap-2">
-                                <button onClick={() => setDeleteModal({ type: 'city', id: city.id, name: city.name })} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
+                <div className="overflow-y-auto flex-1 p-2 space-y-1">
+                  {governorates.map((g: any) => (
+                    <div 
+                      key={g.id} 
+                      className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${activeGovId === g.id ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted'}`}
+                      onClick={() => setActiveGovId(g.id)}
+                    >
+                      <span className="font-medium text-sm truncate">{g.name}</span>
+                      <div className="flex items-center opacity-70 hover:opacity-100">
+                        <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ type: 'gov', id: g.id, name: g.name }); }} className={`p-1 ${activeGovId === g.id ? 'hover:text-primary-foreground/70' : 'hover:text-red-500'}`}>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {governorates.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">لا توجد محافظات</p>}
+                </div>
+              </div>
+
+              {/* Cities Content */}
+              <div className="lg:col-span-3 border border-border/50 rounded-xl bg-card shadow-sm">
+                {activeGov ? (
+                  <>
+                    <div className="p-4 sm:p-6 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/5">
+                      <div>
+                        <h3 className="text-lg font-bold">المدن والتسعيرة - {activeGov.name}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">أضف المدن لتحديد سعر الشحن الخاص بكل منها.</p>
+                      </div>
+                      <Button onClick={() => setIsAddingCity(!isAddingCity)} variant={isAddingCity ? "secondary" : "default"} className="gap-2 shrink-0">
+                        {isAddingCity ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        {isAddingCity ? "إلغاء الإضافة" : "إضافة مدينة"}
+                      </Button>
+                    </div>
+
+                    {isAddingCity && (
+                      <div className="p-4 bg-muted/10 border-b border-border/50 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end animate-in fade-in">
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold">اسم المدينة</label>
+                          <input 
+                            type="text" 
+                            value={newCityName}
+                            onChange={e => setNewCityName(e.target.value)}
+                            className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
+                            placeholder="مثال: مدينة نصر"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-semibold">سعر الشحن (ج.م)</label>
+                          <input 
+                            type="number" 
+                            value={newCityCost}
+                            onChange={e => setNewCityCost(e.target.value)}
+                            className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
+                            onKeyDown={(e) => { if(e.key === 'Enter') handleAddCity(activeGov.id) }}
+                          />
+                        </div>
+                        <Button onClick={() => handleAddCity(activeGov.id)} className="w-full">حفظ المدينة</Button>
+                      </div>
+                    )}
+
+                    <div className="p-0 overflow-x-auto">
+                      <table className="w-full text-sm text-right">
+                        <thead className="bg-muted/30 text-muted-foreground border-b border-border/50">
+                          <tr>
+                            <th className="px-6 py-4 font-semibold">المدينة</th>
+                            <th className="px-6 py-4 font-semibold">سعر الشحن (ج.م)</th>
+                            <th className="px-6 py-4 font-semibold w-24 text-center">حذف</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeGov.cities.map((city: any) => (
+                            <tr key={city.id} className="border-b border-border/30 hover:bg-muted/10">
+                              <td className="px-6 py-4 font-medium">{city.name}</td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2 w-32">
+                                  <input 
+                                    type="number" 
+                                    defaultValue={city.shippingCost}
+                                    onBlur={(e) => {
+                                      const val = parseFloat(e.target.value)
+                                      if (!isNaN(val) && val !== city.shippingCost) {
+                                        handleEditCity(city, val)
+                                      }
+                                    }}
+                                    className="w-full h-8 bg-background border border-input rounded px-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                  />
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-center">
+                                <button onClick={() => setDeleteModal({ type: 'city', id: city.id, name: city.name })} className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors inline-block">
                                   <Trash2 className="w-4 h-4" />
                                 </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                        {activeGov.cities.length === 0 && (
-                          <tr>
-                            <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">لا توجد مدن مضافة.</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                              </td>
+                            </tr>
+                          ))}
+                          {activeGov.cities.length === 0 && (
+                            <tr>
+                              <td colSpan={3} className="px-6 py-12 text-center text-muted-foreground">
+                                لا توجد مدن مضافة في هذه المحافظة.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
+                    <MapPin className="w-12 h-12 mb-4 opacity-20" />
+                    <p>يرجى اختيار محافظة أو إضافة واحدة جديدة.</p>
                   </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-muted-foreground">
-                <MapPin className="w-12 h-12 mb-4 opacity-20" />
-                <p>يرجى اختيار محافظة أو إضافة واحدة جديدة</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'payment' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center bg-card p-4 rounded-xl border border-border/50">
-            <div>
-              <h3 className="font-bold">إدارة طرق الدفع</h3>
-              <p className="text-sm text-muted-foreground">أضف وحدد طرق الدفع المتاحة للعملاء في صفحة إتمام الطلب.</p>
-            </div>
-            {!isAddingPayment && (
-              <Button onClick={() => setIsAddingPayment(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                طريقة دفع جديدة
-              </Button>
-            )}
-          </div>
-
-          {isAddingPayment && (
-            <div className="bg-card border-2 border-primary/20 rounded-xl p-5 mb-6 animate-in slide-in-from-top-2">
-              <h4 className="font-bold mb-4">إضافة طريقة دفع جديدة</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold">الاسم</label>
-                  <input 
-                    type="text" 
-                    value={newPayment.name}
-                    onChange={e => setNewPayment({ ...newPayment, name: e.target.value })}
-                    className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
-                    placeholder="مثال: فودافون كاش"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold">النوع</label>
-                  <select 
-                    value={newPayment.type}
-                    onChange={e => setNewPayment({ ...newPayment, type: e.target.value })}
-                    className="w-full text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary"
-                  >
-                    <option value="VODAFONE_CASH">فودافون كاش</option>
-                    <option value="INSTAPAY">إنستا باي</option>
-                    <option value="BANK_TRANSFER">تحويل بنكي</option>
-                    <option value="COD">الدفع عند الاستلام</option>
-                  </select>
-                </div>
-                <div className="flex gap-2">
-                  <Button onClick={handleAddPayment} className="flex-1">حفظ</Button>
-                  <Button variant="outline" onClick={() => setIsAddingPayment(false)}>إلغاء</Button>
-                </div>
+                )}
               </div>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paymentMethods.map((pm: any) => (
-              <div key={pm.id} className="bg-card border border-border/50 rounded-xl p-5 relative group">
-                <div className="absolute top-4 left-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => setDeleteModal({ type: 'payment', id: pm.id, name: pm.name })} className="p-1.5 bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <h4 className="font-bold text-lg mb-1 pr-6">{pm.name}</h4>
-                <span className="text-xs font-bold px-2 py-1 bg-secondary rounded text-secondary-foreground inline-block mb-4">
-                  {pm.type === 'VODAFONE_CASH' ? 'فودافون كاش' : pm.type === 'INSTAPAY' ? 'إنستا باي' : pm.type === 'COD' ? 'الدفع عند الاستلام' : 'تحويل بنكي'}
-                </span>
-                
-                <div className="space-y-4">
-                  {pm.type !== 'COD' && (
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-muted-foreground">رقم الحساب / الرابط (انستا باي)</label>
-                      <input 
-                        type="text" 
-                        defaultValue={pm.accountInfo || ""}
-                        onBlur={(e) => {
-                          if (e.target.value !== pm.accountInfo) handleUpdatePayment(pm.id, { accountInfo: e.target.value })
-                        }}
-                        className="w-full text-sm bg-muted border border-border/50 rounded-md px-3 py-2 outline-none focus:border-primary"
-                        placeholder="أدخل الرقم أو الرابط"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-muted-foreground">تعليمات الدفع للعميل</label>
-                    <textarea 
-                      defaultValue={pm.instructions || ""}
-                      onBlur={(e) => {
-                        if (e.target.value !== pm.instructions) handleUpdatePayment(pm.id, { instructions: e.target.value })
-                      }}
-                      rows={3}
-                      className="w-full text-sm bg-muted border border-border/50 rounded-md px-3 py-2 outline-none focus:border-primary resize-none"
-                      placeholder="مثال: يرجى رفع الإيصال بعد التحويل إلى الرقم التالي بخط صغير..."
-                    />
+          {activeTab === 'payment' && (
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
+              {/* Payment List */}
+              <div className="flex-1 w-full bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/5">
+                  <div>
+                    <h2 className="text-lg font-semibold">طرق الدفع المتاحة</h2>
+                    <p className="text-sm text-muted-foreground">أضف طرق دفع لعملائك لإتمام طلباتهم.</p>
                   </div>
-                  
-                  <label className="flex items-center gap-2 cursor-pointer mt-2 pt-2 border-t border-border/30">
-                    <input 
-                      type="checkbox" 
-                      checked={pm.isActive}
-                      onChange={(e) => handleUpdatePayment(pm.id, { isActive: e.target.checked })}
-                      className="w-4 h-4 rounded text-primary focus:ring-primary"
-                    />
-                    <span className="text-sm font-medium">تفعيل طريقة الدفع</span>
-                  </label>
+                  <Button onClick={() => { resetPaymentForm(); setIsPaymentFormVisible(!isPaymentFormVisible); }} className="gap-2" variant={isPaymentFormVisible && !editingPayment ? "secondary" : "default"}>
+                    {isPaymentFormVisible && !editingPayment ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    {isPaymentFormVisible && !editingPayment ? "إلغاء" : "إضافة طريقة الدفع"}
+                  </Button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-right">
+                    <thead className="bg-muted/30 text-muted-foreground">
+                      <tr>
+                        <th className="px-4 py-4">اسم الطريقة</th>
+                        <th className="px-4 py-4">النوع</th>
+                        <th className="px-4 py-4">بيانات الحساب</th>
+                        <th className="px-4 py-4 w-24 text-center">إجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentMethods.map((p: any) => (
+                        <tr key={p.id} className="border-b border-border/30 hover:bg-muted/10">
+                          <td className="px-4 py-4 font-bold">{p.name}</td>
+                          <td className="px-4 py-4">
+                            <span className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
+                              {p.type === 'CASH_ON_DELIVERY' ? 'الدفع عند الاستلام' : p.type === 'VODAFONE_CASH' ? 'فودافون كاش' : p.type === 'INSTAPAY' ? 'انستاباي' : 'تحويل بنكي'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4">
+                            {p.type !== 'CASH_ON_DELIVERY' ? (
+                              <div className="text-xs text-muted-foreground">
+                                {p.accountName && <div>الاسم: <span className="font-medium text-foreground">{p.accountName}</span></div>}
+                                {p.accountNumber && <div>الرقم: <span className="font-medium text-foreground" dir="ltr">{p.accountNumber}</span></div>}
+                              </div>
+                            ) : <span className="text-muted-foreground text-xs">-</span>}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex items-center justify-center gap-2">
+                              <button onClick={() => openEditPayment(p)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => setDeleteModal({ type: 'payment', id: p.id, name: p.name })} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {paymentMethods.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-12 text-center text-muted-foreground">لا توجد طرق دفع.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Delete Confirmation Custom Modal */}
+              {/* Payment Sticky Form */}
+              <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isPaymentFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
+                <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col">
+                  <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold tracking-tight">{editingPayment ? "تعديل طريقة الدفع" : "إضافة طريقة جديدة"}</h2>
+                      <p className="text-xs text-muted-foreground mt-1">أدخل بيانات وسيلة الدفع.</p>
+                    </div>
+                    {editingPayment && (
+                      <Button variant="ghost" size="icon" onClick={() => { resetPaymentForm(); setIsPaymentFormVisible(false); }} className="h-8 w-8 text-muted-foreground">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="p-6">
+                    <form id="payment-form" onSubmit={handlePaymentSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">اسم الطريقة <span className="text-red-500">*</span></label>
+                        <input name="methodName" type="text" required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" placeholder="مثال: فودافون كاش" />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">النوع <span className="text-red-500">*</span></label>
+                        <select name="type" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" onChange={(e) => {
+                          const formEl = e.target.form;
+                          if (formEl) {
+                            const isCash = e.target.value === 'CASH_ON_DELIVERY';
+                            const fields = formEl.querySelectorAll('.payment-account-field');
+                            fields.forEach(f => f.classList.toggle('hidden', isCash));
+                          }
+                        }}>
+                          <option value="VODAFONE_CASH">فودافون كاش</option>
+                          <option value="INSTAPAY">انستاباي</option>
+                          <option value="BANK_TRANSFER">تحويل بنكي</option>
+                          <option value="CASH_ON_DELIVERY">الدفع عند الاستلام</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-2 payment-account-field">
+                        <label className="text-sm font-medium">اسم صاحب الحساب</label>
+                        <input name="accountName" type="text" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" placeholder="مثال: أحمد محمد" />
+                      </div>
+
+                      <div className="space-y-2 payment-account-field">
+                        <label className="text-sm font-medium">رقم الحساب / المحفظة</label>
+                        <input name="accountNumber" type="text" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" placeholder="010..." />
+                      </div>
+
+                      <div className="pt-4">
+                        <Button type="submit" disabled={isSubmittingPayment} className="w-full gap-2">
+                          <Save className="w-4 h-4" />
+                          {isSubmittingPayment ? "جاري الحفظ..." : "حفظ"}
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
           <div className="bg-card w-full max-w-sm rounded-2xl shadow-xl border border-border/50 overflow-hidden animate-in zoom-in-95">
@@ -423,9 +477,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
               </div>
               <h3 className="text-xl font-bold">تأكيد الحذف</h3>
               <p className="text-sm text-muted-foreground">
-                هل أنت متأكد أنك تريد حذف {deleteModal.name ? `"${deleteModal.name}"` : 'هذا العنصر'}؟
-                {deleteModal.type === 'gov' && ' سيتم حذف جميع المدن التابعة لها أيضاً.'}
-                لا يمكن التراجع عن هذه الخطوة.
+                هل أنت متأكد من حذف {deleteModal.name ? `"${deleteModal.name}"` : "هذا العنصر"} نهائياً؟
               </p>
             </div>
             <div className="flex border-t border-border/50">
