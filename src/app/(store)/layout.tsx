@@ -64,7 +64,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} categories={categories} departments={departments} />
       <CartDrawer />
       <AuthModal themeConfig={themeConfig} />
-      <main className="flex-1 overflow-x-hidden">
+      <main className="flex-1 overflow-x-hidden min-h-[80vh] flex flex-col">
         {children}
       </main>
       <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} branches={branches} />

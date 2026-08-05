@@ -2,7 +2,7 @@ import React from "react"
 
 export default function StoreLoading() {
   return (
-    <div className="flex flex-col gap-12 w-full animate-pulse pb-24">
+    <div className="flex flex-col flex-1 gap-12 w-full animate-pulse pb-24">
       {/* Hero Banner Skeleton */}
       <div className="w-full h-[50vh] md:h-[70vh] bg-muted/60 relative">
         <div className="absolute inset-0 flex flex-col items-center justify-center p-8 space-y-4">
