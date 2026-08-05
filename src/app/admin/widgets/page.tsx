@@ -4,10 +4,11 @@ import { WidgetsClient } from "./widgets-client"
 import { db } from "@/lib/db"
 
 export default async function WidgetBuilderPage() {
-  const [widgetsData, categories] = await Promise.all([
+  const [widgetsData, categories, departments] = await Promise.all([
     getWidgets(),
-    db.category.findMany({ select: { id: true, name: true } })
+    db.category.findMany({ select: { id: true, name: true, slug: true } }),
+    db.department.findMany({ select: { id: true, name: true, slug: true } })
   ])
 
-  return <WidgetsClient initialWidgets={widgetsData.widgets || []} categories={categories} />
+  return <WidgetsClient initialWidgets={widgetsData.widgets || []} categories={categories} departments={departments} />
 }

@@ -26,7 +26,7 @@ const WIDGET_TYPES = [
   { id: "FeaturedProduct", name: "منتج مميز", icon: ShoppingBag, desc: "عرض منتج واحد بتصميم بارز" },
 ]
 
-export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: any[], categories: any[] }) {
+export function WidgetsClient({ initialWidgets, categories, departments }: { initialWidgets: any[], categories: any[], departments: any[] }) {
   const [widgets, setWidgets] = useState(initialWidgets)
   
   const [activeTab, setActiveTab] = useState<"add" | "edit">("add")
@@ -842,6 +842,16 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                                   <option value="">اختر قائمة المنتجات</option>
                                   {collections.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
                                 </select>
+                              ) : linkType === "department" ? (
+                                <select
+                                  value={linkValue}
+                                  onChange={(e) => setLinkValue(e.target.value)}
+                                  className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                  required
+                                >
+                                  <option value="">اختر المجال</option>
+                                  {departments.map(d => <option key={d.slug} value={d.slug}>{d.name}</option>)}
+                                </select>
                               ) : linkType === "product" ? (
                                 <div className="w-2/3">
                                   <Button 
@@ -861,7 +871,7 @@ export function WidgetsClient({ initialWidgets, categories }: { initialWidgets: 
                                   name="buttonUrl" 
                                   value={linkValue}
                                   onChange={(e) => setLinkValue(e.target.value)}
-                                  placeholder={linkType === "department" ? "اكتب معرف المجال" : "الرابط المخصص"} 
+                                  placeholder="الرابط المخصص" 
                                   dir="ltr" 
                                   className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs text-left" 
                                 />
