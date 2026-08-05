@@ -43,9 +43,10 @@ export function StoreFeatures({ widget }: { widget?: any }) {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 overflow-hidden">
-      <div className="relative max-w-6xl mx-auto">
-        <div className="overflow-hidden" dir="rtl">
+    <div className="bg-secondary w-full overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+        <div className="relative max-w-6xl mx-auto">
+          <div className="overflow-hidden" dir="rtl">
           <div 
             className="flex transition-transform duration-500 ease-in-out"
             style={{ transform: `translate3d(${currentIndex * 100}%, 0, 0)` }}
@@ -61,15 +62,15 @@ export function StoreFeatures({ widget }: { widget?: any }) {
                       style={{ flexBasis: `${100 / itemsPerPage}%`, maxWidth: `${100 / itemsPerPage}%`, flexGrow: 1 }}
                     >
                       <div className="flex flex-col items-center justify-center text-center">
-                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 md:mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-secondary-foreground/10 flex items-center justify-center text-secondary-foreground mb-4 md:mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:bg-secondary-foreground/20">
                           {item.imageUrl ? (
                             <img src={item.imageUrl} alt={item.title || item.name} className="w-10 h-10 md:w-12 md:h-12 object-contain" />
                           ) : (
                             <Icon className="w-10 h-10 md:w-12 md:h-12" strokeWidth={1.5} />
                           )}
                         </div>
-                        <h3 className="font-semibold text-lg md:text-xl mb-1.5 md:mb-2 text-foreground">{item.title || item.name}</h3>
-                        <p className="text-sm md:text-base text-muted-foreground">{item.subtitle || item.description}</p>
+                        <h3 className="font-semibold text-lg md:text-xl mb-1.5 md:mb-2 text-secondary-foreground">{item.title || item.name}</h3>
+                        <p className="text-sm md:text-base text-secondary-foreground/80">{item.subtitle || item.description}</p>
                       </div>
                     </div>
                   )
@@ -88,8 +89,8 @@ export function StoreFeatures({ widget }: { widget?: any }) {
                 onClick={() => setCurrentIndex(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentIndex 
-                    ? "bg-primary w-6" 
-                    : "bg-primary/30 hover:bg-primary/60"
+                    ? "bg-secondary-foreground w-6" 
+                    : "bg-secondary-foreground/30 hover:bg-secondary-foreground/60"
                 }`}
                 aria-label={`Go to slide ${index + 1}`}
               />

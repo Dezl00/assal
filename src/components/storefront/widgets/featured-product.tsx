@@ -51,9 +51,9 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
 
       <ScrollReveal variant="fade-up" delay={0.1}>
         <div className="bg-background rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 p-6 md:p-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10 p-4 md:p-10">
             {/* Image Column */}
-            <div className="relative aspect-[4/3] sm:aspect-square md:aspect-auto md:h-[350px] lg:h-[450px] bg-muted/10 rounded-xl overflow-hidden flex items-center justify-center p-8">
+            <div className="relative h-[250px] sm:h-[300px] md:h-[350px] lg:h-[450px] bg-muted/10 rounded-xl overflow-hidden flex items-center justify-center p-4 md:p-8">
               {hasDiscount && (
                 <div className="absolute top-4 right-4 z-10">
                   <Badge variant="destructive" className="px-3 py-1 text-sm font-bold">
@@ -70,7 +70,7 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
             </div>
 
             {/* Content Column */}
-            <div className="flex flex-col justify-center space-y-4">
+            <div className="flex flex-col justify-center space-y-3">
               <div className="space-y-1">
                 {product.category && (
                   <Link href={`/category/${product.category.slug}`} className="text-sm font-medium text-primary hover:underline">
@@ -90,7 +90,7 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
                 </p>
               )}
 
-              <div className="flex items-end gap-4 pb-6 border-b border-border/50">
+              <div className="flex items-end gap-4 pb-4 border-b border-border/50">
                 <div className="flex flex-col">
                   <span className="text-3xl font-semibold text-foreground">
                     {finalPrice} <span className="text-lg text-muted-foreground font-normal">ج.م</span>
@@ -105,7 +105,7 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
                 )}
               </div>
 
-              <div className="pt-2 max-w-sm">
+              <div className="pt-0 max-w-sm">
                 <AddToCartForm product={product} />
               </div>
             </div>
