@@ -141,7 +141,7 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
     const widget = await db.widget.findUnique({ where: { id: widgetId } })
     const disableRouting = (widget?.settings as any)?.disableRouting === true
     
-    if (widget?.type === "BrandSlider" && title && !disableRouting) {
+    if (widget?.type === "BrandSlider" && title) {
       // Auto-sync: Create Brand
       const translated = await translateToEnglish(title);
       let baseSlug = translated.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w0-9\-]+/g, '');
@@ -300,46 +300,37 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
     })
 
     if (oldItem?.widget?.type === "BrandSlider" && title !== undefined) {
-      const disableRouting = (oldItem?.widget?.settings as any)?.disableRouting === true
-      
       const slug = title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u0621-\u064A0-9\-]+/g, '') + '-' + Math.random().toString(36).substring(2, 6)
       
       const existingBrand = await db.brand.findFirst({
         where: { name: oldItem.title || "" }
       })
 
-      if (disableRouting) {
-        if (existingBrand) {
-          await db.product.updateMany({ where: { brandId: existingBrand.id }, data: { brandId: null } })
-          await db.brand.delete({ where: { id: existingBrand.id } })
+      // If the title changed, we create a new brand (since we don't have a direct link to the old brand ID)
+      // If the title is the same, we update the existing brand's logo
+      if (existingBrand) {
+        await db.brand.update({
+          where: { id: existingBrand.id },
+          data: {
+            name: title,
+            logoUrl: dataToUpdate.desktopImage || existingBrand.logoUrl
+          }
+        })
+        if (!buttonUrl) {
+          buttonUrl = `/brand/${existingBrand.slug}`
+          dataToUpdate.buttonUrl = buttonUrl
         }
       } else {
-        // If the title changed, we create a new brand (since we don't have a direct link to the old brand ID)
-        // If the title is the same, we update the existing brand's logo
-        if (existingBrand) {
-          await db.brand.update({
-            where: { id: existingBrand.id },
-            data: {
-              name: title,
-              logoUrl: dataToUpdate.desktopImage || existingBrand.logoUrl
-            }
-          })
-          if (!buttonUrl) {
-            buttonUrl = `/brand/${existingBrand.slug}`
-            dataToUpdate.buttonUrl = buttonUrl
+        const brand = await db.brand.create({
+          data: {
+            name: title,
+            slug: slug,
+            logoUrl: dataToUpdate.desktopImage || oldItem.desktopImage,
           }
-        } else {
-          const brand = await db.brand.create({
-            data: {
-              name: title,
-              slug: slug,
-              logoUrl: dataToUpdate.desktopImage || oldItem.desktopImage,
-            }
-          })
-          if (!buttonUrl) {
-            buttonUrl = `/brand/${brand.slug}`
-            dataToUpdate.buttonUrl = buttonUrl
-          }
+        })
+        if (!buttonUrl) {
+          buttonUrl = `/brand/${brand.slug}`
+          dataToUpdate.buttonUrl = buttonUrl
         }
       }
     } else if (oldItem?.widget?.type === "ProductList" && title !== undefined) {
