@@ -53,12 +53,12 @@ function AdminLayoutInner({
     ])
   ]
 
-  // For bottom nav, we only show top 4 most important
+  // For bottom nav, we only show top 4 most important for mobile
   const bottomNavItems = [
     { name: "الرئيسية", href: "/admin", icon: LayoutDashboard },
     { name: "الطلبات", href: "/admin/orders", icon: ShoppingBag },
-    { name: "الواجهات", href: "/admin/widgets", icon: LayoutTemplate },
-    { name: "الإعدادات", href: "/admin/settings", icon: Settings },
+    { name: "العملاء", href: "/admin/customers", icon: FolderTree },
+    { name: "المنتجات", href: "/admin/products", icon: ShoppingBag },
   ]
 
   return (
