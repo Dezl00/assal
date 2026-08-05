@@ -1,16 +1,16 @@
 import React from "react"
 import { ProductCard } from "./product-card"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
+import { PackageSearch } from "lucide-react"
 
 export function ProductGrid({ products, title, subtitle }: { products: any[], title?: string, subtitle?: string }) {
   if (!products || products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
-          <span className="text-3xl opacity-50">🛒</span>
+        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6 text-muted-foreground">
+          <PackageSearch className="w-10 h-10" strokeWidth={1.5} />
         </div>
-        <h3 className="text-2xl font-bold mb-2">لا توجد منتجات</h3>
-        <p className="text-muted-foreground">لم نتمكن من العثور على أي منتجات في هذا القسم حالياً.</p>
+        <h3 className="text-2xl font-bold mb-2">لا توجد منتجات في القسم الحالي</h3>
       </div>
     )
   }

@@ -63,7 +63,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
-                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-20 w-auto object-contain" />
+                  <img src={themeConfig.logoUrl} alt="Store Logo" className="h-14 w-auto object-contain transition-transform hover:scale-105" />
                 ) : (
                   <span className="w-12 h-12 rounded-full gold-gradient flex items-center justify-center text-white text-2xl shadow-lg shadow-primary/20">ع</span>
                 )}
