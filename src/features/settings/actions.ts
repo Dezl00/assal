@@ -19,6 +19,7 @@ export async function updateThemeConfig(formData: FormData) {
     const twitterUrl = formData.get("twitterUrl") as string
     const tiktokUrl = formData.get("tiktokUrl") as string
     const snapchatUrl = formData.get("snapchatUrl") as string
+    const backupFrequency = formData.get("backupFrequency") as string
 
     const data = {
       storeName,
@@ -34,7 +35,8 @@ export async function updateThemeConfig(formData: FormData) {
       instagramUrl,
       twitterUrl,
       tiktokUrl,
-      snapchatUrl
+      snapchatUrl,
+      ...(backupFrequency ? { backupFrequency } : {})
     }
 
     await db.themeConfig.upsert({

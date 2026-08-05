@@ -87,10 +87,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">إعدادات المتجر</h1>
-        <p className="text-muted-foreground mt-1">إدارة بيانات المتجر، الهوية البصرية، الفروع والتواصل.</p>
-      </div>
+
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Tabs Sidebar */}
@@ -110,7 +107,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
         {/* Content Area */}
         <div className="flex-1 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
           {/* Config Forms */}
-          {activeTab !== "branches" && (
+          {activeTab !== "branches" && activeTab !== "backups" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
               <div className="p-6 flex-1 space-y-8">
                 

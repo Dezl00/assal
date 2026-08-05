@@ -31,7 +31,8 @@ export default async function AdminDashboardPage() {
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: { user: true }
-    })
+    }),
+    db.themeConfig.findUnique({ where: { id: "default" } })
   ])
 
   // Get product details for topProducts
@@ -43,6 +44,7 @@ export default async function AdminDashboardPage() {
   )
 
   const totalSales = totalSalesResult._sum.totalAmount || 0
+  const adminColor = theme?.adminColor || "#0f172a"
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -51,51 +53,50 @@ export default async function AdminDashboardPage() {
         <p className="mt-2 text-muted-foreground">نظرة عامة على أداء المتجر والمبيعات.</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-primary/20">
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white' }}>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
               <DollarSign className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">إجمالي المبيعات</p>
+              <p className="text-sm font-medium text-white/80">إجمالي المبيعات</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{totalSales.toFixed(2)} ج.م</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-blue-500/20">
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white', filter: 'brightness(1.1)' }}>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
               <ShoppingBag className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">الطلبات الجديدة</p>
+              <p className="text-sm font-medium text-white/80">الطلبات الجديدة</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{newOrders}</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-orange-500/20">
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white', filter: 'brightness(1.2)' }}>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
               <Users className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">العملاء</p>
+              <p className="text-sm font-medium text-white/80">العملاء</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{customers}</h3>
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-sm transition-all hover:border-green-500/20">
+        <div className="rounded-2xl border-0 p-6 shadow-md transition-all hover:scale-[1.02]" style={{ backgroundColor: adminColor, color: 'white', filter: 'brightness(1.3)' }}>
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/10 text-green-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-white shadow-inner">
               <Activity className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">المنتجات النشطة</p>
+              <p className="text-sm font-medium text-white/80">المنتجات النشطة</p>
               <h3 className="text-2xl font-bold tracking-tight mt-1">{activeProducts}</h3>
             </div>
           </div>

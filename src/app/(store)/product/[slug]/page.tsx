@@ -194,9 +194,11 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
           <div className="flex items-center justify-between mb-10">
             <h2 className="text-3xl font-bold tracking-tight">منتجات مشابهة</h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 sm:gap-6 pb-6 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {relatedProducts.map(related => (
-              <ProductCard key={related.id} product={related as any} disableAnimation={true} />
+              <div key={related.id} className="snap-start w-[240px] sm:w-[280px] shrink-0">
+                <ProductCard product={related as any} disableAnimation={true} />
+              </div>
             ))}
           </div>
         </div>

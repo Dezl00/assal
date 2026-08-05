@@ -43,10 +43,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">إعدادات المتجر</h1>
-        <p className="mt-2 text-muted-foreground">قم بتخصيص مظهر المتجر والبيانات الأساسية والفروع والنسخ الاحتياطي.</p>
-      </div>
+      <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <span>الرئيسية</span>
+        <span>/</span>
+        <span className="text-foreground">الإعدادات</span>
+      </nav>
 
       <SettingsClient config={config} branches={branches} backups={backups} />
     </div>

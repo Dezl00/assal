@@ -51,9 +51,9 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
 
       <ScrollReveal variant="fade-up" delay={0.1}>
         <div className="bg-background rounded-2xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 p-6 md:p-10">
             {/* Image Column */}
-            <div className="relative aspect-square md:aspect-auto md:h-[500px] bg-muted/10 rounded-xl overflow-hidden flex items-center justify-center p-8">
+            <div className="relative aspect-[4/3] sm:aspect-square md:aspect-auto md:h-[400px] lg:h-[500px] bg-muted/10 rounded-xl overflow-hidden flex items-center justify-center p-8">
               {hasDiscount && (
                 <div className="absolute top-4 right-4 z-10">
                   <Badge variant="destructive" className="px-3 py-1 text-sm font-bold">
@@ -78,7 +78,7 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
                   </Link>
                 )}
                 <Link href={`/product/${product.slug}`}>
-                  <h3 className="text-3xl md:text-4xl font-bold text-foreground leading-tight hover:text-primary transition-colors">
+                  <h3 className="text-2xl md:text-3xl font-semibold text-foreground leading-tight hover:text-primary transition-colors">
                     {product.name}
                   </h3>
                 </Link>
@@ -92,8 +92,8 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
 
               <div className="flex items-end gap-4 pb-6 border-b border-border/50">
                 <div className="flex flex-col">
-                  <span className="text-4xl font-bold text-foreground">
-                    {finalPrice} <span className="text-xl text-muted-foreground font-normal">ر.س</span>
+                  <span className="text-3xl font-semibold text-foreground">
+                    {finalPrice} <span className="text-lg text-muted-foreground font-normal">ر.س</span>
                   </span>
                 </div>
                 {hasDiscount && (

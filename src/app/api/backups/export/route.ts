@@ -2,6 +2,26 @@ import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import JSZip from "jszip"
+import fs from "fs/promises"
+import path from "path"
+
+async function addFolderToZipAsync(folderPath: string, zip: JSZip, rootPath: string) {
+  try {
+    const items = await fs.readdir(folderPath, { withFileTypes: true });
+    for (const item of items) {
+      const fullPath = path.join(folderPath, item.name);
+      if (item.isDirectory()) {
+        await addFolderToZipAsync(fullPath, zip, rootPath);
+      } else {
+        const relativePath = path.relative(rootPath, fullPath);
+        const fileData = await fs.readFile(fullPath);
+        zip.file(`public/${relativePath.replace(/\\/g, '/')}`, fileData);
+      }
+    }
+  } catch (error) {
+    console.error("Error reading folder:", error);
+  }
+}
 
 export async function GET() {
   try {
@@ -42,6 +62,10 @@ export async function GET() {
 
     const zip = new JSZip()
     zip.file("backup.json", jsonString)
+
+    const publicPath = path.join(process.cwd(), "public");
+    await addFolderToZipAsync(publicPath, zip, publicPath);
+
     const zipBuffer = await zip.generateAsync({ type: "nodebuffer" })
 
     const filename = `assal-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.zip`
