@@ -37,7 +37,10 @@ function AdminLayoutInner({
     { name: "الأقسام", href: "/admin/categories", icon: ListTree },
     { name: "المنتجات", href: "/admin/products", icon: ShoppingBag },
     ...(isManager ? [] : [
+      { name: "الإحصائيات", href: "/admin/analytics", icon: LayoutDashboard },
       { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate },
+      { name: "الحسابات والأدوار", href: "/admin/accounts", icon: FolderTree },
+      { name: "سجل الأمان", href: "/admin/security", icon: LayoutDashboard },
       { name: "الإعدادات", href: "/admin/settings", icon: Settings },
     ])
   ]

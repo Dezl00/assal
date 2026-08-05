@@ -300,39 +300,110 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
           )}
 
           {activeTab === "backups" && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">النسخ الاحتياطي</h3>
-                  <p className="text-sm text-muted-foreground mt-1">تصدير واستيراد البيانات الأساسية بصيغة JSON.</p>
+            <div className="space-y-8 p-6 animate-in fade-in">
+              
+              {/* Export & Auto Backup */}
+              <div>
+                <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold">النسخ الاحتياطي التلقائي والتصدير</h2>
+                    <p className="text-sm text-muted-foreground mt-1">تكوين النسخ التلقائي وتصدير البيانات الحالية.</p>
+                  </div>
+                  <Button onClick={() => window.location.href='/api/backups/export'} className="gap-2">
+                    <Database className="w-4 h-4" /> تصدير نسخة يدوية
+                  </Button>
                 </div>
-                <Button onClick={() => window.location.href='/api/backups/export'} className="gap-2">
-                  <Database className="w-4 h-4" /> تصدير نسخة احتياطية
-                </Button>
+                <form onSubmit={handleConfigSubmit} className="space-y-4 max-w-xl">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">جدولة النسخ التلقائي</label>
+                    <select name="backupFrequency" defaultValue={config.backupFrequency || "never"} className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary">
+                      <option value="never">إيقاف (يدوي فقط)</option>
+                      <option value="daily">يومياً</option>
+                      <option value="3days">كل 3 أيام</option>
+                      <option value="weekly">أسبوعياً</option>
+                      <option value="monthly">شهرياً</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      ملاحظة: يتطلب هذا تفعيل Cron Jobs في منصة Vercel للعمل بشكل تلقائي.
+                    </p>
+                  </div>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ إعدادات النسخ"}
+                  </Button>
+                </form>
               </div>
 
-              <div className="grid gap-4 mt-4">
-                {backups.length === 0 ? (
-                  <div className="text-center py-12 text-muted-foreground border border-dashed border-border/50 rounded-lg">لا توجد نسخ احتياطية سابقة.</div>
-                ) : (
-                  backups.map(backup => (
-                    <div key={backup.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg bg-card">
-                      <div>
-                        <h4 className="font-semibold">{backup.filename}</h4>
-                        <div className="text-sm text-muted-foreground mt-1 flex gap-4">
-                          <span>الحجم: {(backup.size / 1024).toFixed(2)} KB</span>
-                          <span>التاريخ: {new Date(backup.createdAt).toLocaleString("ar-EG")}</span>
+              {/* Import Backups */}
+              <div className="pt-6 border-t border-border/50">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-red-600">استعادة واستيراد نسخة احتياطية</h2>
+                    <p className="text-sm text-muted-foreground mt-1">تحذير: استعادة النسخة الاحتياطية ستقوم بحذف البيانات الحالية واستبدالها.</p>
+                  </div>
+                  <div>
+                     <input type="file" id="importFile" accept=".json" className="hidden" onChange={async (e) => {
+                       const file = e.target.files?.[0];
+                       if (!file) return;
+                       if (!confirm("هل أنت متأكد من استعادة هذه النسخة؟ سيتم مسح كافة بيانات المتجر الحالية!")) return;
+                       
+                       const formData = new FormData();
+                       formData.append('file', file);
+                       
+                       const toastId = toast.loading("جاري استعادة النسخة الاحتياطية، يرجى الانتظار...");
+                       try {
+                         const res = await fetch('/api/backups/import', { method: 'POST', body: formData });
+                         if (res.ok) {
+                           toast.success("تمت استعادة النسخة الاحتياطية بنجاح!", { id: toastId });
+                           setTimeout(() => window.location.reload(), 2000);
+                         } else {
+                           const data = await res.json();
+                           toast.error(data.error || "فشل استعادة النسخة الاحتياطية", { id: toastId });
+                         }
+                       } catch (error) {
+                         toast.error("فشل في رفع الملف", { id: toastId });
+                       }
+                       e.target.value = '';
+                     }} />
+                     <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => document.getElementById('importFile')?.click()}>
+                       <Upload className="w-4 h-4" /> رفع واستيراد نسخة يدوياً
+                     </Button>
+                  </div>
+                </div>
+
+                <div className="grid gap-3 mt-4">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">النسخ السابقة (التلقائية واليدوية)</h3>
+                  {backups.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground border border-dashed border-border/50 rounded-lg">لا توجد نسخ احتياطية محفوظة.</div>
+                  ) : (
+                    backups.map(backup => (
+                      <div key={backup.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg bg-card">
+                        <div>
+                          <h4 className="font-semibold text-sm">{backup.filename}</h4>
+                          <div className="text-xs text-muted-foreground mt-1 flex gap-4">
+                            <span>الحجم: {(backup.size / 1024).toFixed(2)} KB</span>
+                            <span>التاريخ: {new Date(backup.createdAt).toLocaleString("ar-EG")}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-1 rounded text-[10px] font-medium ${backup.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                            {backup.status}
+                          </span>
+                          {backup.status === 'COMPLETED' && (
+                            <Button size="sm" variant="outline" className="h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => {
+                              if(confirm("استعادة هذه النسخة ستحذف البيانات الحالية. هل توافق؟")) {
+                                toast.info("ميزة استعادة النسخ المحفوظة قيد التطوير. يرجى تنزيلها ورفعها يدوياً حالياً.");
+                              }
+                            }}>
+                              استعادة
+                            </Button>
+                          )}
                         </div>
                       </div>
-                      <div>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${backup.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                          {backup.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
+
             </div>
           )}
 

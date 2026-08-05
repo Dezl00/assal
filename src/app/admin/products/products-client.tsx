@@ -227,6 +227,8 @@ export function ProductsClient({ products, categories, brands = [], departments 
     XLSX.writeFile(wb, "Assal_Products.xlsx")
   }
 
+  const [importConflicts, setImportConflicts] = useState<{parsed: any[], duplicates: any[], ready: any[]} | null>(null)
+
   function handleImportExcel(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -241,8 +243,35 @@ export function ProductsClient({ products, categories, brands = [], departments 
         const data = XLSX.utils.sheet_to_json(ws)
         
         if (data.length > 0) {
-          toast.success(`تم قراءة ${data.length} منتج. سيتم استيرادها لاحقاً. (وظيفة تجريبية)`)
-          // Implementation of actual parsing and creating can go here
+          const parsedData = data.map((row: any) => ({
+            name: row["اسم المنتج"] || "",
+            price: row["السعر"] ? parseFloat(row["السعر"]) : 0,
+            costPrice: row["سعر التكلفة"] ? parseFloat(row["سعر التكلفة"]) : undefined,
+            stock: row["المخزون"] ? parseInt(row["المخزون"]) : 0,
+            categoryId: categories.find(c => c.name === row["التصنيف"])?.id || null, // Map category name to ID if found
+            description: row["الوصف"] || "",
+            isActive: row["مفعل؟"] === "نعم"
+          })).filter(p => p.name.trim() !== "");
+
+          const duplicates: any[] = [];
+          const ready: any[] = [];
+
+          parsedData.forEach(item => {
+            const existing = localProducts.find(p => p.name.toLowerCase() === item.name.toLowerCase());
+            if (existing) {
+              duplicates.push({ ...item, existingId: existing.id });
+            } else {
+              ready.push(item);
+            }
+          });
+
+          if (duplicates.length > 0) {
+            setImportConflicts({ parsed: parsedData, duplicates, ready });
+          } else if (ready.length > 0) {
+            await submitImport(ready, []);
+          } else {
+            toast.info("لا توجد منتجات جديدة لاستيرادها.");
+          }
         }
       } catch (err) {
         toast.error("ملف Excel غير صالح")
@@ -252,15 +281,68 @@ export function ProductsClient({ products, categories, brands = [], departments 
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
+  async function submitImport(newItems: any[], updateItems: any[]) {
+    const toastId = toast.loading("جاري استيراد المنتجات...");
+    try {
+      // Create new
+      let createdCount = 0;
+      let updatedCount = 0;
+      
+      for (const item of newItems) {
+        const formData = new FormData();
+        formData.append("name", item.name);
+        formData.append("price", item.price.toString());
+        if (item.costPrice) formData.append("costPrice", item.costPrice.toString());
+        formData.append("stock", item.stock.toString());
+        if (item.categoryId) formData.append("categoryId", item.categoryId);
+        formData.append("description", item.description);
+        formData.append("isActive", item.isActive.toString());
+        const res = await createProduct(formData);
+        if (res.success) createdCount++;
+      }
+
+      // Update existing (bulk update)
+      if (updateItems.length > 0) {
+        const res = await bulkUpdateProducts(updateItems.map(item => ({
+          id: item.existingId,
+          name: item.name,
+          price: item.price,
+          stock: item.stock,
+          isActive: item.isActive
+        })));
+        if (res.success) updatedCount = updateItems.length;
+      }
+
+      toast.success(`تم بنجاح! إضافة ${createdCount} وتحديث ${updatedCount} منتج.`, { id: toastId });
+      setTimeout(() => window.location.reload(), 1500);
+      setImportConflicts(null);
+    } catch (error) {
+      toast.error("حدث خطأ أثناء الاستيراد", { id: toastId });
+    }
+  }
+
   const filteredBrands = brands.filter(b => b.name.toLowerCase().includes(brandSearch.toLowerCase()))
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">المنتجات</h1>
-          <p className="text-muted-foreground mt-1">إدارة منتجات المتجر، المخزون، والأسعار.</p>
+          <p className="text-muted-foreground mt-1">إدارة منتجات المتجر والمخزون</p>
         </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button onClick={() => {
+            setBulkEditData(filteredProducts.map(p => ({ ...p })))
+            setBulkEditOpen(true)
+          }} variant="outline" className="flex-1 sm:flex-none gap-2">
+            <Edit className="w-4 h-4" /> تعديل سريع
+          </Button>
+          <Button onClick={() => setIsFormVisible(!isFormVisible)} className="flex-1 sm:flex-none gap-2">
+            {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة منتج</>}
+          </Button>
+        </div>
+      </div>
+      <div className="flex items-center justify-end gap-3 mb-4">
         <div className="flex items-center gap-3">
            <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
              <Download className="h-4 w-4" /> <span className="hidden sm:inline">تصدير</span>
@@ -598,6 +680,46 @@ export function ProductsClient({ products, categories, brands = [], departments 
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalOpen(false)}
       />
+
+      {/* Import Conflicts Modal */}
+      {importConflicts && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-background rounded-xl border border-border/50 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-border/50 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-red-600">تنبيه: منتجات مكررة!</h2>
+              <Button variant="ghost" size="icon" onClick={() => setImportConflicts(null)}><X className="w-5 h-5" /></Button>
+            </div>
+            <div className="p-6 overflow-y-auto flex-1">
+              <p className="mb-4 text-muted-foreground">
+                تم العثور على <strong className="text-foreground">{importConflicts.duplicates.length}</strong> منتجات مكررة بالاسم. يمكنك تحديث بياناتها أو تخطيها.
+              </p>
+              <div className="space-y-3 max-h-64 overflow-y-auto pr-2 border rounded-md p-2">
+                {importConflicts.duplicates.map((dup, i) => (
+                  <div key={i} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded">
+                    <span className="font-medium truncate max-w-[200px]">{dup.name}</span>
+                    <span className="text-muted-foreground text-xs">موجود مسبقاً</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-6 border-t border-border/50 flex items-center gap-3 bg-muted/10">
+              <Button 
+                onClick={() => submitImport(importConflicts.ready, importConflicts.duplicates)} 
+                className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+              >
+                تحديث المكرر وإضافة الجديد ({importConflicts.ready.length + importConflicts.duplicates.length})
+              </Button>
+              <Button 
+                onClick={() => submitImport(importConflicts.ready, [])} 
+                variant="outline" 
+                className="flex-1"
+              >
+                تخطي المكرر ({importConflicts.ready.length} فقط)
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bulk Edit Modal */}
       {bulkEditOpen && (
