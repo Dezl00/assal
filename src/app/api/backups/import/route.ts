@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import JSZip from "jszip"
@@ -85,16 +85,14 @@ export async function POST(req: Request) {
             storeName: themeConfig.storeName,
             logoUrl: themeConfig.logoUrl,
             faviconUrl: themeConfig.faviconUrl,
-            primaryColor: themeConfig.primaryColor,
-            fontFamily: themeConfig.fontFamily
+            primaryColor: themeConfig.primaryColor
           },
           create: {
             id: "default",
             storeName: themeConfig.storeName,
             logoUrl: themeConfig.logoUrl,
             faviconUrl: themeConfig.faviconUrl,
-            primaryColor: themeConfig.primaryColor,
-            fontFamily: themeConfig.fontFamily
+            primaryColor: themeConfig.primaryColor
           }
         })
       }
