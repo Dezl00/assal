@@ -50,9 +50,9 @@ export const authConfig: NextAuthConfig = {
 
         return {
           id: user.id,
-          email: user.email,
-          phone: user.phone,
-          name: user.name,
+          email: user.email || undefined,
+          phone: user.phone || undefined,
+          name: user.name || undefined,
           role: user.role,
           permissions: user.permissions,
         }
