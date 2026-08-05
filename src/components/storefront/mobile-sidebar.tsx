@@ -43,9 +43,9 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
             {themeConfig?.logoUrl ? (
               <img src={themeConfig.logoUrl} alt="Store Logo" className="h-8 w-auto object-contain" />
             ) : (
-              <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/20">ع</span>
+              <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium shadow-lg shadow-primary/20">ع</span>
             )}
-            <span className="font-bold text-foreground">{themeConfig?.storeName || "عسل"}</span>
+            <span className="font-medium text-foreground">{themeConfig?.storeName || "عسل"}</span>
           </Link>
           <button 
             onClick={() => setMobileMenuOpen(false)}
@@ -58,14 +58,14 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
         {/* Tabs */}
         <div className="flex items-center border-b border-border/50 bg-muted/10 shrink-0">
           <button 
-            className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'menu' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'menu' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
             onClick={() => setActiveTab('menu')}
           >
             القائمة
           </button>
           <button 
             onClick={() => setActiveTab('categories')}
-            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'categories' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
+            className={`flex-1 py-3 text-sm font-medium transition-colors ${activeTab === 'categories' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'}`}
           >
             المجالات والأقسام
           </button>
@@ -79,7 +79,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               <Link 
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-4 font-bold text-foreground hover:bg-secondary/50 transition-colors"
+                className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
               >
                 الرئيسية
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -88,7 +88,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               <Link 
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-4 font-bold text-foreground hover:bg-secondary/50 transition-colors"
+                className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
               >
                 المنتجات
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -99,7 +99,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                   key={dept.id}
                   href={`/department/${dept.slug}`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-4 font-bold text-foreground hover:bg-secondary/50 transition-colors"
+                  className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
                 >
                   {dept.name}
                   <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -109,7 +109,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               <Link 
                 href="/brands"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-4 font-bold text-foreground hover:bg-secondary/50 transition-colors"
+                className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
               >
                 الماركات
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
@@ -118,7 +118,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               <Link 
                 href="/products?discounted=true"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between p-4 font-bold text-red-500 hover:bg-red-500/10 transition-colors"
+                className="flex items-center justify-between p-4 font-medium text-red-500 hover:bg-red-500/10 transition-colors"
               >
                 عروض وخصومات
                 <ChevronLeft className="w-4 h-4 text-red-500/50" />
@@ -147,7 +147,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                               <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
                             )}
                           </div>
-                          <span className="font-bold text-foreground">{dept.name}</span>
+                          <span className="font-medium text-foreground">{dept.name}</span>
                         </Link>
 
                         {/* Expand/Collapse Chevron (Only if children exist) */}
@@ -175,7 +175,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                               <Link 
                                 href={`/category/${mainCat.slug}`}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="py-2.5 px-3 text-sm font-bold text-foreground hover:text-primary transition-colors flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary/50"
+                                className="py-2.5 px-3 text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary/50"
                               >
                                 {mainCat.name}
                               </Link>
@@ -217,7 +217,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                             <div className="w-4 h-4 bg-muted/50 rounded-full"></div>
                           )}
                         </div>
-                        <span className="font-bold text-foreground">{cat.name}</span>
+                        <span className="font-medium text-foreground">{cat.name}</span>
                       </Link>
 
                       {/* Expand/Collapse Chevron (Only if children exist) */}
@@ -239,7 +239,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                           key={sub.id}
                           href={`/category/${sub.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="py-3 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors border-b border-border/10 last:border-0"
+                          className="py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border-b border-border/10 last:border-0"
                         >
                           {sub.name}
                         </Link>
