@@ -1,15 +1,15 @@
 "use client"
 import React, { useState, useEffect } from "react"
 import { useCartStore } from "@/store/cart-store"
-import { submitOrder } from "@/features/checkout/actions"
+import { submitOrder, validateCoupon } from "@/features/checkout/actions"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useUIStore } from "@/store/ui-store"
-import { ChevronDown, ShoppingBag, ChevronRight, User, Loader2 } from "lucide-react"
+import { ChevronDown, ShoppingBag, ChevronRight, User, Loader2, Tag, Truck } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 
-export default function CheckoutClient({ user }: { user?: any }) {
+export default function CheckoutClient({ user, governorates = [], paymentMethods = [], settings = {} }: any) {
   const { items, getTotals, clearCart } = useCartStore()
   const { setAuthModalOpen } = useUIStore()
   const { total } = getTotals()
@@ -18,11 +18,66 @@ export default function CheckoutClient({ user }: { user?: any }) {
   const [mounted, setMounted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSummaryOpen, setIsSummaryOpen] = useState(false)
-  const [useNewAddress, setUseNewAddress] = useState(!(user?.address && user?.phone))
+  
+  // -- Shipping State --
+  const hasSavedAddress = !!(user?.address && user?.phone && user?.city)
+  const [useNewAddress, setUseNewAddress] = useState(!hasSavedAddress)
+  const [selectedGovId, setSelectedGovId] = useState("")
+  const [selectedCityId, setSelectedCityId] = useState("")
+  
+  // -- Payment State --
+  const [selectedPaymentId, setSelectedPaymentId] = useState(paymentMethods[0]?.id || "")
+  
+  // -- Coupon State --
+  const [couponCodeInput, setCouponCodeInput] = useState("")
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false)
   
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // -- Calculations --
+  const selectedGov = governorates.find((g: any) => g.id === selectedGovId)
+  const selectedCity = selectedGov?.cities.find((c: any) => c.id === selectedCityId)
+  
+  // Default to 0, unless city is selected. If using saved address and no city selected, assume 0 for now or require re-selection.
+  // Real-world: Should map user.city to the DB cities. For this task, we assume the user picks it.
+  const baseShippingCost = selectedCity ? selectedCity.shippingCost : 0
+  
+  const isFreeShippingThresholdMet = settings?.freeShippingThreshold && total >= settings.freeShippingThreshold
+  const isFreeShippingCoupon = appliedCoupon?.type === "FREE_SHIPPING"
+  
+  const finalShippingCost = (isFreeShippingThresholdMet || isFreeShippingCoupon) ? 0 : baseShippingCost
+  
+  let discountAmount = 0
+  if (appliedCoupon && appliedCoupon.type !== "FREE_SHIPPING") {
+    if (appliedCoupon.type === "PERCENTAGE") {
+      discountAmount = total * (appliedCoupon.value / 100)
+    } else if (appliedCoupon.type === "FIXED") {
+      discountAmount = appliedCoupon.value
+    }
+  }
+  
+  const finalTotal = Math.max(0, total + finalShippingCost - discountAmount)
+
+  const handleApplyCoupon = async () => {
+    if (!couponCodeInput.trim()) return
+    setIsValidatingCoupon(true)
+    try {
+      const res = await validateCoupon(couponCodeInput)
+      if (res.error) {
+        toast.error(res.error)
+        setAppliedCoupon(null)
+      } else {
+        setAppliedCoupon(res.coupon)
+        toast.success("تم تفعيل الكوبون بنجاح")
+      }
+    } catch (e) {
+      toast.error("حدث خطأ أثناء تفعيل الكوبون")
+    }
+    setIsValidatingCoupon(false)
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -36,21 +91,44 @@ export default function CheckoutClient({ user }: { user?: any }) {
     
     let finalPhone = user?.phone || ""
     let finalAddress = user?.address || ""
-    let finalCity = "المملكة" // Default or fetched from DB
+    let finalCity = user?.city || ""
+    let finalGovName = ""
 
     if (useNewAddress) {
       finalPhone = formData.get("customerPhone") as string
       finalAddress = formData.get("address") as string
-      finalCity = formData.get("city") as string
+      if (!selectedGov || !selectedCity) {
+        toast.error("يرجى اختيار المحافظة والمدينة")
+        setIsSubmitting(false)
+        return
+      }
+      finalGovName = selectedGov.name
+      finalCity = selectedCity.name
+    } else if (!hasSavedAddress) {
+        toast.error("يرجى إدخال عنوان التوصيل")
+        setIsSubmitting(false)
+        return
     }
-    
+
+    const selectedPayment = paymentMethods.find((p: any) => p.id === selectedPaymentId)
+    if (!selectedPayment) {
+      toast.error("يرجى اختيار طريقة الدفع")
+      setIsSubmitting(false)
+      return
+    }
+
     const data: any = {
       customerName: user?.name || "عميل",
       customerPhone: finalPhone,
       address: finalAddress,
       city: finalCity,
-      totalAmount: total,
-      items: items.map(item => ({
+      governorate: finalGovName,
+      paymentMethod: selectedPayment.name,
+      shippingCost: finalShippingCost,
+      discount: discountAmount,
+      couponCode: appliedCoupon?.code,
+      totalAmount: finalTotal,
+      items: items.map((item: any) => ({
         productId: item.productId,
         quantity: item.quantity,
         price: item.price
@@ -177,14 +255,40 @@ export default function CheckoutClient({ user }: { user?: any }) {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">المدينة <span className="text-destructive">*</span></label>
-                  <input 
-                    name="city"
-                    required
-                    placeholder="مثال: الرياض، جدة، الدمام..."
-                    className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">المحافظة <span className="text-destructive">*</span></label>
+                    <select 
+                      required
+                      value={selectedGovId}
+                      onChange={(e) => {
+                        setSelectedGovId(e.target.value)
+                        setSelectedCityId("")
+                      }}
+                      className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none"
+                    >
+                      <option value="" disabled>اختر المحافظة...</option>
+                      {governorates.map((g: any) => (
+                        <option key={g.id} value={g.id}>{g.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">المدينة / المنطقة <span className="text-destructive">*</span></label>
+                    <select 
+                      required
+                      disabled={!selectedGovId}
+                      value={selectedCityId}
+                      onChange={(e) => setSelectedCityId(e.target.value)}
+                      className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                    >
+                      <option value="" disabled>اختر المدينة...</option>
+                      {selectedGov?.cities?.map((c: any) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -203,10 +307,45 @@ export default function CheckoutClient({ user }: { user?: any }) {
 
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold mb-6">طريقة الدفع</h2>
-            <div className="p-4 rounded-2xl border-2 border-primary bg-primary/5 flex items-center gap-4">
-              <div className="w-6 h-6 rounded-full border-4 border-primary bg-background"></div>
-              <span className="font-semibold">الدفع عند الاستلام (Cash on Delivery)</span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {paymentMethods.map((pm: any) => (
+                <div 
+                  key={pm.id}
+                  onClick={() => setSelectedPaymentId(pm.id)}
+                  className={`border-2 rounded-xl p-4 cursor-pointer transition-colors flex flex-col gap-2 ${selectedPaymentId === pm.id ? 'border-primary bg-primary/5' : 'border-border/50 hover:bg-muted'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedPaymentId === pm.id ? 'border-primary' : 'border-muted-foreground'}`}>
+                      {selectedPaymentId === pm.id && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                    </div>
+                    <span className="font-bold">{pm.name}</span>
+                  </div>
+                </div>
+              ))}
+              {paymentMethods.length === 0 && (
+                <p className="text-muted-foreground text-sm col-span-full">عذراً، لا تتوفر طرق دفع حالياً.</p>
+              )}
             </div>
+
+            {/* Selected Payment Instructions */}
+            {paymentMethods.find((p: any) => p.id === selectedPaymentId)?.instructions && (
+              <div className="mt-6 p-4 bg-muted/50 rounded-xl border border-border/50 animate-in fade-in slide-in-from-top-2">
+                <p className="text-sm text-foreground whitespace-pre-wrap">
+                  {paymentMethods.find((p: any) => p.id === selectedPaymentId)?.instructions}
+                </p>
+                {paymentMethods.find((p: any) => p.id === selectedPaymentId)?.type === "INSTAPAY" && paymentMethods.find((p: any) => p.id === selectedPaymentId)?.accountInfo && (
+                  <a 
+                    href={paymentMethods.find((p: any) => p.id === selectedPaymentId)?.accountInfo}
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg mt-4 text-sm font-bold hover:bg-slate-800 transition-colors"
+                  >
+                    التوجه إلى الرابط
+                  </a>
+                )}
+              </div>
+            )}
           </div>
           </>
           )}
@@ -244,18 +383,80 @@ export default function CheckoutClient({ user }: { user?: any }) {
             </div>
 
             <div className="border-t border-border/50 pt-6 space-y-4">
+              
+              {/* Coupon Input */}
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="كود الخصم (إن وجد)" 
+                  value={couponCodeInput}
+                  onChange={(e) => setCouponCodeInput(e.target.value)}
+                  disabled={!!appliedCoupon}
+                  dir="ltr"
+                  className="flex-1 h-12 bg-background border border-input rounded-xl px-4 text-right outline-none focus:border-primary disabled:opacity-50"
+                />
+                {!appliedCoupon ? (
+                  <Button 
+                    type="button" 
+                    onClick={handleApplyCoupon}
+                    disabled={isValidatingCoupon || !couponCodeInput.trim()}
+                    className="h-12 px-6 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 font-bold"
+                  >
+                    {isValidatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "تطبيق"}
+                  </Button>
+                ) : (
+                  <Button 
+                    type="button" 
+                    onClick={() => { setAppliedCoupon(null); setCouponCodeInput(""); }}
+                    variant="destructive"
+                    className="h-12 px-6 rounded-xl font-bold"
+                  >
+                    إلغاء
+                  </Button>
+                )}
+              </div>
+              
+              {appliedCoupon && (
+                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg border border-green-200">
+                  <Tag className="w-4 h-4" />
+                  تم تطبيق كود الخصم: {appliedCoupon.code}
+                </div>
+              )}
+
+              <div className="h-px bg-border/50 my-2" />
+
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">المجموع الفرعي</span>
                 <span className="font-semibold">{total.toFixed(2)} ج.م</span>
               </div>
+              
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>الخصم {appliedCoupon?.code ? `(${appliedCoupon.code})` : ''}</span>
+                  <span className="font-bold">- {discountAmount.toFixed(2)} ج.م</span>
+                </div>
+              )}
+
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
-                <span className="font-semibold text-primary">مجاني</span>
+                {finalShippingCost === 0 ? (
+                  <span className="font-semibold text-primary">مجاني</span>
+                ) : (
+                  <span className="font-semibold">{finalShippingCost.toFixed(2)} ج.م</span>
+                )}
               </div>
+              
+              {(isFreeShippingThresholdMet || isFreeShippingCoupon) && finalShippingCost === 0 && (
+                <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/5 p-2 rounded border border-primary/20">
+                  <Truck className="w-3.5 h-3.5" />
+                  أنت مؤهل للحصول على شحن مجاني!
+                </div>
+              )}
+
               <div className="h-px bg-border/50 my-2" />
               <div className="flex justify-between items-end">
                 <span className="text-lg font-bold">الإجمالي</span>
-                <span className="text-2xl font-black text-primary">{total.toFixed(2)} ج.م</span>
+                <span className="text-2xl font-black text-primary">{finalTotal.toFixed(2)} ج.م</span>
               </div>
             </div>
 

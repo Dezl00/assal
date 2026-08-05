@@ -33,8 +33,8 @@ export default async function AdminDashboardPage() {
   // Get product details for topProducts
   const topProducts = await Promise.all(
     topProductsData.map(async (tp) => {
-      const product = await db.product.findUnique({ where: { id: tp.productId }, select: { name: true } })
-      return { ...tp, product: product || { name: 'منتج محذوف' } }
+      const product = await db.product.findUnique({ where: { id: tp.productId }, select: { name: true, images: true } })
+      return { ...tp, product: product || { name: 'منتج محذوف', images: [] } }
     })
   )
 
@@ -97,15 +97,22 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Most Viewed Products */}
-        <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm">
+        <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm lg:col-span-1 order-last lg:order-first">
           <h3 className="mb-4 text-lg font-semibold tracking-tight">المنتجات الأكثر مشاهدة</h3>
           <div className="flex flex-col gap-4">
             {topProducts.length > 0 ? topProducts.map((tv, idx) => (
               <div key={idx} className="flex items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0">
-                <span className="text-sm font-medium">{tv.product.name}</span>
-                <span className="text-sm font-bold text-muted-foreground bg-secondary/20 px-2 py-0.5 rounded">{tv._count.productId} مشاهدة</span>
+                <div className="flex items-center gap-3">
+                  {tv.product.images && tv.product.images[0] ? (
+                    <img src={tv.product.images[0]} alt={tv.product.name} className="w-10 h-10 rounded-md object-cover border border-border/50" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground border border-border/50">صورة</div>
+                  )}
+                  <span className="text-sm font-medium line-clamp-2">{tv.product.name}</span>
+                </div>
+                <span className="text-xs font-bold text-muted-foreground bg-secondary/20 px-2 py-0.5 rounded whitespace-nowrap">{tv._count.productId} <span className="hidden sm:inline">مشاهدة</span></span>
               </div>
             )) : (
               <p className="text-sm text-muted-foreground text-center py-8">لا توجد بيانات بعد</p>
@@ -114,21 +121,21 @@ export default async function AdminDashboardPage() {
         </div>
 
         {/* Latest Orders */}
-        <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm flex flex-col">
+        <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm flex flex-col lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold tracking-tight">أحدث الطلبات</h3>
             <Link href="/admin/orders" className="text-sm text-primary hover:underline font-medium">عرض الكل</Link>
           </div>
           <div className="flex flex-col gap-4 flex-1">
             {latestOrders.length > 0 ? latestOrders.map((order) => (
-              <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0 gap-2">
+              <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0 gap-2 hover:bg-muted/10 transition-colors rounded-lg sm:p-2 -mx-2 px-2">
                 <div className="flex flex-col">
                   <span className="font-medium">طلب #{order.id.slice(-6).toUpperCase()}</span>
                   <span className="text-sm text-muted-foreground">{order.user?.name || order.user?.email || "عميل زائر"}</span>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-2 sm:gap-1 text-sm">
                   <span className="font-bold text-foreground">{order.totalAmount} ج.م</span>
-                  <Link href={`/admin/orders`} className="text-xs bg-primary/10 text-primary px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:bg-primary/20 transition-colors font-medium">
+                  <Link href={`/admin/orders`} className="text-xs bg-slate-900 text-white px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:bg-slate-800 transition-colors font-medium">
                     تفاصيل الطلب
                   </Link>
                 </div>

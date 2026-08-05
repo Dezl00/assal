@@ -98,7 +98,7 @@ export default async function RootLayout({
           richColors 
           dir="rtl"
           toastOptions={{
-            className: "font-sans flex justify-center text-center rounded-2xl",
+            className: "font-sans flex justify-center text-center rounded-2xl !shadow-none border border-border/50",
           }}
         />
       </body>

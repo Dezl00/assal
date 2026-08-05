@@ -96,7 +96,7 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
   const dept = category.department || (category.parent as any)?.department
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-12">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8 overflow-hidden whitespace-nowrap">
         <Link href="/" className="hover:text-primary transition-colors flex-shrink-0">الرئيسية</Link>
@@ -138,14 +138,14 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
         {/* Product Info */}
         <div className="flex flex-col">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-5xl font-semibold md:font-bold tracking-tight text-foreground leading-tight">
               {product.name}
             </h1>
             <ShareButton title={product.name} url={`https://assal1.vercel.app/product/${product.id}`} />
           </div>
 
           <div className="flex items-end gap-4 mb-3">
-            <span className="text-4xl font-black text-primary">{finalPrice.toFixed(2)} ج.م</span>
+            <span className="text-3xl md:text-4xl font-bold md:font-black text-primary">{finalPrice.toFixed(2)} ج.م</span>
             {hasDiscount && (
               <span className="text-xl text-muted-foreground line-through mb-1">
                 {product.price.toFixed(2)} ج.م

@@ -8,6 +8,7 @@ import { MobileSidebar } from "@/components/storefront/mobile-sidebar"
 import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav"
 import { auth } from "@/lib/auth"
 import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
+import { PromoPopup } from "@/components/storefront/promo-popup"
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -72,6 +73,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
       {themeConfig?.whatsappEnabled && themeConfig?.whatsappNumber && (
         <FloatingWhatsApp number={themeConfig.whatsappNumber} />
       )}
+      <PromoPopup settings={themeConfig} />
     </div>
   )
 }

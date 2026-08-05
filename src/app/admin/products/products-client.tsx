@@ -327,38 +327,30 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-2">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>الرئيسية</span>
           <span>/</span>
           <span className="text-foreground">المنتجات</span>
         </nav>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
+            <Download className="h-4 w-4" /> <span className="hidden sm:inline">تصدير</span>
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="h-4 w-4" /> <span className="hidden sm:inline">استيراد</span>
+          </Button>
+          <input type="file" accept=".xlsx, .xls, .csv" className="hidden" ref={fileInputRef} onChange={handleImportExcel} />
+          
           <Button onClick={() => {
             setBulkEditData(filteredProducts.map(p => ({ ...p })))
             setBulkEditOpen(true)
-          }} variant="outline" className="flex-1 sm:flex-none gap-2">
-            <Edit className="w-4 h-4" /> تعديل سريع
+          }} variant="outline" className="gap-2">
+            <Edit className="w-4 h-4" /> <span className="hidden sm:inline">تعديل سريع</span>
           </Button>
-          <Button onClick={() => setIsFormVisible(!isFormVisible)} className="flex-1 sm:flex-none gap-2">
+          <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2 bg-slate-900 hover:bg-slate-800 text-white border-none">
             {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة منتج</>}
           </Button>
-        </div>
-      </div>
-      <div className="flex items-center justify-end gap-3 mb-4">
-        <div className="flex items-center gap-3">
-           <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
-             <Download className="h-4 w-4" /> <span className="hidden sm:inline">تصدير</span>
-           </Button>
-           <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()}>
-             <Upload className="h-4 w-4" /> <span className="hidden sm:inline">استيراد</span>
-           </Button>
-           <input type="file" accept=".xlsx, .xls, .csv" className="hidden" ref={fileInputRef} onChange={handleImportExcel} />
-           
-           <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2 lg:hidden">
-             <PlusCircle className="h-4 w-4" />
-             {isFormVisible ? "إخفاء النموذج" : "إضافة منتج"}
-           </Button>
         </div>
       </div>
 
@@ -417,19 +409,19 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
       {/* Bulk Actions Bar */}
       {selectedIds.length > 0 && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex flex-wrap items-center justify-between gap-4 animate-in fade-in">
-          <div className="text-sm font-medium text-primary">تم تحديد {selectedIds.length} منتج</div>
+        <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-4 animate-in fade-in mb-4">
+          <div className="text-sm font-medium text-slate-700">تم تحديد {selectedIds.length} منتج</div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 bg-background">
+            <Button variant="outline" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
               <Edit className="h-3.5 w-3.5" /> تعديل جماعي
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 bg-background">
+            <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
               <Eye className="h-3.5 w-3.5 text-green-600" /> تفعيل
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 bg-background">
+            <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
               <EyeOff className="h-3.5 w-3.5 text-yellow-600" /> إخفاء
             </Button>
-            <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5">
+            <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 border-none">
               <Trash2 className="h-3.5 w-3.5" /> حذف
             </Button>
           </div>

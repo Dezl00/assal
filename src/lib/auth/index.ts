@@ -5,10 +5,12 @@ import { db } from "@/lib/db"
 declare module "next-auth" {
   interface User {
     role?: string
+    permissions?: string[]
   }
   interface Session {
     user: User & {
       role?: string
+      permissions?: string[]
       id?: string
     }
   }
@@ -45,6 +47,7 @@ export const authConfig: NextAuthConfig = {
           email: user.email,
           name: user.name,
           role: user.role,
+          permissions: user.permissions,
         }
       }
     })
@@ -53,6 +56,7 @@ export const authConfig: NextAuthConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role
+        token.permissions = (user as any).permissions
         token.id = user.id
       }
       return token
@@ -60,6 +64,7 @@ export const authConfig: NextAuthConfig = {
     async session({ session, token }) {
       if (token) {
         session.user.role = token.role as string
+        session.user.permissions = (token.permissions as string[]) || []
         session.user.id = token.id as string
       }
       return session

@@ -6,6 +6,11 @@ export async function submitOrder(data: {
   customerPhone: string
   address: string
   city: string
+  governorate?: string
+  paymentMethod?: string
+  shippingCost?: number
+  discount?: number
+  couponCode?: string
   items: { productId: string; quantity: number; price: number }[]
   totalAmount: number
   userId?: string
@@ -20,6 +25,11 @@ export async function submitOrder(data: {
       customerPhone: data.customerPhone,
       address: data.address,
       city: data.city,
+      governorate: data.governorate,
+      paymentMethod: data.paymentMethod,
+      shippingCost: data.shippingCost || 0,
+      discount: data.discount || 0,
+      couponCode: data.couponCode,
       totalAmount: data.totalAmount,
       status: "PENDING",
       items: {
@@ -48,9 +58,29 @@ export async function submitOrder(data: {
       data: orderData
     })
 
+    if (data.couponCode) {
+      await db.coupon.update({
+        where: { code: data.couponCode },
+        data: { usedCount: { increment: 1 } }
+      })
+    }
+
     return { success: true, orderId: order.id }
   } catch (error) {
     console.error("Order submission failed:", error)
     return { success: false, error: "حدث خطأ أثناء معالجة الطلب" }
   }
+}
+
+export async function validateCoupon(code: string) {
+  const coupon = await db.coupon.findUnique({
+    where: { code: code.toUpperCase() }
+  })
+  
+  if (!coupon) return { error: "كود الخصم غير صحيح" }
+  if (!coupon.isActive) return { error: "هذا الكود غير مفعل" }
+  if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) return { error: "لقد تم تجاوز الحد الأقصى لاستخدام هذا الكود" }
+  if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) return { error: "هذا الكود منتهي الصلاحية" }
+
+  return { success: true, coupon }
 }

@@ -11,7 +11,7 @@ export function ProductTabs({ description }: { description?: string | null }) {
         <button
           onClick={() => setActiveTab('desc')}
           className={cn(
-            "pb-4 text-lg font-bold transition-all relative",
+            "pb-4 text-lg font-medium md:font-semibold transition-all relative",
             activeTab === 'desc' ? "text-primary" : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -23,7 +23,7 @@ export function ProductTabs({ description }: { description?: string | null }) {
         <button
           onClick={() => setActiveTab('shipping')}
           className={cn(
-            "pb-4 text-lg font-bold transition-all relative",
+            "pb-4 text-lg font-medium md:font-semibold transition-all relative",
             activeTab === 'shipping' ? "text-primary" : "text-muted-foreground hover:text-foreground"
           )}
         >

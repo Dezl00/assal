@@ -1,9 +1,10 @@
 "use client"
 import React, { useRef, useEffect, useState } from "react"
 import Link from "next/link"
-import { ShoppingBag } from "lucide-react"
+import { ShoppingBag, Loader2 } from "lucide-react"
 import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
+import { toast } from "sonner"
 
 interface ProductCardProps {
   product: {
@@ -25,6 +26,7 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
   const { storeLogo } = useUIStore()
   const cardRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(disableAnimation)
+  const [isAdding, setIsAdding] = useState(false)
   
   const finalPrice = product.discountPrice ?? product.price
   const hasDiscount = product.discountPrice != null && product.discountPrice < product.price
@@ -51,15 +53,22 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
     e.preventDefault()
     e.stopPropagation()
     
-    if (isOutOfStock) return
+    if (isOutOfStock || isAdding) return
 
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: finalPrice,
-      quantity: 1,
-      image: product.images[0]?.url
-    })
+    setIsAdding(true)
+    
+    // Simulate a small delay for better UX
+    setTimeout(() => {
+      addItem({
+        productId: product.id,
+        name: product.name,
+        price: finalPrice,
+        quantity: 1,
+        image: product.images[0]?.url
+      })
+      toast.success("تمت الإضافة للسلة")
+      setIsAdding(false)
+    }, 400)
   }
 
   // Stagger delay: each card gets a small delay based on its index (max 0.4s)
@@ -73,7 +82,7 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
         transform: isVisible ? 'translateY(0)' : 'translateY(24px)',
         transition: `opacity 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${staggerDelay}s, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${staggerDelay}s`,
       }}
-      className="group relative rounded-2xl bg-card p-4 transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full"
+      className="group/card relative rounded-2xl bg-card p-4 transition-shadow duration-300 hover:shadow-lg hover:shadow-primary/5 flex flex-col h-full"
     >
       
       {/* Badges */}
@@ -96,14 +105,14 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
             src={product.images[0].url} 
             alt={product.name}
             loading="lazy"
-            className="object-contain w-full h-full p-2 transition-transform duration-700 group-hover:scale-110"
+            className="object-contain w-full h-full p-2 transition-transform duration-700 group-hover/card:scale-110"
           />
         ) : storeLogo ? (
           <img 
             src={storeLogo} 
             alt={product.name}
             loading="lazy"
-            className="object-contain w-full h-full p-8 opacity-10 grayscale transition-transform duration-700 group-hover:scale-110"
+            className="object-contain w-full h-full p-8 opacity-10 grayscale transition-transform duration-700 group-hover/card:scale-110"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-muted-foreground/50">
@@ -113,12 +122,13 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
         
         {/* Quick Add Overlay */}
         {!isOutOfStock && (
-          <div className="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center">
+          <div className="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 items-center justify-center">
             <button 
               onClick={handleQuickAdd}
-              className="bg-white text-black font-bold px-6 py-3 rounded-full translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-primary hover:text-white"
+              disabled={isAdding}
+              className="bg-white text-black font-bold px-6 py-3 rounded-full translate-y-4 group-hover/card:translate-y-0 transition-all duration-300 hover:scale-105 hover:bg-primary hover:text-white flex items-center justify-center min-w-[120px]"
             >
-              أضف سريعاً
+              {isAdding ? <Loader2 className="w-5 h-5 animate-spin" /> : "أضف سريعاً"}
             </button>
           </div>
         )}

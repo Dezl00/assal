@@ -1,7 +1,25 @@
-'use client'
-import React from 'react'
+import React, { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { updateProfile } from '@/features/accounts/actions'
+import { toast } from 'sonner'
+import { Loader2, User as UserIcon, Shield } from 'lucide-react'
 
-export function SecurityClient({ logs }: { logs: any[] }) {
+export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser: any }) {
+  const [activeTab, setActiveTab] = useState<'profile' | 'logs'>('profile')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  async function handleProfileUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const res = await updateProfile(formData)
+    setIsSubmitting(false)
+    if (res.success) {
+      toast.success('تم تحديث البيانات بنجاح')
+    } else {
+      toast.error(res.error || 'فشل التحديث')
+    }
+  }
   return (
     <div className="space-y-6 animate-in fade-in">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -12,8 +30,52 @@ export function SecurityClient({ logs }: { logs: any[] }) {
         </nav>
       </div>
 
-      <div className="border rounded-lg bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="flex border-b border-border/50 mb-6">
+        <button 
+          onClick={() => setActiveTab('profile')}
+          className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'profile' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+        >
+          <UserIcon className="w-4 h-4" /> إعدادات الحساب
+        </button>
+        {currentUser?.role === 'ADMIN' && (
+          <button 
+            onClick={() => setActiveTab('logs')}
+            className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            <Shield className="w-4 h-4" /> سجل الأمان
+          </button>
+        )}
+      </div>
+
+      {activeTab === 'profile' && (
+        <div className="max-w-xl">
+          <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">
+            <div className="p-6 border-b border-border/50 bg-muted/5">
+              <h2 className="text-lg font-semibold">تعديل بيانات الحساب</h2>
+              <p className="text-sm text-muted-foreground mt-1">تحديث اسمك أو كلمة المرور الخاصة بك.</p>
+            </div>
+            <div className="p-6">
+              <form onSubmit={handleProfileUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">الاسم</label>
+                  <input name="name" type="text" required defaultValue={currentUser?.name || ''} className="w-full h-10 px-3 border rounded-md" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">كلمة المرور الجديدة <span className="text-muted-foreground text-xs">(اختياري)</span></label>
+                  <input name="password" type="password" className="w-full h-10 px-3 border rounded-md" />
+                </div>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديلات'}
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'logs' && currentUser?.role === 'ADMIN' && (
+        <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm text-right">
             <thead className="bg-muted/50 border-b">
               <tr>
@@ -26,8 +88,8 @@ export function SecurityClient({ logs }: { logs: any[] }) {
             </thead>
             <tbody>
               {logs.map(log => (
-                <tr key={log.id} className="border-b last:border-0 hover:bg-muted/20">
-                  <td className="p-4 text-xs" dir="ltr">{new Date(log.createdAt).toLocaleString('ar-EG')}</td>
+                <tr key={log.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20">
+                  <td className="p-4 text-xs font-mono" dir="ltr">{new Date(log.createdAt).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
                   <td className="p-4 font-medium">{log.user?.name || log.userId || 'نظام'}</td>
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded text-xs ${log.action === 'Delete' || log.action === 'حذف' ? 'bg-red-100 text-red-700' : log.action === 'Create' || log.action === 'إنشاء' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
@@ -58,7 +120,7 @@ export function SecurityClient({ logs }: { logs: any[] }) {
             </tbody>
           </table>
         </div>
-      </div>
+      )}
     </div>
   )
 }

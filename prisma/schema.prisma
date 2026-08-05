@@ -25,6 +25,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   orders        Order[]
   activityLogs  ActivityLog[]
+  permissions   String[]  @default([])
 }
 
 model Widget {
@@ -192,8 +193,13 @@ model Order {
   customerPhone String?
   address       String?
   city          String?
+  governorate   String?
   status        String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
   totalAmount   Float
+  shippingCost  Float       @default(0)
+  discount      Float       @default(0)
+  couponCode    String?
+  paymentMethod String?
   items         OrderItem[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -254,6 +260,14 @@ model ThemeConfig {
   
   backupFrequency String @default("never") // never, daily, 3days, weekly, monthly
   
+  // Offers & Shipping
+  freeShippingThreshold Float?
+  promoPopupEnabled     Boolean @default(false)
+  promoPopupDelay       Int     @default(10)
+  promoPopupTitle       String?
+  promoPopupDescription String?
+  promoPopupCode        String?
+  
   updatedAt     DateTime @updatedAt
 }
 
@@ -309,4 +323,49 @@ model Backup {
   size        Int
   status      String   // COMPLETED, FAILED, PENDING
   createdAt   DateTime @default(now())
+}
+
+model Governorate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  cities    City[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model City {
+  id            String      @id @default(cuid())
+  name          String
+  shippingCost  Float       @default(0)
+  isActive      Boolean     @default(true)
+  governorateId String
+  governorate   Governorate @relation(fields: [governorateId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model PaymentMethod {
+  id           String   @id @default(cuid())
+  name         String
+  type         String   // COD, VODAFONE_CASH, INSTAPAY, BANK_TRANSFER
+  accountInfo  String?  // Phone number or link
+  instructions String?
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Coupon {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  type       String   // PERCENTAGE, FIXED, FREE_SHIPPING
+  value      Float
+  maxUses    Int?
+  usedCount  Int      @default(0)
+  isActive   Boolean  @default(true)
+  expiresAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

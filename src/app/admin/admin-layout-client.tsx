@@ -2,7 +2,7 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X, Bell } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { signOut, useSession, SessionProvider } from "next-auth/react"
 import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
@@ -167,12 +167,6 @@ function AdminLayoutInner({
           
           {/* Mobile Header Left */}
           <div className="flex items-center gap-3 md:hidden">
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 -mr-2 rounded-md hover:bg-muted text-foreground"
-            >
-              <MenuIcon className="h-5 w-5" />
-            </button>
             {logoUrl ? (
               <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
             ) : (
@@ -208,9 +202,9 @@ function AdminLayoutInner({
               <span className="hidden sm:inline">عرض المتجر</span>
               <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </Link>
-             <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs md:text-sm ms-2">
-               A
-             </div>
+             <button className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center text-primary transition-colors ms-2">
+               <Bell className="h-4 w-4 md:h-5 md:w-5" />
+             </button>
           </div>
         </header>
         {/* Spacer for fixed header */}
@@ -223,6 +217,13 @@ function AdminLayoutInner({
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t border-border z-40 pb-safe">
         <div className="flex items-center justify-around h-16 px-2">
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="flex flex-col items-center justify-center w-full h-full gap-1 text-xs font-medium transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <MenuIcon className="h-5 w-5" />
+            <span>القائمة</span>
+          </button>
           {bottomNavItems.map((item) => {
             const isActive = pathname === item.href
             return (

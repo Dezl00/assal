@@ -5,10 +5,25 @@ import { PlusCircle, Edit, Trash2, X, Loader2, ShieldCheck, ShieldAlert } from '
 import { createAccount, updateAccount, deleteAccount } from '@/features/accounts/actions'
 import { toast } from 'sonner'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import { Checkbox } from '@/components/ui/checkbox'
+
+const AVAILABLE_PERMISSIONS = [
+  { id: 'orders', label: 'الطلبات' },
+  { id: 'customers', label: 'العملاء' },
+  { id: 'departments', label: 'المجالات' },
+  { id: 'categories', label: 'الأقسام' },
+  { id: 'products', label: 'المنتجات' },
+  { id: 'analytics', label: 'الإحصائيات' },
+  { id: 'widgets', label: 'الواجهات' },
+  { id: 'accounts', label: 'الحسابات والأدوار' },
+  { id: 'security', label: 'سجل الأمان' },
+  { id: 'settings', label: 'الإعدادات' },
+]
 
 export function AccountsClient({ accounts }: { accounts: any[] }) {
   const [isFormVisible, setIsFormVisible] = useState(false)
   const [editingItem, setEditingItem] = useState<any>(null)
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -16,6 +31,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   function resetForm() {
     setEditingItem(null)
+    setSelectedPermissions([])
     setIsFormVisible(false)
     const form: any = document.getElementById("add-account-form")
     if (form) form.reset()
@@ -25,6 +41,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
     e.preventDefault()
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
+    formData.set('permissions', JSON.stringify(selectedPermissions))
     
     let res
     if (editingItem) res = await updateAccount(editingItem.id, formData)
@@ -60,27 +77,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
         </Button>
       </div>
 
-      {/* Permissions Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div className="bg-red-50/50 border border-red-100 p-4 rounded-xl flex gap-3">
-          <ShieldAlert className="text-red-500 w-6 h-6 shrink-0" />
-          <div>
-            <h3 className="font-bold text-red-900 text-sm mb-1">مدير كامل (Admin)</h3>
-            <p className="text-xs text-red-800 leading-relaxed">
-              له كامل الصلاحيات في المتجر، يمكنه إضافة/حذف حسابات، رؤية الإحصائيات، سجل الأمان، التحكم في الواجهات والإعدادات العامة.
-            </p>
-          </div>
-        </div>
-        <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl flex gap-3">
-          <ShieldCheck className="text-blue-500 w-6 h-6 shrink-0" />
-          <div>
-            <h3 className="font-bold text-blue-900 text-sm mb-1">مشرف (Manager)</h3>
-            <p className="text-xs text-blue-800 leading-relaxed">
-              صلاحيات محدودة جداً: تقتصر على إدارة الأقسام والمنتجات، رؤية الطلبات والعملاء، ولا يمكنه التحكم في إعدادات النظام أو الواجهات.
-            </p>
-          </div>
-        </div>
-      </div>
+
 
       <div className="flex flex-col lg:flex-row gap-6 relative items-start">
         {/* Table Area */}
@@ -107,7 +104,11 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                         </span>
                       </td>
                       <td className="p-4 flex gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingItem(acc); setIsFormVisible(true) }}>
+                        <Button variant="ghost" size="icon" onClick={() => { 
+                          setEditingItem(acc); 
+                          setSelectedPermissions(acc.permissions || []);
+                          setIsFormVisible(true) 
+                        }}>
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="icon" onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}>
@@ -149,11 +150,36 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                   <input name="email" type="email" required defaultValue={editingItem?.email || ''} className="w-full h-10 px-3 border rounded-md" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">الدور (الصلاحية)</label>
+                  <label className="text-sm font-medium">كلمة المرور {editingItem && <span className="text-muted-foreground text-xs">(اتركه فارغاً لعدم التغيير)</span>}</label>
+                  <input name="password" type="password" required={!editingItem} className="w-full h-10 px-3 border rounded-md" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">الدور الأساسي</label>
                   <select name="role" key={editingItem?.role || 'MANAGER'} defaultValue={editingItem?.role || 'MANAGER'} className="w-full h-10 px-3 border rounded-md">
                     <option value="MANAGER">مشرف (MANAGER)</option>
                     <option value="ADMIN">مدير كامل (ADMIN)</option>
                   </select>
+                </div>
+                <div className="space-y-3 pt-2">
+                  <label className="text-sm font-medium">الصلاحيات المخصصة</label>
+                  <div className="grid grid-cols-2 gap-3 bg-muted/20 p-3 rounded-lg border border-border/50">
+                    {AVAILABLE_PERMISSIONS.map(perm => (
+                      <div key={perm.id} className="flex items-center gap-2">
+                        <Checkbox 
+                          id={`perm-${perm.id}`} 
+                          checked={selectedPermissions.includes(perm.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedPermissions([...selectedPermissions, perm.id])
+                            } else {
+                              setSelectedPermissions(selectedPermissions.filter(p => p !== perm.id))
+                            }
+                          }}
+                        />
+                        <label htmlFor={`perm-${perm.id}`} className="text-sm cursor-pointer">{perm.label}</label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingItem ? 'تحديث' : 'إضافة')}

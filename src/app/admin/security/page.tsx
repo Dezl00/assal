@@ -7,13 +7,16 @@ export const dynamic = 'force-dynamic'
 
 export default async function SecurityPage() {
   const session = await auth()
-  if (session?.user?.role !== 'ADMIN') redirect('/admin')
+  if (!session?.user) redirect('/admin')
 
-  const logs = await prisma.activityLog.findMany({
+  const isAdmin = session?.user?.role === 'ADMIN'
+
+  // Only admins see the logs
+  const logs = isAdmin ? await prisma.activityLog.findMany({
     orderBy: { createdAt: 'desc' },
     take: 100,
     include: { user: true }
-  })
+  }) : []
 
-  return <SecurityClient logs={logs} />
+  return <SecurityClient logs={logs} currentUser={session.user} />
 }

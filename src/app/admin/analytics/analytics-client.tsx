@@ -13,6 +13,8 @@ export function AnalyticsClient({
   const visitsDiff = todayVisits - yesterdayVisits
   const viewsDiff = todayViews - yesterdayViews
 
+  const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num || 0)
+
   return (
     <div className="space-y-6 animate-in fade-in">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -30,7 +32,7 @@ export function AnalyticsClient({
             </div>
             <div>
               <p className="text-sm font-medium text-indigo-800/80">إجمالي الزيارات (30 يوم)</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalVisits}</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{formatNumber(totalVisits)}</h3>
             </div>
           </div>
         </div>
@@ -43,7 +45,7 @@ export function AnalyticsClient({
             </div>
             <div>
               <p className="text-sm font-medium text-emerald-800/80">إجمالي المشاهدات (30 يوم)</p>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">{totalViews}</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{formatNumber(totalViews)}</h3>
             </div>
           </div>
         </div>
@@ -59,10 +61,10 @@ export function AnalyticsClient({
                 <p className="text-sm font-medium text-amber-800/80">زيارات اليوم</p>
                 <span className={`text-xs font-bold flex items-center ${visitsDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {visitsDiff >= 0 ? <ArrowUpRight className="w-3 h-3 ml-0.5" /> : <ArrowDownRight className="w-3 h-3 ml-0.5" />}
-                  {Math.abs(visitsDiff)}
+                  {formatNumber(Math.abs(visitsDiff))}
                 </span>
               </div>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">{todayVisits}</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{formatNumber(todayVisits)}</h3>
             </div>
           </div>
         </div>
@@ -78,10 +80,10 @@ export function AnalyticsClient({
                 <p className="text-sm font-medium text-rose-800/80">مشاهدات اليوم</p>
                 <span className={`text-xs font-bold flex items-center ${viewsDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {viewsDiff >= 0 ? <ArrowUpRight className="w-3 h-3 ml-0.5" /> : <ArrowDownRight className="w-3 h-3 ml-0.5" />}
-                  {Math.abs(viewsDiff)}
+                  {formatNumber(Math.abs(viewsDiff))}
                 </span>
               </div>
-              <h3 className="text-2xl font-bold tracking-tight mt-1">{todayViews}</h3>
+              <h3 className="text-2xl font-bold tracking-tight mt-1">{formatNumber(todayViews)}</h3>
             </div>
           </div>
         </div>
@@ -97,9 +99,9 @@ export function AnalyticsClient({
               {chartData.map((day: any, i: number) => (
                 <div key={i} className="flex flex-col items-center gap-1 min-w-[40px] group relative">
                   <div className="absolute -top-16 bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none">
-                    <p>{day.date}</p>
-                    <p>الزيارات: {day.visits}</p>
-                    <p>المشاهدات: {day.views}</p>
+                    <p dir="ltr" className="text-center">{day.date}</p>
+                    <p>الزيارات: {formatNumber(day.visits)}</p>
+                    <p>المشاهدات: {formatNumber(day.views)}</p>
                   </div>
                   <div className="w-full flex justify-center gap-1 items-end h-48">
                     <div 
@@ -138,7 +140,7 @@ export function AnalyticsClient({
               {topProducts.map((p: any, i: number) => (
                 <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                   <span className="truncate max-w-[200px] font-medium">{p.name}</span>
-                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{p.count} مشاهدة</span>
+                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} مشاهدة</span>
                 </div>
               ))}
             </div>
@@ -151,7 +153,7 @@ export function AnalyticsClient({
               {topPages?.map((p: any, i: number) => (
                 <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                   <span className="truncate max-w-[200px] font-medium text-left" dir="ltr">{p.path}</span>
-                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{p.count} زيارة</span>
+                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} زيارة</span>
                 </div>
               ))}
             </div>
@@ -167,7 +169,7 @@ export function AnalyticsClient({
             {topCountries.map((c: any, i: number) => (
               <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                 <span className="font-medium">{c.name}</span>
-                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{c.count} زيارة</span>
+                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(c.count)} زيارة</span>
               </div>
             ))}
           </div>
@@ -179,7 +181,7 @@ export function AnalyticsClient({
             {topCities.map((c: any, i: number) => (
               <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                 <span className="font-medium">{c.name}</span>
-                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{c.count} زيارة</span>
+                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(c.count)} زيارة</span>
               </div>
             ))}
           </div>
