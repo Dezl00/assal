@@ -1074,6 +1074,8 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث التعديل" : "إضافة العنصر")}
                           </Button>
                         </form>
+                        );
+                      })()}
                       </div>
                     )}
                       
