@@ -2,9 +2,7 @@ import React from "react"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { db } from "@/lib/db"
-import { Package, User, MapPin, LogOut } from "lucide-react"
 import { AccountClient } from "./account-client"
-import { StorefrontFooter } from "@/components/storefront/footer"
 
 export const dynamic = 'force-dynamic'
 
@@ -15,12 +13,12 @@ export const metadata = {
 export default async function AccountPage() {
   const session = await auth()
   
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     redirect("/")
   }
 
   const user = await db.user.findUnique({
-    where: { email: session.user.email },
+    where: { id: session.user.id },
     include: {
       orders: {
         orderBy: { createdAt: "desc" }
@@ -32,6 +30,18 @@ export default async function AccountPage() {
     redirect("/")
   }
 
+  // Serialize Date objects to strings before passing to Client Component
+  const serializedUser = {
+    ...user,
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
+    orders: user.orders.map((order) => ({
+      ...order,
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+    })),
+  }
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[70vh]">
       <div className="mb-8">
@@ -39,7 +49,7 @@ export default async function AccountPage() {
         <p className="text-muted-foreground mt-2">من خلال لوحة تحكم حسابك يمكنك استعراض طلباتك السابقة وتعديل بياناتك بسهولة.</p>
       </div>
 
-      <AccountClient user={user} />
+      <AccountClient user={serializedUser} />
     </div>
   )
 }
