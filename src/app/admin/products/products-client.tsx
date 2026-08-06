@@ -438,7 +438,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
       <div className="flex flex-col lg:flex-row items-start gap-8 relative">
         <div className="flex-1 w-full min-w-0">
           <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-right">
                 <thead className="bg-muted/30 border-b border-border/50 text-muted-foreground">
                   <tr>
@@ -527,6 +527,106 @@ export function ProductsClient({ products, categories, brands = [], departments 
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/50">
+                <button onClick={handleSelectAll} className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                  {selectedIds.length === filteredProducts.length && filteredProducts.length > 0 ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                  <span>تحديد الكل</span>
+                </button>
+              </div>
+              
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                  لا توجد منتجات مسجلة مطابقة للبحث.
+                </div>
+              ) : (
+                filteredProducts.map((product) => (
+                  <div key={product.id} className={`bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4 ${selectedIds.includes(product.id) ? 'ring-1 ring-primary border-primary bg-primary/5' : ''}`}>
+                    <div className="flex items-start gap-3">
+                      <button onClick={() => handleSelect(product.id)} className="mt-1 p-1 text-muted-foreground hover:text-foreground shrink-0">
+                        {selectedIds.includes(product.id) ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5" />}
+                      </button>
+                      
+                      <div className="flex-1 flex gap-3 min-w-0">
+                        {product.images && product.images.length > 0 ? (
+                          <img src={product.images[0].url} alt={product.name} className="w-16 h-16 object-cover rounded-md border border-border/50 shrink-0" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-md bg-muted flex items-center justify-center border border-border/50 shrink-0">
+                            <span className="text-muted-foreground text-[10px]">لا صورة</span>
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-foreground text-sm line-clamp-2">{product.name}</div>
+                          <div className="text-xs text-muted-foreground mt-1" dir="ltr">{product.sku}</div>
+                          <span className="inline-block mt-2 rounded-full bg-secondary/20 px-2 py-0.5 text-[10px] font-medium text-secondary-foreground">
+                            {categories.find(c => c.id === product.categoryId)?.name || "بدون قسم"}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-3 border-t border-border/50">
+                      <div className="font-bold text-base">
+                        {product.discountPrice ? (
+                          <div className="flex flex-col">
+                            <span className="text-red-500">{product.discountPrice} ج.م</span>
+                            <span className="text-[10px] text-muted-foreground line-through font-normal">{product.price} ج.م</span>
+                          </div>
+                        ) : (
+                          <span>{product.price} ج.م</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">الحالة:</span>
+                        <Switch 
+                          checked={product.isActive} 
+                          onCheckedChange={() => toggleStatus(product.id, product.isActive)}
+                          title="تفعيل / إخفاء المنتج"
+                          disabled={!canEdit}
+                        />
+                      </div>
+                    </div>
+
+                    {(canEdit || canDelete) && (
+                      <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                        {canEdit && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setEditingProduct(product);
+                              if (window.innerWidth < 1024) {
+                                document.getElementById('add-product-form')?.scrollIntoView({ behavior: 'smooth' });
+                              }
+                            }}
+                          >
+                            <Edit className="h-4 w-4 ml-2" />
+                            تعديل
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+                            onClick={() => {
+                              setProductToDelete(product.id);
+                              setDeleteModalOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 ml-2" />
+                            حذف
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
@@ -559,7 +659,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
                   <div className="space-y-1.5">
                     <label className="text-xs font-medium">القسم <span className="text-red-500">*</span></label>
                     <select name="categoryId" required className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none">
-                      <option value="">اختيار القسم الفرعي...</option>
+                      <option value="">اختيار القسم...</option>
                       {categories.filter(c => !c.parentId).map(mainCat => (
                         <optgroup key={mainCat.id} label={mainCat.name}>
                           {categories.filter(c => c.parentId === mainCat.id).map(subCat => (
@@ -572,9 +672,16 @@ export function ProductsClient({ products, categories, brands = [], departments 
                       ))}
                     </select>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">السعر <span className="text-red-500">*</span></label>
+                    <input name="price" type="number" step="0.01" required dir="ltr" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">سعر التخفيض <span className="text-muted-foreground text-[10px] font-normal">(اختياري)</span></label>
+                    <input name="discountPrice" type="number" step="0.01" dir="ltr" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
+                  </div>
+
                   <div className="space-y-1.5 relative">
                     <label className="text-xs font-medium">الماركة <span className="text-muted-foreground text-[10px] font-normal">(اختياري)</span></label>
                     <div className="relative">
@@ -604,36 +711,37 @@ export function ProductsClient({ products, categories, brands = [], departments 
                         </div>
                       )}
                     </div>
+                    <input type="hidden" name="brandId" value={selectedBrandId} />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">المخزون</label>
-                    <input name="stock" type="number" defaultValue={0} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">المخزون</label>
+                    <input name="stock" type="number" defaultValue={0} dir="ltr" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">الوصف</label>
-                    <textarea name="description" rows={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none" />
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium">الوصف</label>
+                  <textarea name="description" rows={2} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none" />
+                </div>
 
-                  {/* Advanced Settings */}
-                  <div className="pt-2 border-t border-border/50">
-                    <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                      <span className="font-medium">إعدادات إضافية</span>
-                      <svg className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    
-                    <div className={`grid grid-cols-2 gap-3 mt-4 animate-in fade-in slide-in-from-top-2 ${!showAdvanced ? 'hidden' : ''}`}>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">الرابط (Slug)</label>
-                        <input name="slug" type="text" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">الرمز (SKU)</label>
-                        <input name="sku" type="text" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
-                      </div>
+                {/* Advanced Settings */}
+                <div className="pt-2 border-t border-border/50">
+                  <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    <span className="font-medium">إعدادات إضافية</span>
+                    <svg className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  <div className={`grid grid-cols-2 gap-3 mt-4 animate-in fade-in slide-in-from-top-2 ${!showAdvanced ? 'hidden' : ''}`}>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium">الرابط (Slug)</label>
+                      <input name="slug" type="text" dir="ltr" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium">الرمز (SKU)</label>
+                      <input name="sku" type="text" dir="ltr" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
                     </div>
                   </div>
                 </div>

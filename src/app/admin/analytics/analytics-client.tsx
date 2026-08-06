@@ -145,19 +145,6 @@ export function AnalyticsClient({
               ))}
             </div>
           </div>
-
-          <div className="p-4 sm:p-6 bg-card border border-border/50 rounded-xl shadow-sm">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">الصفحات الأكثر زيارة</h2>
-            <div className="space-y-3">
-              {topPages?.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
-              {topPages?.map((p: any, i: number) => (
-                <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
-                  <span className="truncate max-w-[200px] font-medium">{p.path}</span>
-                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} زيارة</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 

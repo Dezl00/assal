@@ -232,14 +232,14 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
         {/* Table Area */}
         <div className="flex-1 w-full order-last lg:order-first">
           <div className="border rounded-xl bg-card overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-right">
                 <thead className="bg-muted/50 border-b">
                   <tr>
                     <th className="p-4 font-medium">الاسم</th>
                     <th className="p-4 font-medium">رقم الهاتف</th>
                     <th className="p-4 font-medium">الصلاحيات</th>
-                    <th className="p-4 font-medium">الإجراءات</th>
+                    <th className="p-4 font-medium text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -258,7 +258,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                             <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700 font-medium">بدون صلاحيات</span>
                           )}
                         </td>
-                        <td className="p-4 flex gap-2 items-center justify-end">
+                        <td className="p-4 flex gap-2 items-center justify-center">
                           <Switch 
                             checked={acc.isActive !== false} 
                             onCheckedChange={(checked) => handleUpdateStatus(acc.id, checked)}
@@ -287,6 +287,83 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {accounts.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                  لا توجد حسابات مسجلة
+                </div>
+              ) : (
+                accounts.map(acc => {
+                  const permCount = acc.permissions?.length || 0;
+                  return (
+                    <div key={acc.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <div className="font-semibold text-foreground text-base">{acc.name || 'بدون اسم'}</div>
+                          <div className="text-muted-foreground text-sm mt-1" dir="ltr">{acc.phone}</div>
+                        </div>
+                        <div>
+                          <Switch 
+                            checked={acc.isActive !== false} 
+                            onCheckedChange={(checked) => handleUpdateStatus(acc.id, checked)}
+                            disabled={!canEdit}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">الصلاحيات:</span>
+                        {permCount === allPermissionKeys.length ? (
+                          <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-700 font-medium">مدير بنظام كامل</span>
+                        ) : permCount > 0 ? (
+                          <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 font-medium">{permCount} صلاحية</span>
+                        ) : (
+                          <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700 font-medium">بدون صلاحيات</span>
+                        )}
+                      </div>
+
+                      {(canEdit || canDelete) && (
+                        <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                          {canEdit && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1 text-muted-foreground hover:text-primary"
+                              onClick={() => {
+                                setEditingItem(acc); 
+                                setSelectedPermissions(acc.permissions || []);
+                                setIsFormVisible(true);
+                                if (window.innerWidth < 1024) {
+                                  setTimeout(() => {
+                                    document.getElementById('add-account-form')?.scrollIntoView({ behavior: 'smooth' });
+                                  }, 100);
+                                }
+                              }}
+                            >
+                              <Edit className="h-4 w-4 ml-2" />
+                              تعديل
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+                              onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}
+                            >
+                              <Trash2 className="h-4 w-4 ml-2" />
+                              حذف
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

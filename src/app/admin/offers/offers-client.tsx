@@ -161,7 +161,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                   )}
                 </div>
                 
-                <div className="overflow-x-auto">
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm text-right">
                     <thead className="bg-muted/50 text-muted-foreground">
                       <tr>
@@ -175,7 +175,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                     <tbody>
                       {coupons.map((coupon: any) => (
                         <tr key={coupon.id} className="border-b border-border/30 hover:bg-muted/20">
-                          <td className="px-4 py-4 font-bold text-primary" dir="ltr">{coupon.code}</td>
+                          <td className="px-4 py-4 font-bold text-slate-700" dir="ltr">{coupon.code}</td>
                           <td className="px-4 py-4">
                             <span className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
                               {coupon.type === "PERCENTAGE" ? "نسبة مئوية %" : coupon.type === "FIXED" ? "مبلغ ثابت" : "شحن مجاني"}
@@ -191,7 +191,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                                 className="sr-only peer"
                                 disabled={!canEdit}
                               />
-                              <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto"></div>
+                              <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto disabled:opacity-50"></div>
                               <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
                             </label>
                           </td>
@@ -218,6 +218,84 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                       )}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile View */}
+                <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+                  {coupons.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                      لا توجد كوبونات خصم.
+                    </div>
+                  ) : (
+                    coupons.map((coupon: any) => (
+                      <div key={coupon.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="font-bold text-slate-800 text-lg" dir="ltr">{coupon.code}</div>
+                          <div>
+                            <label className="flex items-center gap-2 cursor-pointer w-max relative">
+                              <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
+                              <input 
+                                type="checkbox" 
+                                checked={coupon.isActive}
+                                onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
+                                className="sr-only peer"
+                                disabled={!canEdit}
+                              />
+                              <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto disabled:opacity-50"></div>
+                            </label>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">النوع:</span>
+                            <span className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
+                              {coupon.type === "PERCENTAGE" ? "نسبة مئوية %" : coupon.type === "FIXED" ? "مبلغ ثابت" : "شحن مجاني"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">القيمة:</span>
+                            <span className="font-bold">{coupon.value} {coupon.type === "PERCENTAGE" ? "%" : "ج.م"}</span>
+                          </div>
+                        </div>
+
+                        {(canEdit || canDelete) && (
+                          <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                            {canEdit && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1 text-muted-foreground hover:text-slate-800"
+                                onClick={() => {
+                                  openEdit(coupon);
+                                  if (window.innerWidth < 1024) {
+                                    setIsFormVisible(true);
+                                    setTimeout(() => {
+                                      document.getElementById('coupon-form')?.scrollIntoView({ behavior: 'smooth' });
+                                    }, 100);
+                                  }
+                                }}
+                              >
+                                <Edit2 className="h-4 w-4 ml-2" />
+                                تعديل
+                              </Button>
+                            )}
+                            {canDelete && (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="flex-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+                                onClick={() => setDeleteModalOpen(coupon.id)}
+                              >
+                                <Trash2 className="h-4 w-4 ml-2" />
+                                حذف
+                              </Button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 

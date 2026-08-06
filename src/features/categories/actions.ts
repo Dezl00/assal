@@ -49,6 +49,16 @@ export async function deleteCategory(id: string) {
 
 export async function updateCategory(id: string, formData: FormData) {
   try {
+    const isActiveStr = formData.get("isActive");
+    if (isActiveStr !== null) {
+      await db.category.update({
+        where: { id },
+        data: { isActive: isActiveStr === "true" }
+      });
+      revalidatePath("/admin/categories")
+      return { success: true }
+    }
+
     const name = formData.get("name") as string
     const slug = formData.get("slug") as string
     const description = formData.get("description") as string

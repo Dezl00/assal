@@ -161,12 +161,12 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
 
           {/* DEPARTMENTS LIST */}
           <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-right">
+                    <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
                 <thead className="bg-muted/50 border-b border-border">
                   <tr>
-                    <th className="px-6 py-4 font-medium text-muted-foreground">المجال</th>
-                    <th className="px-6 py-4 font-medium text-muted-foreground">الرابط</th>
+                    <th className="px-6 py-4 font-medium text-muted-foreground text-right">المجال</th>
+                    <th className="px-6 py-4 font-medium text-muted-foreground text-right">الرابط (Slug)</th>
                     <th className="px-6 py-4 font-medium text-muted-foreground text-center">الأقسام الرئيسية</th>
                     <th className="px-6 py-4 font-medium text-muted-foreground text-center">المنتجات</th>
                     <th className="px-6 py-4 font-medium text-muted-foreground text-center">الحالة</th>
@@ -176,7 +176,7 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                 <tbody className="divide-y divide-border">
                   {filteredDepartments.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                         <div className="flex flex-col items-center justify-center gap-2">
                           <Folder className="w-8 h-8 opacity-20" />
                           <p>لا توجد مجالات مضافة بعد</p>
@@ -212,14 +212,17 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                         <td className="px-6 py-4 text-center">
                           <span className="font-medium">{dept._count?.products || 0}</span>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => toggleStatus(dept)}
-                            disabled={!canEdit}
-                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${dept.isActive ? 'bg-primary' : 'bg-muted'}`}
-                          >
-                            <span aria-hidden="true" className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${dept.isActive ? '-translate-x-4' : 'translate-x-0'}`} />
-                          </button>
+                        <td className="px-6 py-4 text-center flex justify-center items-center">
+                          <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              checked={dept.isActive}
+                              disabled={!canEdit}
+                              onChange={() => toggleStatus(dept)}
+                            />
+                            <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 disabled:opacity-50"></div>
+                          </label>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex justify-center gap-2">
@@ -258,6 +261,100 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {filteredDepartments.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <Folder className="w-8 h-8 opacity-20" />
+                    <p>لا توجد مجالات مضافة بعد</p>
+                  </div>
+                </div>
+              ) : (
+                filteredDepartments.map((dept) => (
+                  <div key={dept.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 shrink-0 rounded-md border border-border bg-muted overflow-hidden flex items-center justify-center">
+                          {dept.imageUrl ? (
+                            <img src={dept.imageUrl} alt={dept.name} className="h-full w-full object-cover" />
+                          ) : (
+                            <Folder className="h-6 w-6 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-foreground text-base">{dept.name}</div>
+                          <span className="bg-muted px-2 py-0.5 rounded text-xs mt-1 inline-block text-muted-foreground" dir="ltr">{dept.slug}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={dept.isActive}
+                            disabled={!canEdit}
+                            onChange={() => toggleStatus(dept)}
+                          />
+                          <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 disabled:opacity-50"></div>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    {dept.description && (
+                      <div className="text-sm text-muted-foreground line-clamp-2 bg-muted/30 p-2 rounded-md">{dept.description}</div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
+                        <span className="text-muted-foreground text-xs">الأقسام:</span>
+                        <span className="font-medium text-xs">{dept._count?.categories || 0}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
+                        <span className="text-muted-foreground text-xs">المنتجات:</span>
+                        <span className="font-medium text-xs text-primary">{dept._count?.products || 0}</span>
+                      </div>
+                    </div>
+
+                    {(canEdit || canDelete) && (
+                      <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                        {canEdit && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setEditingDepartment(dept);
+                              if (window.innerWidth < 1024) {
+                                document.getElementById('add-department-form-container')?.scrollIntoView({ behavior: 'smooth' });
+                              }
+                            }}
+                          >
+                            <Edit className="h-4 w-4 ml-2" />
+                            تعديل
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+                            onClick={() => {
+                              setDepartmentToDelete(dept.id)
+                              setDeleteModalOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 ml-2" />
+                            حذف
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

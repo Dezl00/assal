@@ -44,6 +44,16 @@ export async function deleteDepartment(id: string) {
 
 export async function updateDepartment(id: string, formData: FormData) {
   try {
+    const isActiveStr = formData.get("isActive");
+    if (isActiveStr !== null) {
+      await db.department.update({
+        where: { id },
+        data: { isActive: isActiveStr === "true" }
+      });
+      revalidatePath("/admin/departments")
+      return { success: true }
+    }
+
     const name = formData.get("name") as string
     const slug = formData.get("slug") as string
     const description = formData.get("description") as string

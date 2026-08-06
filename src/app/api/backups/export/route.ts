@@ -80,6 +80,19 @@ export async function GET() {
     departments.forEach(d => d.imageUrl && urlsToDownload.add(d.imageUrl))
     brands.forEach(b => b.logoUrl && urlsToDownload.add(b.logoUrl))
     
+    // Add ThemeConfig images
+    if (themeConfig?.logoUrl) urlsToDownload.add(themeConfig.logoUrl)
+    if (themeConfig?.faviconUrl) urlsToDownload.add(themeConfig.faviconUrl)
+
+    // Add Widget images
+    widgets.forEach(w => {
+      if (w.settings?.image) urlsToDownload.add(w.settings.image)
+      w.items?.forEach((item: any) => {
+        if (item.desktopImage) urlsToDownload.add(item.desktopImage)
+        if (item.mobileImage) urlsToDownload.add(item.mobileImage)
+      })
+    })
+    
     // Download images and add to zip
     const downloadPromises = Array.from(urlsToDownload).filter(url => url && url.startsWith('http')).map(async (url) => {
       try {

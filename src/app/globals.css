@@ -81,6 +81,14 @@
     --ring: 38 92% 50%;
     --radius: 0.5rem;
   }
+  
+  .admin-theme {
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --accent: 222.2 47.4% 11.2%;
+    --accent-foreground: 210 40% 98%;
+    --ring: 222.2 47.4% 11.2%;
+  }
 
   body {
     background-color: #ffffff;

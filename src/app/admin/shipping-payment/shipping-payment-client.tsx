@@ -299,14 +299,19 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
                               checked={activeGov.hideCities || false}
                               onChange={async (e) => {
                                 const val = e.target.checked
+                                // Optimistic update
+                                setGovernorates((prev: any) => prev.map((g: any) => g.id === activeGov.id ? { ...g, hideCities: val } : g))
                                 try {
                                   await updateGovernorate(activeGov.id, { hideCities: val })
-                                  setGovernorates((prev: any) => prev.map((g: any) => g.id === activeGov.id ? { ...g, hideCities: val } : g))
                                   toast.success(val ? "تم إخفاء المدن" : "تم إظهار المدن")
-                                } catch(e) { toast.error("فشل التحديث") }
+                                } catch(e) { 
+                                  toast.error("فشل التحديث") 
+                                  // Revert
+                                  setGovernorates((prev: any) => prev.map((g: any) => g.id === activeGov.id ? { ...g, hideCities: !val } : g))
+                                }
                               }}
                             />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-slate-900"></div>
                           </label>
                         </div>
                       </div>

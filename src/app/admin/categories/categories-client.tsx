@@ -184,7 +184,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 />
               </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-right">
                 <thead className="border-b border-border/50 text-muted-foreground">
                   <tr>
@@ -199,7 +199,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 <tbody className="divide-y divide-border/50">
                   {filteredCategories.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                         {searchQuery ? "لا توجد نتائج بحث مطابقة." : "لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية."}
                       </td>
                     </tr>
@@ -229,14 +229,17 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                             {category._count?.products || 0}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => toggleStatus(category)}
-                            disabled={!canEdit}
-                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${category.isActive ? 'bg-primary' : 'bg-muted'}`}
-                          >
-                            <span aria-hidden="true" className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${category.isActive ? '-translate-x-4' : 'translate-x-0'}`} />
-                          </button>
+                        <td className="px-6 py-4 text-center flex justify-center items-center">
+                          <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              checked={category.isActive}
+                              disabled={!canEdit}
+                              onChange={() => toggleStatus(category)}
+                            />
+                            <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 disabled:opacity-50"></div>
+                          </label>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
@@ -270,6 +273,93 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {filteredCategories.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                  {searchQuery ? "لا توجد نتائج بحث مطابقة." : "لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية."}
+                </div>
+              ) : (
+                filteredCategories.map((category) => (
+                  <div key={category.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        {category.imageUrl ? (
+                          <img src={category.imageUrl} alt={category.name} className="h-12 w-12 rounded-lg object-cover border border-border" />
+                        ) : (
+                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                            <Folder className="h-6 w-6 text-primary/60" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-semibold text-foreground text-base">{category.name}</h3>
+                          <p className="text-xs text-muted-foreground mt-1" dir="ltr">{category.slug}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer" 
+                            checked={category.isActive}
+                            disabled={!canEdit}
+                            onChange={() => toggleStatus(category)}
+                          />
+                          <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 disabled:opacity-50"></div>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
+                        <span className="text-muted-foreground text-xs">الأب:</span>
+                        <span className="font-medium text-xs">{category.parent ? category.parent.name : '-'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
+                        <span className="text-muted-foreground text-xs">المنتجات:</span>
+                        <span className="font-medium text-xs text-primary">{category._count?.products || 0}</span>
+                      </div>
+                    </div>
+
+                    {(canEdit || canDelete) && (
+                      <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                        {canEdit && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setEditingCategory(category);
+                              if (window.innerWidth < 1024) {
+                                document.getElementById('add-category-form')?.scrollIntoView({ behavior: 'smooth' });
+                              }
+                            }}
+                          >
+                            <Edit className="h-4 w-4 ml-2" />
+                            تعديل
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+                            onClick={() => {
+                              setCategoryToDelete(category.id)
+                              setDeleteModalOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 ml-2" />
+                            حذف
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
