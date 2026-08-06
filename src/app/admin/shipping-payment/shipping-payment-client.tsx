@@ -120,11 +120,11 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
     setIsSubmittingPayment(true)
     const formData = new FormData(e.currentTarget)
     const type = formData.get("type") as string
-    const data = {
+    const data: any = {
       name: formData.get("methodName") as string,
       type,
-      accountInfo: type !== 'CASH_ON_DELIVERY' ? formData.get("accountInfo") as string : null,
-      paymentLink: type !== 'CASH_ON_DELIVERY' ? formData.get("paymentLink") as string : null,
+      accountInfo: type !== 'CASH_ON_DELIVERY' ? formData.get("accountInfo") as string : undefined,
+      paymentLink: type !== 'CASH_ON_DELIVERY' ? formData.get("paymentLink") as string : undefined,
       logoUrl: paymentLogoUrl
     }
 

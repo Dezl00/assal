@@ -605,7 +605,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
                       )}
                     </div>
                   </div>
-                  </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">المخزون</label>

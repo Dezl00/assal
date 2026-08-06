@@ -273,8 +273,10 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                 </div>
               </div>
             )}
+          </div>
+        )}
 
-          {/* Settings Tab */}
+        {/* Settings Tab */}
           {activeTab === 'settings' && (
             <div className="bg-card border border-border/50 rounded-xl shadow-sm p-6 min-h-[500px]">
               <div className="mb-6">

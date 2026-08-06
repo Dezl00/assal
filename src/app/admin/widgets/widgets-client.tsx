@@ -908,6 +908,11 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                                 type="button" 
                                 variant="outline" 
                                 onClick={() => setProductPickerOpen(true)}
+                              >
+                                تحديد المنتجات المخصصة ({selectedProductIds.length})
+                              </Button>
+                            </div>
+                          )}
                             
                             {editingWidget.type === "HeroSlider" && (
                               <div className="space-y-2 mt-2 border-t border-border/50 pt-2 pb-2">
@@ -1078,7 +1083,8 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث التعديل" : "إضافة العنصر")}
                           </Button>
                         </form>
-                      )}
+                      </div>
+                    )}
                       
                       {productPickerOpen && (editingWidget.type === "BannerGrid" || editingWidget.type === "HeroSlider") && linkType === "product" ? (
                         <ProductPickerModal 
@@ -1102,9 +1108,7 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                 </div>
               )}
             </div>
-          )}
         </div>
-      </div>
 
       {/* Main Preview Area (Left) */}
       <div className="flex-1 flex flex-col border border-border/50 bg-card rounded-xl md:h-[calc(100vh-8rem)] min-h-[500px] overflow-hidden shadow-sm">
