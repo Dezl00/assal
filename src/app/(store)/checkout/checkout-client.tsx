@@ -37,6 +37,13 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     setMounted(true)
   }, [])
 
+  // -- Default to the only governorate if there is exactly 1 --
+  useEffect(() => {
+    if (governorates.length === 1 && !selectedGovId) {
+      setSelectedGovId(governorates[0].id)
+    }
+  }, [governorates, selectedGovId])
+
   // -- Calculations --
   const selectedGov = governorates.find((g: any) => g.id === selectedGovId)
   const selectedCity = selectedGov?.cities.find((c: any) => c.id === selectedCityId)
@@ -45,15 +52,25 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   let isShippingCalculated = false
 
   if (useNewAddress) {
-    if (selectedCity) {
-      baseShippingCost = selectedCity.shippingCost
+    if (selectedGov?.hideCities) {
+      baseShippingCost = selectedGov.shippingCost || 0
+      isShippingCalculated = true
+    } else if (selectedCity) {
+      baseShippingCost = selectedCity.shippingCost || 0
       isShippingCalculated = true
     }
-  } else if (user?.city) {
+  } else if (user?.city || user?.governorate) {
     for (const gov of governorates) {
+      if (gov.name === user.governorate) {
+        if (gov.hideCities) {
+          baseShippingCost = gov.shippingCost || 0
+          isShippingCalculated = true
+          break
+        }
+      }
       const c = gov.cities.find((city: any) => city.name === user.city)
       if (c) {
-        baseShippingCost = c.shippingCost
+        baseShippingCost = c.shippingCost || 0
         isShippingCalculated = true
         break
       }
@@ -113,13 +130,13 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     if (useNewAddress) {
       finalPhone = formData.get("customerPhone") as string
       finalAddress = formData.get("address") as string
-      if (!selectedGov || !selectedCity) {
+      if (!selectedGov || (!selectedCity && !selectedGov.hideCities)) {
         toast.error("يرجى اختيار المحافظة والمدينة")
         setIsSubmitting(false)
         return
       }
       finalGovName = selectedGov.name
-      finalCity = selectedCity.name
+      finalCity = selectedCity?.name || ""
     } else if (!hasSavedAddress) {
         toast.error("يرجى إدخال عنوان التوصيل")
         setIsSubmitting(false)
@@ -251,7 +268,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">الاسم الكامل</label>
+                    <label className="text-sm font-medium">الاسم الكامل <span className="text-destructive">*</span></label>
                     <input 
                       disabled
                       value={user?.name || ""}
@@ -259,52 +276,64 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">رقم الجوال <span className="text-destructive">*</span></label>
+                    <label className="text-sm font-medium">رقم الهاتف <span className="text-destructive">*</span></label>
                     <input 
                       name="customerPhone"
                       required
                       type="tel"
                       dir="ltr"
-                      placeholder="05xxxxxxxx"
+                      pattern="^01[0-9]{9}$"
+                      maxLength={11}
+                      placeholder="01XXXXXXXXX"
+                      onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity("رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01")}
+                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
                       className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">المحافظة <span className="text-destructive">*</span></label>
-                    <select 
-                      required
-                      value={selectedGovId}
-                      onChange={(e) => {
-                        setSelectedGovId(e.target.value)
-                        setSelectedCityId("")
-                      }}
-                      className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none"
-                    >
-                      <option value="" disabled>اختر المحافظة...</option>
-                      {governorates.map((g: any) => (
-                        <option key={g.id} value={g.id}>{g.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {governorates.length > 1 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">المحافظة <span className="text-destructive">*</span></label>
+                      <select 
+                        required
+                        value={selectedGovId}
+                        onChange={(e) => {
+                          setSelectedGovId(e.target.value)
+                          setSelectedCityId("")
+                        }}
+                        onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("يرجى اختيار المحافظة")}
+                        onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
+                        className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none"
+                      >
+                        <option value="" disabled>اختر المحافظة...</option>
+                        {governorates.map((g: any) => (
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">المدينة / المنطقة <span className="text-destructive">*</span></label>
-                    <select 
-                      required
-                      disabled={!selectedGovId}
-                      value={selectedCityId}
-                      onChange={(e) => setSelectedCityId(e.target.value)}
-                      className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
-                    >
-                      <option value="" disabled>اختر المدينة...</option>
-                      {selectedGov?.cities?.map((c: any) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
+                  {(!selectedGov || !selectedGov.hideCities) && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">المدينة / المنطقة <span className="text-destructive">*</span></label>
+                      <select 
+                        required
+                        disabled={!selectedGovId}
+                        value={selectedCityId}
+                        onChange={(e) => setSelectedCityId(e.target.value)}
+                        onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("يرجى اختيار المدينة")}
+                        onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
+                        className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                      >
+                        <option value="" disabled>اختر المدينة...</option>
+                        {selectedGov?.cities?.map((c: any) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -314,6 +343,8 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     required
                     rows={3}
                     placeholder="اسم الحي، الشارع، رقم المبنى أو أي علامة مميزة"
+                    onInvalid={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("يرجى إدخال عنوان التوصيل بالتفصيل")}
+                    onInput={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("")}
                     className="w-full bg-background border border-input rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none"
                   />
                 </div>
@@ -465,8 +496,8 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
               </div>
               
               {(isFreeShippingThresholdMet || isFreeShippingCoupon) && finalShippingCost === 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-primary bg-primary/5 p-2 rounded border border-primary/20">
-                  <Truck className="w-3.5 h-3.5" />
+                <div className="flex items-center justify-center gap-2 text-sm font-semibold text-emerald-700 bg-emerald-500/10 p-3 rounded-xl border-none">
+                  <Truck className="w-4 h-4" />
                   أنت مؤهل للحصول على شحن مجاني!
                 </div>
               )}

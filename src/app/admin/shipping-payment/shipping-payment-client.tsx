@@ -245,14 +245,66 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
               <div className="lg:col-span-3 border border-border/50 rounded-xl bg-card shadow-sm">
                 {activeGov ? (
                   <>
-                    <div className="p-4 sm:p-6 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/5">
-                      <div>
-                        <h3 className="text-lg font-bold">المدن والتسعيرة - {activeGov.name}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">أضف المدن لتحديد سعر الشحن الخاص بكل منها.</p>
+                    <div className="p-4 sm:p-6 border-b border-border/50 flex flex-col gap-4 bg-muted/5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <h3 className="text-lg font-bold">إعدادات المحافظة - {activeGov.name}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">قم بضبط إعدادات الشحن للمحافظة أو أضف مدن بتسعيرة مختلفة.</p>
+                        </div>
+                        <Button onClick={() => setIsAddingCity(!isAddingCity)} variant={isAddingCity ? "ghost" : "default"} className="gap-2 shrink-0">
+                          {isAddingCity ? <><X className="w-4 h-4" /> إلغاء الإضافة</> : <><Plus className="w-4 h-4" /> إضافة مدينة</>}
+                        </Button>
                       </div>
-                      <Button onClick={() => setIsAddingCity(!isAddingCity)} variant={isAddingCity ? "ghost" : "default"} className="gap-2 shrink-0">
-                        {isAddingCity ? <><X className="w-4 h-4" /> إلغاء الإضافة</> : <><Plus className="w-4 h-4" /> إضافة مدينة</>}
-                      </Button>
+
+                      <div className="bg-background border rounded-lg p-4 space-y-4 shadow-sm mt-2">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <h4 className="font-semibold text-sm">سعر الشحن الموحد للمحافظة (ج.م)</h4>
+                            <p className="text-xs text-muted-foreground">سيتم تطبيق هذا السعر في حال لم يتم تحديد مدينة، أو إذا تم إخفاء المدن.</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input 
+                              type="number" 
+                              className="w-24 text-sm bg-background border border-input rounded-md px-3 py-2 outline-none focus:border-primary text-left"
+                              dir="ltr"
+                              defaultValue={activeGov.shippingCost || 0}
+                              onBlur={async (e) => {
+                                const val = parseFloat(e.target.value) || 0
+                                if (val !== activeGov.shippingCost) {
+                                  try {
+                                    const res = await updateGovernorate(activeGov.id, { shippingCost: val })
+                                    setGovernorates((prev: any) => prev.map((g: any) => g.id === activeGov.id ? { ...g, shippingCost: val } : g))
+                                    toast.success("تم تحديث السعر بنجاح")
+                                  } catch(e) { toast.error("فشل التحديث") }
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="border-t pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <h4 className="font-semibold text-sm">إخفاء حقل المدن</h4>
+                            <p className="text-xs text-muted-foreground">تفعيل هذا الخيار سيخفي حقل اختيار المدينة في صفحة الدفع للعملاء من هذه المحافظة.</p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer" 
+                              checked={activeGov.hideCities || false}
+                              onChange={async (e) => {
+                                const val = e.target.checked
+                                try {
+                                  await updateGovernorate(activeGov.id, { hideCities: val })
+                                  setGovernorates((prev: any) => prev.map((g: any) => g.id === activeGov.id ? { ...g, hideCities: val } : g))
+                                  toast.success(val ? "تم إخفاء المدن" : "تم إظهار المدن")
+                                } catch(e) { toast.error("فشل التحديث") }
+                              }}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                          </label>
+                        </div>
+                      </div>
                     </div>
 
                     {isAddingCity && (

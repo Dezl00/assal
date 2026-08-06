@@ -327,12 +327,14 @@ model Backup {
 }
 
 model Governorate {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  isActive  Boolean  @default(true)
-  cities    City[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String   @unique
+  shippingCost Float    @default(0)
+  hideCities   Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  cities       City[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model City {

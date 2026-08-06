@@ -22,14 +22,14 @@ export async function getGovernorates() {
   })
 }
 
-export async function createGovernorate(data: { name: string; isActive?: boolean }) {
+export async function createGovernorate(data: { name: string; shippingCost?: number; hideCities?: boolean; isActive?: boolean }) {
   await checkAdmin()
   const gov = await db.governorate.create({ data })
   revalidatePath('/admin/shipping-payment')
   return gov
 }
 
-export async function updateGovernorate(id: string, data: { name?: string; isActive?: boolean }) {
+export async function updateGovernorate(id: string, data: { name?: string; shippingCost?: number; hideCities?: boolean; isActive?: boolean }) {
   await checkAdmin()
   const gov = await db.governorate.update({ where: { id }, data })
   revalidatePath('/admin/shipping-payment')
