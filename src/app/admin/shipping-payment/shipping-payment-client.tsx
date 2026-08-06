@@ -3,6 +3,7 @@ import React, { useState } from "react"
 import { Plus, Edit2, Trash2, ShieldCheck, MapPin, CreditCard, Save, X, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { ImageUploader } from "@/components/ui/image-uploader"
 import {
   createGovernorate, updateGovernorate, deleteGovernorate,
   createCity, updateCity, deleteCity,
@@ -27,6 +28,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
   const [isPaymentFormVisible, setIsPaymentFormVisible] = useState(false)
   const [editingPayment, setEditingPayment] = useState<any>(null)
   const [isSubmittingPayment, setIsSubmittingPayment] = useState(false)
+  const [paymentLogoUrl, setPaymentLogoUrl] = useState("")
 
   const [deleteModal, setDeleteModal] = useState<{ type: 'gov' | 'city' | 'payment', id: string, name?: string } | null>(null)
 
@@ -91,6 +93,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
   // -- Payment Method Handlers --
   const resetPaymentForm = () => {
     setEditingPayment(null)
+    setPaymentLogoUrl("")
     const formEl = document.getElementById("payment-form") as HTMLFormElement
     if (formEl) formEl.reset()
   }
@@ -98,14 +101,15 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
   const openEditPayment = (payment: any) => {
     setEditingPayment(payment)
     setIsPaymentFormVisible(true)
+    setPaymentLogoUrl(payment.logoUrl || "")
     setTimeout(() => {
       const formEl = document.getElementById("payment-form") as HTMLFormElement
       if (formEl) {
         formEl.methodName.value = payment.name
         formEl.type.value = payment.type
         if (payment.type !== 'CASH_ON_DELIVERY') {
-          formEl.accountName.value = payment.accountName || ""
-          formEl.accountNumber.value = payment.accountNumber || ""
+          formEl.accountInfo.value = payment.accountInfo || ""
+          formEl.paymentLink.value = payment.paymentLink || ""
         }
       }
     }, 50)
@@ -119,8 +123,9 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
     const data = {
       name: formData.get("methodName") as string,
       type,
-      accountName: type !== 'CASH_ON_DELIVERY' ? formData.get("accountName") as string : null,
-      accountNumber: type !== 'CASH_ON_DELIVERY' ? formData.get("accountNumber") as string : null,
+      accountInfo: type !== 'CASH_ON_DELIVERY' ? formData.get("accountInfo") as string : null,
+      paymentLink: type !== 'CASH_ON_DELIVERY' ? formData.get("paymentLink") as string : null,
+      logoUrl: paymentLogoUrl
     }
 
     try {
@@ -425,9 +430,9 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
                           </td>
                           <td className="px-4 py-4">
                             {p.type !== 'CASH_ON_DELIVERY' ? (
-                              <div className="text-xs text-muted-foreground">
-                                {p.accountName && <div>الاسم: <span className="font-medium text-foreground">{p.accountName}</span></div>}
-                                {p.accountNumber && <div>الرقم: <span className="font-medium text-foreground" dir="ltr">{p.accountNumber}</span></div>}
+                              <div className="text-xs text-muted-foreground space-y-1">
+                                {p.accountInfo && <div>رقم المحفظة / الحساب: <span className="font-medium text-foreground" dir="ltr">{p.accountInfo}</span></div>}
+                                {p.paymentLink && <div>الرابط: <a href={p.paymentLink} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-500 hover:underline" dir="ltr">{p.paymentLink}</a></div>}
                               </div>
                             ) : <span className="text-muted-foreground text-xs">-</span>}
                           </td>
@@ -454,7 +459,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
               </div>
 
               {/* Payment Sticky Form */}
-              <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isPaymentFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
+              <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 block opacity-100`}>
                 <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
                   <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
                     <div>
@@ -470,9 +475,19 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
 
                   <div className="p-6">
                     <form id="payment-form" onSubmit={handlePaymentSubmit} className="space-y-4">
+                      <div className="flex justify-center mb-4">
+                        <div className="w-32">
+                          <ImageUploader 
+                            label="شعار الدفع" 
+                            value={paymentLogoUrl} 
+                            onChange={setPaymentLogoUrl} 
+                          />
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <label className="text-sm font-medium">اسم الطريقة <span className="text-red-500">*</span></label>
-                        <input name="methodName" type="text" required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" placeholder="مثال: فودافون كاش" />
+                        <input name="methodName" type="text" required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" placeholder="مثال: انستاباي" />
                       </div>
                       
                       <div className="space-y-2">
@@ -485,21 +500,20 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
                             fields.forEach(f => f.classList.toggle('hidden', isCash));
                           }
                         }}>
-                          <option value="VODAFONE_CASH">فودافون كاش</option>
-                          <option value="INSTAPAY">انستاباي</option>
+                          <option value="ELECTRONIC_WALLET">محفظة إلكترونية أو انستاباي</option>
                           <option value="BANK_TRANSFER">تحويل بنكي</option>
                           <option value="CASH_ON_DELIVERY">الدفع عند الاستلام</option>
                         </select>
                       </div>
 
                       <div className="space-y-2 payment-account-field">
-                        <label className="text-sm font-medium">اسم صاحب الحساب</label>
-                        <input name="accountName" type="text" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" placeholder="مثال: أحمد محمد" />
+                        <label className="text-sm font-medium">رقم المحفظة / الحساب (اختياري)</label>
+                        <input name="accountInfo" type="text" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" placeholder="010..." />
                       </div>
 
                       <div className="space-y-2 payment-account-field">
-                        <label className="text-sm font-medium">رقم الحساب / المحفظة</label>
-                        <input name="accountNumber" type="text" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" placeholder="010..." />
+                        <label className="text-sm font-medium">رابط الدفع (اختياري)</label>
+                        <input name="paymentLink" type="url" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" placeholder="https://..." />
                       </div>
 
                       <div className="pt-4">

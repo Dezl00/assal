@@ -4,8 +4,14 @@ import { Plus, Edit2, Trash2, Ticket, Settings, Save, AlertTriangle, X } from "l
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { createCoupon, updateCoupon, deleteCoupon, updateOfferSettings } from "@/features/offers/actions"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function OffersClient({ initialCoupons, initialSettings }: any) {
+  const { hasPermission } = usePermissions()
+  const canAdd = hasPermission("offers.add")
+  const canEdit = hasPermission("offers.edit")
+  const canDelete = hasPermission("offers.delete")
+
   const [activeTab, setActiveTab] = useState<'coupons' | 'settings'>('coupons')
   const [coupons, setCoupons] = useState(initialCoupons)
   const [settings, setSettings] = useState(initialSettings || {})
@@ -147,10 +153,12 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                     <h2 className="text-lg font-semibold">أكواد الخصم</h2>
                     <p className="text-sm text-muted-foreground">أضف كوبونات وأكواد خصم لعملائك.</p>
                   </div>
-                  <Button onClick={() => { resetForm(); setIsFormVisible(!isFormVisible); }} className="gap-2" variant={isFormVisible && !editingCoupon ? "secondary" : "default"}>
-                    {isFormVisible && !editingCoupon ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {isFormVisible && !editingCoupon ? "إلغاء" : "كوبون جديد"}
-                  </Button>
+                  {canAdd && (
+                    <Button onClick={() => { resetForm(); setIsFormVisible(!isFormVisible); }} className="gap-2" variant={isFormVisible && !editingCoupon ? "secondary" : "default"}>
+                      {isFormVisible && !editingCoupon ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                      {isFormVisible && !editingCoupon ? "إلغاء" : "كوبون جديد"}
+                    </Button>
+                  )}
                 </div>
                 
                 <div className="overflow-x-auto">
@@ -181,6 +189,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                                 checked={coupon.isActive}
                                 onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
                                 className="sr-only peer"
+                                disabled={!canEdit}
                               />
                               <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto"></div>
                               <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
@@ -188,12 +197,16 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center justify-center gap-2">
-                              <button onClick={() => openEdit(coupon)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors">
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              <button onClick={() => setDeleteModalOpen(coupon.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              {canEdit && (
+                                <button onClick={() => openEdit(coupon)} className="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded-md transition-colors">
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button onClick={() => setDeleteModalOpen(coupon.id)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors">
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -209,8 +222,9 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
               </div>
 
               {/* Sticky Form Column */}
-              <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
-                <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col">
+              {(canAdd || editingCoupon) && (
+                <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
+                  <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col">
                   <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold tracking-tight">{editingCoupon ? "تعديل الكوبون" : "إضافة كوبون جديد"}</h2>
@@ -250,17 +264,15 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                       </div>
 
                       <div className="pt-4">
-                        <Button type="submit" disabled={isSubmitting} className="w-full gap-2">
-                          <Save className="w-4 h-4" />
-                          {isSubmitting ? "جاري الحفظ..." : "حفظ الكوبون"}
+                        <Button type="submit" disabled={isSubmitting} className="w-full h-11 text-base">
+                          {isSubmitting ? "جاري الحفظ..." : (editingCoupon ? "حفظ التعديلات" : "إضافة الكوبون")}
                         </Button>
                       </div>
                     </form>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Settings Tab */}
           {activeTab === 'settings' && (
@@ -358,10 +370,12 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                 </div>
 
                 <div>
-                  <Button type="submit" disabled={isSubmitting} className="gap-2 px-8">
-                    <Save className="w-4 h-4" />
-                    {isSubmitting ? "جاري الحفظ..." : "حفظ الإعدادات"}
-                  </Button>
+                  {canEdit && (
+                    <Button type="submit" disabled={isSubmitting} className="gap-2 px-8">
+                      <Save className="w-4 h-4" />
+                      {isSubmitting ? "جاري الحفظ..." : "حفظ الإعدادات"}
+                    </Button>
+                  )}
                 </div>
               </form>
             </div>

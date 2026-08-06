@@ -96,6 +96,7 @@ export default async function AnalyticsPage() {
   }
 
   const translateCity = (c: string) => {
+    if (!c) return 'غير محدد'
     const map: any = {
       'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة',
       'Riyadh': 'الرياض', 'Jeddah': 'جدة', 'Mecca': 'مكة', 'Medina': 'المدينة',
@@ -103,7 +104,27 @@ export default async function AnalyticsPage() {
       'Amman': 'عمان', 'Kuwait City': 'مدينة الكويت', 'Doha': 'الدوحة',
       'Manama': 'المنامة', 'Muscat': 'مسقط', 'Baghdad': 'بغداد',
       'Khartoum': 'الخرطوم', 'Damascus': 'دمشق', 'Beirut': 'بيروت',
+      'Tanta': 'طنطا', 'Mansoura': 'المنصورة', 'Suez': 'السويس', 'Port Said': 'بورسعيد',
+      'Ismailia': 'الإسماعيلية', 'Aswan': 'أسوان', 'Asyut': 'أسيوط', 'Sohag': 'سوهاج',
+      'Minya': 'المنيا', 'Qena': 'قنا', 'Fayoum': 'الفيوم', 'Banha': 'بنها',
+      'Damanhur': 'دمنهور', 'Zagazig': 'الزقازيق', 'Ash Sharqiyah': 'الشرقية',
+      'Dakahlia': 'الدقهلية', 'Gharbia': 'الغربية', 'Monufia': 'المنوفية',
+      'Damietta': 'دمياط', 'Kafr El Sheikh': 'كفر الشيخ', 'Beni Suef': 'بني سويف',
+      'Hurghada': 'الغردقة', 'Sharm El Sheikh': 'شرم الشيخ', 'Luxor': 'الأقصر',
+      'Dammam': 'الدمام', 'Khobar': 'الخبر', 'Dhahran': 'الظهران', 'Al Ahsa': 'الأحساء',
+      'Taif': 'الطائف', 'Tabuk': 'تبوك', 'Abha': 'أبها', 'Najran': 'نجران',
+      'Jizan': 'جازان', 'Al Qassim': 'القصيم', 'Hail': 'حائل', 'Jubail': 'الجبيل',
+      'unknown': 'غير محدد', 'Unknown': 'غير محدد', '(not set)': 'غير محدد',
     }
+    // Check if the city contains any of these
+    for (const [en, ar] of Object.entries(map)) {
+      if (c.toLowerCase() === en.toLowerCase()) return ar as string
+    }
+    // If not found, try to see if it's already arabic (contains arabic letters)
+    const arabicRegex = /[\u0600-\u06FF]/;
+    if (arabicRegex.test(c)) return c;
+    
+    // Return original if no translation found (maybe it's a small city)
     return map[c] || c
   }
 

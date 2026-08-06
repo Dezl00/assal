@@ -98,6 +98,7 @@ model Department {
   slug        String     @unique
   description String?
   imageUrl    String?
+  isActive    Boolean    @default(true)
   categories  Category[]
   products    Product[]
   createdAt   DateTime   @default(now())
@@ -110,6 +111,7 @@ model Category {
   slug         String     @unique
   description  String?
   imageUrl     String?
+  isActive     Boolean    @default(true)
   
   departmentId String?
   department   Department? @relation(fields: [departmentId], references: [id])
@@ -351,9 +353,11 @@ model City {
 model PaymentMethod {
   id           String   @id @default(cuid())
   name         String
-  type         String   // COD, VODAFONE_CASH, INSTAPAY, BANK_TRANSFER
-  accountInfo  String?  // Phone number or link
+  type         String   // COD, ELECTRONIC_WALLET, INSTAPAY
+  accountInfo  String?  // Phone number
+  paymentLink  String?  // Payment link for Instapay
   instructions String?
+  logoUrl      String?  // Logo for payment method
   isActive     Boolean  @default(true)
   sortOrder    Int      @default(0)
   createdAt    DateTime @default(now())

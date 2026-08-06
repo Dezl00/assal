@@ -7,8 +7,14 @@ import { createCategory, deleteCategory, updateCategory } from "@/features/categ
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { ImageUploader } from "@/components/ui/image-uploader"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function CategoriesClient({ categories, departments = [] }: { categories: any[], departments?: any[] }) {
+  const { hasPermission } = usePermissions()
+  const canAdd = hasPermission("categories.add")
+  const canEdit = hasPermission("categories.edit")
+  const canDelete = hasPermission("categories.delete")
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
   
@@ -17,6 +23,11 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
   const [imageUrl, setImageUrl] = useState("")
+  const [categoryType, setCategoryType] = useState<"main" | "sub">("main")
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  
+  // Local state for optimistic updates
+  const [localCategories, setLocalCategories] = useState(categories)
 
   useEffect(() => {
     if (editingCategory) {
@@ -43,6 +54,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
         }
       }
       setIsFormVisible(true)
+      setCategoryType(editingCategory.parentId ? "sub" : "main")
     }
   }, [editingCategory])
 
@@ -79,6 +91,12 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set("imageUrl", imageUrl)
+    if (categoryType === "main") {
+      formData.delete("parentId")
+    } else {
+      formData.delete("departmentId")
+    }
+    
     let res;
     if (editingCategory) {
       res = await updateCategory(editingCategory.id, formData)
@@ -100,6 +118,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     const res = await deleteCategory(categoryToDelete)
     if (res.success) {
       toast.success("تم الحذف بنجاح")
+      setLocalCategories(prev => prev.filter(c => c.id !== categoryToDelete))
     } else {
       toast.error(res.error || "حدث خطأ أثناء الحذف")
     }
@@ -107,7 +126,24 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     setCategoryToDelete(null)
   }
 
-  const filteredCategories = categories.filter(c => 
+  async function toggleStatus(category: any) {
+    if (!canEdit) return
+    const newStatus = !category.isActive
+    // Optimistic update
+    setLocalCategories(prev => prev.map(c => c.id === category.id ? { ...c, isActive: newStatus } : c))
+    
+    const formData = new FormData()
+    formData.append("isActive", newStatus.toString())
+    const res = await updateCategory(category.id, formData)
+    
+    if (!res.success) {
+      toast.error("حدث خطأ أثناء التحديث")
+      // Revert
+      setLocalCategories(prev => prev.map(c => c.id === category.id ? { ...c, isActive: !newStatus } : c))
+    }
+  }
+
+  const filteredCategories = localCategories.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     c.slug.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -121,10 +157,12 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
           <span className="text-foreground">الأقسام</span>
         </nav>
         <div className="flex items-center gap-3 lg:hidden">
-           <Button onClick={handleAddCategoryClick} className="gap-2">
-             <PlusCircle className="h-4 w-4" />
-             {isFormVisible ? "إخفاء النموذج" : "إضافة قسم"}
-           </Button>
+           {canAdd && (
+             <Button onClick={handleAddCategoryClick} className="gap-2">
+               <PlusCircle className="h-4 w-4" />
+               {isFormVisible ? "إخفاء النموذج" : "إضافة قسم"}
+             </Button>
+           )}
         </div>
       </div>
 
@@ -154,6 +192,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                     <th className="px-6 py-4 font-medium">الرابط (Slug)</th>
                     <th className="px-6 py-4 font-medium">القسم الأب</th>
                     <th className="px-6 py-4 font-medium">المنتجات</th>
+                    <th className="px-6 py-4 font-medium text-center">الحالة</th>
                     <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
                   </tr>
                 </thead>
@@ -191,26 +230,39 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => toggleStatus(category)}
+                            disabled={!canEdit}
+                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${category.isActive ? 'bg-primary' : 'bg-muted'}`}
+                          >
+                            <span aria-hidden="true" className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${category.isActive ? '-translate-x-4' : 'translate-x-0'}`} />
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-muted-foreground hover:text-primary"
-                              onClick={() => setEditingCategory(category)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={() => {
-                                setCategoryToDelete(category.id)
-                                setDeleteModalOpen(true)
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {canEdit && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                onClick={() => setEditingCategory(category)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canDelete && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => {
+                                  setCategoryToDelete(category.id)
+                                  setDeleteModalOpen(true)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -223,8 +275,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
         </div>
 
         {/* Sticky Form Column (Right in RTL) */}
-        <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
-          <div className="rounded-xl border border-border/50 bg-background shadow-sm overflow-hidden">
+        {(canAdd || editingCategory) && (
+          <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
+            <div className="rounded-xl border border-border/50 bg-background shadow-sm overflow-hidden">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold tracking-tight">{editingCategory ? "تعديل القسم" : "إضافة قسم جديد"}</h2>
@@ -279,18 +332,6 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الرابط الدائم (Slug) <span className="text-red-500">*</span></label>
-                  <input 
-                    name="slug"
-                    type="text" 
-                    required
-                    dir="ltr"
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left"
-                    placeholder="mountain-honey"
-                  />
-                </div>
-
                 <div className="space-y-3">
                   <label className="text-sm font-medium">نوع القسم <span className="text-red-500">*</span></label>
                   <div className="flex items-center gap-4">
@@ -299,12 +340,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                         type="radio" 
                         name="categoryType" 
                         value="main" 
-                        defaultChecked
+                        checked={categoryType === "main"}
                         className="text-primary focus:ring-primary"
-                        onChange={(e) => {
-                          const select = document.getElementById('parentId-select') as HTMLSelectElement
-                          if(select) { select.value = ""; select.disabled = true; }
-                        }}
+                        onChange={() => setCategoryType("main")}
                       />
                       <span className="text-sm">قسم رئيسي</span>
                     </label>
@@ -312,55 +350,67 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                       <input 
                         type="radio" 
                         name="categoryType" 
-                        value="sub" 
+                        value="sub"
+                        checked={categoryType === "sub"} 
                         className="text-primary focus:ring-primary"
-                        onChange={(e) => {
-                          const select = document.getElementById('parentId-select') as HTMLSelectElement
-                          if(select) { select.disabled = false; }
-                        }}
+                        onChange={() => setCategoryType("sub")}
                       />
                       <span className="text-sm">قسم فرعي</span>
                     </label>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">اختر القسم الأب</label>
-                  <select 
-                    id="parentId-select"
-                    name="parentId"
-                    disabled
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none disabled:opacity-50 disabled:bg-muted/10"
-                  >
-                    <option value="">اختر...</option>
-                    {categories.filter(c => !c.parentId && c.id !== editingCategory?.id).map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                </div>
+                {categoryType === "sub" && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">اختر القسم الأب <span className="text-red-500">*</span></label>
+                    <select 
+                      id="parentId-select"
+                      name="parentId"
+                      required
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                    >
+                      <option value="">اختر...</option>
+                      {categories.filter(c => !c.parentId && c.id !== editingCategory?.id).map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">المجال التابع له (اختياري)</label>
-                  <select 
-                    id="departmentId-select"
-                    name="departmentId"
-                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
-                  >
-                    <option value="">بدون مجال (قسم مستقل أو يتبع الأب)</option>
-                    {departments?.map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
-                    ))}
-                  </select>
-                </div>
+                {categoryType === "main" && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">المجال التابع له <span className="text-red-500">*</span></label>
+                    <select 
+                      id="departmentId-select"
+                      name="departmentId"
+                      required
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                    >
+                      <option value="">اختر المجال...</option>
+                      {departments?.map(d => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الوصف (اختياري)</label>
-                  <textarea 
-                    name="description"
-                    rows={3}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring resize-none"
-                    placeholder="وصف القسم..."
-                  />
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowAdvanced(!showAdvanced)}>
+                    <span className="text-sm font-medium text-muted-foreground">إعدادات متقدمة</span>
+                    <svg className={`w-4 h-4 text-muted-foreground transition-transform ${showAdvanced ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  <div className={showAdvanced ? "pt-2" : "hidden"}>
+                    <label className="text-sm font-medium">الرابط الدائم (Slug)</label>
+                    <input 
+                      name="slug"
+                      type="text" 
+                      dir="ltr"
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left mt-2"
+                      placeholder="يترك فارغاً للتوليد التلقائي"
+                    />
+                  </div>
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full h-10 flex items-center justify-center gap-2">
@@ -370,7 +420,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
             </div>
           </div>
         </div>
-
+        )}
       </div>
 
       <ConfirmModal 

@@ -74,14 +74,14 @@ export async function getPaymentMethods() {
   })
 }
 
-export async function createPaymentMethod(data: { name: string; type: string; accountInfo?: string; instructions?: string; isActive?: boolean; sortOrder?: number }) {
+export async function createPaymentMethod(data: { name: string; type: string; accountInfo?: string; paymentLink?: string; logoUrl?: string; instructions?: string; isActive?: boolean; sortOrder?: number }) {
   await checkAdmin()
   const pm = await db.paymentMethod.create({ data })
   revalidatePath('/admin/shipping-payment')
   return pm
 }
 
-export async function updatePaymentMethod(id: string, data: { name?: string; type?: string; accountInfo?: string; instructions?: string; isActive?: boolean; sortOrder?: number }) {
+export async function updatePaymentMethod(id: string, data: { name?: string; type?: string; accountInfo?: string; paymentLink?: string; logoUrl?: string; instructions?: string; isActive?: boolean; sortOrder?: number }) {
   await checkAdmin()
   const pm = await db.paymentMethod.update({ where: { id }, data })
   revalidatePath('/admin/shipping-payment')

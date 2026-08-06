@@ -9,29 +9,36 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { MultiImageUploader } from "@/components/ui/multi-image-uploader"
 import { Switch } from "@/components/ui/switch"
 import * as XLSX from "xlsx"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function ProductsClient({ products, categories, brands = [], departments = [] }: { products: any[], categories: any[], brands?: any[], departments?: any[] }) {
+  const { hasPermission } = usePermissions()
+  const canAdd = hasPermission("products.add")
+  const canEdit = hasPermission("products.edit")
+  const canDelete = hasPermission("products.delete")
+
   const [localProducts, setLocalProducts] = useState<any[]>(products)
   useEffect(() => { setLocalProducts(products) }, [products])
 
   // Form States
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
-  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [editingProduct, setEditingProduct] = useState<any | null>(null)
+  const [isBulkSubmitting, setIsBulkSubmitting] = useState(false)
+  
+  // Image Upload State
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  
+  // Brand selection
+  const [selectedBrandId, setSelectedBrandId] = useState("")
+  const [brandSearch, setBrandSearch] = useState("")
+  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false)
   
   // Single Action States
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
 
-  // Brand Dropdown State
-  const [brandSearch, setBrandSearch] = useState("")
-  const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false)
-  const [selectedBrandId, setSelectedBrandId] = useState("")
   const [showAdvanced, setShowAdvanced] = useState(false)
-
-  // Department -> Category dynamic selection for the form
-  const [formDepartmentId, setFormDepartmentId] = useState("")
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,9 +54,10 @@ export function ProductsClient({ products, categories, brands = [], departments 
   // Bulk Edit Modal
   const [bulkEditOpen, setBulkEditOpen] = useState(false)
   const [bulkEditData, setBulkEditData] = useState<any[]>([])
-  const [isBulkSubmitting, setIsBulkSubmitting] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const filteredBrands = brands.filter((b: any) => b.name.toLowerCase().includes(brandSearch.toLowerCase()))
 
   // Memoized Filtered Products
   const filteredProducts = useMemo(() => {
@@ -76,7 +84,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
         form.stock.value = editingProduct.stock || 0
         form.description.value = editingProduct.description || ""
       }
-      setFormDepartmentId(editingProduct.departmentId || "")
       setTimeout(() => {
         if (form && form.categoryId) {
           form.categoryId.value = editingProduct.categoryId || ""
@@ -95,7 +102,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
     setImageUrls([])
     setSelectedBrandId("")
     setBrandSearch("")
-    setFormDepartmentId("")
     const form: any = document.getElementById("add-product-form")
     if (form) form.reset()
   }
@@ -106,7 +112,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set("brandId", selectedBrandId)
-    formData.set("departmentId", formDepartmentId)
     
     let res;
     if (editingProduct) {
@@ -209,16 +214,13 @@ export function ProductsClient({ products, categories, brands = [], departments 
   function handleExportExcel() {
     const dataToExport = filteredProducts.map(p => ({
       "الاسم": p.name,
-      "الرابط (Slug)": p.slug,
       "الرمز (SKU)": p.sku,
       "السعر": p.price,
       "سعر التخفيض": p.discountPrice || "",
       "المخزون": p.stock,
       "القسم": categories.find(c => c.id === p.categoryId)?.name || "",
-      "المجال": departments.find(d => d.id === p.departmentId)?.name || "",
       "الماركة": brands.find(b => b.id === p.brandId)?.name || "",
-      "الوصف": p.description || "",
-      "مفعل؟": p.isActive ? "نعم" : "لا"
+      "الوصف": p.description || ""
     }))
 
     const ws = XLSX.utils.json_to_sheet(dataToExport)
@@ -249,7 +251,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
             costPrice: row["سعر التكلفة"] ? parseFloat(row["سعر التكلفة"]) : undefined,
             stock: row["المخزون"] ? parseInt(row["المخزون"]) : 0,
             categoryId: categories.find(c => c.name === (row["القسم"] || row["التصنيف"]))?.id || categories[0]?.id || "", 
-            departmentId: departments.find(d => d.name === row["المجال"])?.id || undefined,
             brandId: brands.find(b => b.name === row["الماركة"])?.id || undefined,
             description: row["الوصف"] || "",
             isActive: row["مفعل؟"] === "نعم"
@@ -267,12 +268,10 @@ export function ProductsClient({ products, categories, brands = [], departments 
             }
           });
 
-          if (duplicates.length > 0) {
+          if (parsedData.length > 0) {
             setImportConflicts({ parsed: parsedData, duplicates, ready });
-          } else if (ready.length > 0) {
-            await submitImport(ready, []);
           } else {
-            toast.info("لا توجد منتجات جديدة لاستيرادها.");
+            toast.info("لا توجد منتجات لاستيرادها.");
           }
         }
       } catch (err) {
@@ -323,8 +322,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
     }
   }
 
-  const filteredBrands = brands.filter(b => b.name.toLowerCase().includes(brandSearch.toLowerCase()))
-
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-2">
@@ -342,19 +339,22 @@ export function ProductsClient({ products, categories, brands = [], departments 
           </Button>
           <input type="file" accept=".xlsx, .xls, .csv" className="hidden" ref={fileInputRef} onChange={handleImportExcel} />
           
-          <Button onClick={() => {
-            setBulkEditData(filteredProducts.map(p => ({ ...p })))
-            setBulkEditOpen(true)
-          }} variant="outline" className="gap-2">
-            <Edit className="w-4 h-4" /> <span className="hidden sm:inline">تعديل سريع</span>
-          </Button>
-          <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2 bg-slate-900 hover:bg-slate-800 text-white border-none">
-            {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة منتج</>}
-          </Button>
+          {canEdit && (
+            <Button onClick={() => {
+              setBulkEditData(filteredProducts.map(p => ({ ...p })))
+              setBulkEditOpen(true)
+            }} variant="outline" className="gap-2">
+              <Edit className="w-4 h-4" /> <span className="hidden sm:inline">تعديل سريع</span>
+            </Button>
+          )}
+          {canAdd && (
+            <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2 bg-slate-900 hover:bg-slate-800 text-white border-none">
+              {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة منتج</>}
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Advanced Filters */}
       <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center gap-4">
           <div className="relative flex-1">
@@ -407,31 +407,35 @@ export function ProductsClient({ products, categories, brands = [], departments 
         )}
       </div>
 
-      {/* Bulk Actions Bar */}
       {selectedIds.length > 0 && (
         <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-4 animate-in fade-in mb-4">
           <div className="text-sm font-medium text-slate-700">تم تحديد {selectedIds.length} منتج</div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
-              <Edit className="h-3.5 w-3.5" /> تعديل جماعي
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
-              <Eye className="h-3.5 w-3.5 text-green-600" /> تفعيل
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
-              <EyeOff className="h-3.5 w-3.5 text-yellow-600" /> إخفاء
-            </Button>
-            <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 border-none">
-              <Trash2 className="h-3.5 w-3.5" /> حذف
-            </Button>
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
+                <Edit className="h-3.5 w-3.5" /> تعديل جماعي
+              </Button>
+            )}
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
+                <Eye className="h-3.5 w-3.5 text-green-600" /> تفعيل
+              </Button>
+            )}
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
+                <EyeOff className="h-3.5 w-3.5 text-yellow-600" /> إخفاء
+              </Button>
+            )}
+            {canDelete && (
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 border-none">
+                <Trash2 className="h-3.5 w-3.5" /> حذف
+              </Button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Split Screen Layout */}
       <div className="flex flex-col lg:flex-row items-start gap-8 relative">
-        
-        {/* Main Table Column */}
         <div className="flex-1 w-full min-w-0">
           <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -500,16 +504,21 @@ export function ProductsClient({ products, categories, brands = [], departments 
                              checked={product.isActive} 
                              onCheckedChange={() => toggleStatus(product.id, product.isActive)}
                              title="تفعيل / إخفاء المنتج"
+                             disabled={!canEdit}
                            />
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => setEditingProduct(product)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => { setProductToDelete(product.id); setDeleteModalOpen(true); }}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {canEdit && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => setEditingProduct(product)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canDelete && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => { setProductToDelete(product.id); setDeleteModalOpen(true); }}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -521,7 +530,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
           </div>
         </div>
 
-        {/* Sticky Form Column (Right in RTL) */}
         <div className={`w-full lg:w-[420px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
           <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[calc(100vh-2rem)]">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5 shrink-0 flex items-center justify-between">
@@ -537,54 +545,38 @@ export function ProductsClient({ products, categories, brands = [], departments 
             </div>
             
             <div className="p-6 overflow-y-auto">
-              <form onSubmit={handleSubmit} className="space-y-6" id="add-product-form">
-                <div className="space-y-4">
-                  
-                  {/* Image Upload Area */}
-                  <div className="space-y-2">
-                    <MultiImageUploader value={imageUrls} onChange={setImageUrls} />
-                    <input type="hidden" name="images" value={JSON.stringify(imageUrls)} />
-                  </div>
+              <form onSubmit={handleSubmit} className="space-y-4" id="add-product-form">
+                <div className="space-y-2">
+                  <MultiImageUploader value={imageUrls} onChange={setImageUrls} />
+                  <input type="hidden" name="images" value={JSON.stringify(imageUrls)} />
+                </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">اسم المنتج <span className="text-red-500">*</span></label>
-                    <input name="name" type="text" required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">اسم المنتج <span className="text-red-500">*</span></label>
+                    <input name="name" type="text" required className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">المجال <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
-                    <select 
-                      value={formDepartmentId}
-                      onChange={(e) => setFormDepartmentId(e.target.value)}
-                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
-                    >
-                      <option value="">بدون مجال (يتبع القسم مباشرة)</option>
-                      {departments?.map(d => (
-                        <option key={d.id} value={d.id}>{d.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">القسم <span className="text-red-500">*</span></label>
-                    <select name="categoryId" required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium">القسم <span className="text-red-500">*</span></label>
+                    <select name="categoryId" required className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none">
                       <option value="">اختيار القسم الفرعي...</option>
-                      {categories.filter(c => !c.parentId && (!formDepartmentId || c.departmentId === formDepartmentId)).map(mainCat => (
+                      {categories.filter(c => !c.parentId).map(mainCat => (
                         <optgroup key={mainCat.id} label={mainCat.name}>
                           {categories.filter(c => c.parentId === mainCat.id).map(subCat => (
                             <option key={subCat.id} value={subCat.id}>{subCat.name}</option>
                           ))}
                         </optgroup>
                       ))}
-                      {/* For categories without parents */}
-                      {categories.filter(c => !c.parentId && (!formDepartmentId || c.departmentId === formDepartmentId)).map(c => (
+                      {categories.filter(c => !c.parentId).map(c => (
                          <option key={c.id + "_alone"} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
+                </div>
 
-                  <div className="space-y-2 relative">
-                    <label className="text-sm font-medium">الماركة <span className="text-muted-foreground text-xs font-normal">(اختياري)</span></label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 relative">
+                    <label className="text-xs font-medium">الماركة <span className="text-muted-foreground text-[10px] font-normal">(اختياري)</span></label>
                     <div className="relative">
                       <input
                         type="text"
@@ -597,7 +589,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
                         onFocus={() => setIsBrandDropdownOpen(true)}
                         onBlur={() => setTimeout(() => setIsBrandDropdownOpen(false), 200)}
                         placeholder="ابحث عن ماركة..."
-                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
                       />
                       {isBrandDropdownOpen && (
                         <div className="absolute top-full left-0 right-0 mt-1 max-h-40 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50">
@@ -613,16 +605,6 @@ export function ProductsClient({ products, categories, brands = [], departments 
                       )}
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">السعر (ج.م) <span className="text-red-500">*</span></label>
-                      <input name="price" type="number" step="0.01" required dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">التخفيض</label>
-                      <input name="discountPrice" type="number" step="0.01" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring text-left" />
-                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -678,39 +660,78 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
       {/* Import Conflicts Modal */}
       {importConflicts && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-background rounded-xl border border-border/50 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in">
+          <div className="bg-background rounded-xl border border-border/50 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-border/50 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-red-600">تنبيه: منتجات مكررة!</h2>
+              <h2 className="text-xl font-bold">معاينة المنتجات المستوردة</h2>
               <Button variant="ghost" size="icon" onClick={() => setImportConflicts(null)}><X className="w-5 h-5" /></Button>
             </div>
             <div className="p-6 overflow-y-auto flex-1">
               <p className="mb-4 text-muted-foreground">
-                تم العثور على <strong className="text-foreground">{importConflicts.duplicates.length}</strong> منتجات مكررة بالاسم. يمكنك تحديث بياناتها أو تخطيها.
+                إجمالي المنتجات: <strong className="text-foreground">{importConflicts.parsed.length}</strong> 
+                {importConflicts.duplicates.length > 0 && (
+                  <span className="text-red-500 mr-2">
+                    (منها {importConflicts.duplicates.length} مكرر)
+                  </span>
+                )}
               </p>
-              <div className="space-y-3 max-h-64 overflow-y-auto pr-2 border rounded-md p-2">
-                {importConflicts.duplicates.map((dup, i) => (
-                  <div key={i} className="flex justify-between items-center text-sm p-2 bg-muted/30 rounded">
-                    <span className="font-medium truncate max-w-[200px]">{dup.name}</span>
-                    <span className="text-muted-foreground text-xs">موجود مسبقاً</span>
-                  </div>
-                ))}
+              <div className="space-y-3 max-h-80 overflow-y-auto pr-2 border rounded-md p-2">
+                {importConflicts.parsed.map((item, i) => {
+                  const isDuplicate = importConflicts.duplicates.some(d => d.name === item.name);
+                  return (
+                    <div key={i} className={`flex justify-between items-center text-sm p-2 rounded ${isDuplicate ? 'bg-red-500/10 border border-red-500/20' : 'bg-muted/30 border border-transparent'}`}>
+                      <div className="flex flex-col">
+                        <span className="font-medium truncate max-w-[300px]">{item.name}</span>
+                        {isDuplicate && <span className="text-red-500 text-xs mt-1">موجود مسبقاً (مكرر)</span>}
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-muted-foreground hover:text-red-500 hover:bg-red-50"
+                        onClick={() => {
+                          const newParsed = [...importConflicts.parsed];
+                          newParsed.splice(i, 1);
+                          const duplicates: any[] = [];
+                          const ready: any[] = [];
+                          newParsed.forEach(newItem => {
+                            const existing = localProducts.find(p => p.name.toLowerCase() === newItem.name.toLowerCase());
+                            if (existing) {
+                              duplicates.push({ ...newItem, existingId: existing.id });
+                            } else {
+                              ready.push(newItem);
+                            }
+                          });
+                          setImportConflicts({ parsed: newParsed, duplicates, ready });
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
+                {importConflicts.parsed.length === 0 && (
+                  <div className="p-4 text-center text-muted-foreground">لا يوجد منتجات</div>
+                )}
               </div>
             </div>
-            <div className="p-6 border-t border-border/50 flex items-center gap-3 bg-muted/10">
+            <div className="p-6 border-t border-border/50 flex flex-col sm:flex-row items-center gap-3 bg-muted/10">
               <Button 
                 onClick={() => submitImport(importConflicts.ready, importConflicts.duplicates)} 
-                className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+                className="flex-1 bg-primary text-primary-foreground"
+                disabled={importConflicts.parsed.length === 0}
               >
-                تحديث المكرر وإضافة الجديد ({importConflicts.ready.length + importConflicts.duplicates.length})
+                استيراد الكل ({importConflicts.parsed.length})
               </Button>
-              <Button 
-                onClick={() => submitImport(importConflicts.ready, [])} 
-                variant="outline" 
-                className="flex-1"
-              >
-                تخطي المكرر ({importConflicts.ready.length} فقط)
-              </Button>
+              {importConflicts.duplicates.length > 0 && (
+                <Button 
+                  onClick={() => submitImport(importConflicts.ready, [])} 
+                  variant="outline" 
+                  className="flex-1"
+                  disabled={importConflicts.ready.length === 0}
+                >
+                  استيراد الجديد فقط ({importConflicts.ready.length})
+                </Button>
+              )}
             </div>
           </div>
         </div>

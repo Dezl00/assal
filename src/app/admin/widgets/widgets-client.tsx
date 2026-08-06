@@ -11,6 +11,7 @@ import { ProductPickerModal } from "@/components/admin/product-picker-modal"
 import { getCollectionProducts, getCategories, getCollections, getProducts } from "@/features/widget-builder/actions"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { usePermissions } from "@/hooks/use-permissions"
 
 const WIDGET_TYPES = [
   { id: "HeroSlider", name: "سلايدر الصور", icon: ImageIcon, desc: "سلايدر متحرك للصور أعلى الصفحة" },
@@ -27,6 +28,9 @@ const WIDGET_TYPES = [
 ]
 
 export function WidgetsClient({ initialWidgets, categories, departments }: { initialWidgets: any[], categories: any[], departments: any[] }) {
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission("widgets.edit")
+
   const [widgets, setWidgets] = useState(initialWidgets)
   
   const [activeTab, setActiveTab] = useState<"add" | "edit">("add")
@@ -400,15 +404,17 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
       )}
 
       {/* Floating Action Button for Mobile */}
-      <button 
-        className="fixed bottom-20 left-6 z-40 lg:hidden h-14 w-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition-transform active:scale-95"
-        onClick={() => {
-          if (!editingWidget) setActiveTab("add")
-          setIsMobileSidebarOpen(true)
-        }}
-      >
-        {editingWidget ? <Settings2 className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-      </button>
+      {canEdit && (
+        <button 
+          className="fixed bottom-20 left-6 z-40 lg:hidden h-14 w-14 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:bg-primary/90 transition-transform active:scale-95"
+          onClick={() => {
+            if (!editingWidget) setActiveTab("add")
+            setIsMobileSidebarOpen(true)
+          }}
+        >
+          {editingWidget ? <Settings2 className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+        </button>
+      )}
 
       {/* Sidebar (Right) */}
       <div id="widget-sidebar" className={cn(
@@ -902,19 +908,177 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                                 type="button" 
                                 variant="outline" 
                                 onClick={() => setProductPickerOpen(true)}
-                                className="w-full h-9 text-xs"
-                              >
-                                <ShoppingBag className="w-4 h-4 mr-2" />
-                                تحديد المنتجات ({selectedProductIds.length})
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                        
-                        <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || (editingWidget.type !== "ProductList" && !newItemImage)}>
-                          {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث التعديل" : "إضافة العنصر")}
-                        </Button>
-                      </form>
+                            
+                            {editingWidget.type === "HeroSlider" && (
+                              <div className="space-y-2 mt-2 border-t border-border/50 pt-2 pb-2">
+                                <input name="subtitle" placeholder="الوصف النصي (اختياري)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                                <input name="buttonText" placeholder="نص الزر (اختياري - افتراضي: تسوق الآن)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                                
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="text-[10px] text-muted-foreground block mb-1">المحاذاة</label>
+                                    <select name="alignment" className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                      <option value="center">في المنتصف</option>
+                                      <option value="right">لليمين</option>
+                                      <option value="left">لليسار</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] text-muted-foreground block mb-1">شكل الزر</label>
+                                    <select name="buttonStyle" className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                      <option value="solid">ممتلئ (Solid)</option>
+                                      <option value="outline">مفرغ (Outline)</option>
+                                    </select>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <div>
+                                    <label className="text-[10px] text-muted-foreground block mb-1">تعتيم الشريحة (الشفافية %)</label>
+                                    <input type="range" name="overlayOpacity" min="0" max="100" defaultValue="40" className="w-full h-9" />
+                                  </div>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                  <div>
+                                    <label className="text-[10px] text-muted-foreground block mb-1">لون خلفية الزر</label>
+                                    <select name="buttonBgColor" value={btnBgColor} onChange={e => setBtnBgColor(e.target.value)} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                      <option value="primary">اللون الأساسي</option>
+                                      <option value="secondary">اللون الثانوي</option>
+                                      <option value="white">أبيض</option>
+                                      <option value="custom">مخصص...</option>
+                                    </select>
+                                    {btnBgColor === "custom" && (
+                                      <input type="color" name="buttonCustomBgColor" className="w-full h-9 mt-1 rounded border border-input p-1 cursor-pointer" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] text-muted-foreground block mb-1">لون نص الزر</label>
+                                    <select name="buttonTextColor" value={btnTextColor} onChange={e => setBtnTextColor(e.target.value)} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                      <option value="white">أبيض</option>
+                                      <option value="primary">اللون الأساسي</option>
+                                      <option value="secondary">اللون الثانوي</option>
+                                      <option value="custom">مخصص...</option>
+                                    </select>
+                                    {btnTextColor === "custom" && (
+                                      <input type="color" name="buttonCustomTextColor" className="w-full h-9 mt-1 rounded border border-input p-1 cursor-pointer" />
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {editingWidget.type === "BannerGrid" || editingWidget.type === "HeroSlider" ? (
+                              <div className="flex gap-2">
+                                <select 
+                                  name="redirectType" 
+                                  className="h-9 w-1/3 rounded border border-input bg-background px-2 text-xs"
+                                  value={linkType}
+                                  onChange={(e) => {
+                                    setLinkType(e.target.value)
+                                    setLinkValue("")
+                                  }}
+                                >
+                                  <option value="custom">رابط مخصص</option>
+                                  <option value="category">قسم (Category)</option>
+                                  <option value="department">مجال (Department)</option>
+                                  <option value="product">منتج (Product)</option>
+                                  <option value="collection">قائمة منتجات (Collection)</option>
+                                </select>
+                                
+                                {linkType === "category" ? (
+                                  <>
+                                    <select
+                                      value={linkValue}
+                                      onChange={(e) => setLinkValue(e.target.value)}
+                                      className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                      required
+                                    >
+                                      <option value="">اختر القسم</option>
+                                      {categories.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                    </select>
+                                    <input type="hidden" name="buttonUrl" value={linkValue ? `/category/${linkValue}` : ""} required />
+                                  </>
+                                ) : linkType === "collection" ? (
+                                  <>
+                                    <select
+                                      value={linkValue}
+                                      onChange={(e) => setLinkValue(e.target.value)}
+                                      className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                      required
+                                    >
+                                      <option value="">اختر قائمة المنتجات</option>
+                                      {collections.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                    </select>
+                                    <input type="hidden" name="buttonUrl" value={linkValue ? `/collection/${linkValue}` : ""} required />
+                                  </>
+                                ) : linkType === "department" ? (
+                                  <>
+                                    <select
+                                      value={linkValue}
+                                      onChange={(e) => setLinkValue(e.target.value)}
+                                      className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs"
+                                      required
+                                    >
+                                      <option value="">اختر المجال</option>
+                                      {departments.map(d => <option key={d.slug} value={d.slug}>{d.name}</option>)}
+                                    </select>
+                                    <input type="hidden" name="buttonUrl" value={linkValue ? `/department/${linkValue}` : ""} required />
+                                  </>
+                                ) : linkType === "product" ? (
+                                  <div className="w-2/3">
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      className="w-full h-9 text-xs justify-between"
+                                      onClick={() => setProductPickerOpen(true)}
+                                    >
+                                      <span className="truncate">
+                                        {linkValue ? `تم تحديد منتج (${linkValue})` : "اختر منتجاً..."}
+                                      </span>
+                                    </Button>
+                                    <input type="hidden" name="buttonUrl" value={linkValue} required />
+                                  </div>
+                                ) : (
+                                  <input 
+                                    name="buttonUrl" 
+                                    value={linkValue}
+                                    onChange={(e) => setLinkValue(e.target.value)}
+                                    placeholder="الرابط المخصص" 
+                                    dir="ltr" 
+                                    className="h-9 w-2/3 rounded border border-input bg-background px-2 text-xs text-left" 
+                                  />
+                                )}
+                              </div>
+                            ) : editingWidget.type !== "ProductList" ? (
+                              <input 
+                                name="buttonUrl" 
+                                placeholder={editingWidget.type === "BrandSlider" ? "رابط التوجيه (يتم تلقائياً التوجيه لمنتجات الماركة)" : "رابط التوجيه عند الضغط"} 
+                                dir="ltr" 
+                                className="h-9 w-full rounded border border-input bg-background px-2 text-xs text-left" 
+                              />
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="text-xs text-muted-foreground p-2 bg-secondary/20 rounded mb-2">
+                                  سيتم إنشاء مسار تلقائي لهذه القائمة بمجرد الحفظ.
+                                </div>
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  onClick={() => setProductPickerOpen(true)}
+                                  className="w-full h-9 text-xs"
+                                >
+                                  <ShoppingBag className="w-4 h-4 mr-2" />
+                                  تحديد المنتجات ({selectedProductIds.length})
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <Button type="submit" variant={editingItemId ? "default" : "secondary"} size="sm" className="w-full text-xs h-9 flex items-center justify-center gap-2" disabled={isSubmitting || (editingWidget.type !== "ProductList" && !newItemImage)}>
+                            {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItemId ? "تحديث التعديل" : "إضافة العنصر")}
+                          </Button>
+                        </form>
+                      )}
                       
                       {productPickerOpen && (editingWidget.type === "BannerGrid" || editingWidget.type === "HeroSlider") && linkType === "product" ? (
                         <ProductPickerModal 
@@ -966,15 +1130,17 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
               {widgets.map((widget) => (
                 <div 
                   key={widget.id} 
-                  draggable 
-                  onDragStart={(e) => handleDragStart(e, widget.id)}
-                  onDragOver={(e) => handleDragOver(e, widget.id)}
-                  onDrop={handleDrop}
-                  onDragEnd={() => setDraggedWidgetId(null)}
+                  draggable={canEdit}
+                  onDragStart={(e) => canEdit && handleDragStart(e, widget.id)}
+                  onDragOver={(e) => canEdit && handleDragOver(e, widget.id)}
+                  onDrop={canEdit ? handleDrop : undefined}
+                  onDragEnd={() => canEdit && setDraggedWidgetId(null)}
                   onClick={() => {
-                    setEditingWidget(widget)
-                    setActiveTab("edit")
-                    setIsMobileSidebarOpen(true)
+                    if (canEdit) {
+                      setEditingWidget(widget)
+                      setActiveTab("edit")
+                      setIsMobileSidebarOpen(true)
+                    }
                   }}
                   className={`group flex items-center justify-between p-3 md:p-4 rounded-xl border transition-all cursor-pointer ${
                     draggedWidgetId === widget.id 
@@ -1012,20 +1178,23 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                       <Switch 
                         checked={widget.status} 
                         onCheckedChange={() => handleToggleWidget(widget)}
+                        disabled={!canEdit}
                       />
                     </div>
 
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setWidgetToDelete(widget.id)
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {canEdit && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setWidgetToDelete(widget.id)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                     <ChevronRight className="h-5 w-5 text-muted-foreground opacity-30 rtl-flip group-hover:opacity-100 group-hover:text-primary transition-all group-hover:translate-x-1" />
                   </div>
                 </div>

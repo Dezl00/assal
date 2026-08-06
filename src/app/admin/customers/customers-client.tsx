@@ -6,8 +6,12 @@ import { Search, Eye, Trash2, User, Phone, MapPin, Mail, Calendar, ChevronLeft, 
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { deleteCustomer } from "@/features/customers/actions"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function CustomersClient({ customers }: { customers: any[] }) {
+  const { hasPermission } = usePermissions()
+  const canDelete = hasPermission("customers.delete")
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
@@ -62,9 +66,9 @@ export function CustomersClient({ customers }: { customers: any[] }) {
         </nav>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-12rem)] min-h-[600px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:h-[calc(100vh-12rem)] md:min-h-[600px]">
         {/* Right pane: Customer List */}
-        <div className="md:col-span-1 rounded-xl border border-border bg-card flex flex-col h-full overflow-hidden">
+        <div className="md:col-span-1 rounded-xl border border-border bg-card flex flex-col md:h-full md:overflow-hidden">
           <div className="p-4 border-b border-border bg-muted/5 shrink-0">
             <div className="relative">
               <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -78,7 +82,7 @@ export function CustomersClient({ customers }: { customers: any[] }) {
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto scrollbar-thin">
+          <div className="flex-1 md:overflow-y-auto scrollbar-thin">
             {filteredCustomers.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 لا يوجد عملاء يطابقون بحثك
@@ -109,7 +113,7 @@ export function CustomersClient({ customers }: { customers: any[] }) {
         </div>
 
         {/* Left pane: Customer Details */}
-        <div className="md:col-span-2 rounded-xl border border-border bg-card h-full overflow-hidden flex flex-col">
+        <div className="md:col-span-2 rounded-xl border border-border bg-card md:h-full md:overflow-hidden flex flex-col">
           {!selectedCustomer ? (
             <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center space-y-4">
               <div className="h-20 w-20 rounded-full border border-border bg-muted/20 flex items-center justify-center">
@@ -121,7 +125,7 @@ export function CustomersClient({ customers }: { customers: any[] }) {
               </div>
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto scrollbar-thin">
+            <div className="flex-1 md:overflow-y-auto scrollbar-thin">
               {/* Header Profile */}
               <div className="p-6 border-b border-border">
                 <div className="flex justify-between items-start">
@@ -137,18 +141,20 @@ export function CustomersClient({ customers }: { customers: any[] }) {
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="gap-2"
-                    onClick={() => {
-                      setCustomerToDelete(selectedCustomer.id)
-                      setDeleteModalOpen(true)
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    حذف الحساب
-                  </Button>
+                  {canDelete && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="gap-2"
+                      onClick={() => {
+                        setCustomerToDelete(selectedCustomer.id)
+                        setDeleteModalOpen(true)
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      حذف الحساب
+                    </Button>
+                  )}
                 </div>
               </div>
 

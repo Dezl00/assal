@@ -13,19 +13,18 @@ export async function createProduct(formData: FormData) {
       // Find the next available sequential number
       const products = await db.product.findMany({ select: { slug: true } });
       const numericSlugs = products
-        .map(p => parseInt(p.slug, 10))
-        .filter(n => !isNaN(n) && n > 0)
-        .sort((a, b) => a - b);
+        .map(p => {
+          const match = p.slug.match(/^(?:P-)?(\d+)$/i);
+          return match ? parseInt(match[1], 10) : NaN;
+        })
+        .filter(n => !isNaN(n) && n > 0);
       
-      let nextId = 1;
-      for (const id of numericSlugs) {
-        if (id === nextId) {
-          nextId++;
-        } else if (id > nextId) {
-          break;
-        }
+      let nextId = 10001;
+      if (numericSlugs.length > 0) {
+        const maxId = Math.max(...numericSlugs);
+        nextId = maxId >= 10001 ? maxId + 1 : 10001;
       }
-      slug = nextId.toString();
+      slug = `P-${nextId}`;
     }
     
 

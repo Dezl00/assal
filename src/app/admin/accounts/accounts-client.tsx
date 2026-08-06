@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
+import { usePermissions } from "@/hooks/use-permissions"
 
 const PERMISSIONS_SCHEMA = [
   { 
@@ -59,6 +60,16 @@ const PERMISSIONS_SCHEMA = [
     ]
   },
   { 
+    id: 'offers', 
+    label: 'العروض وأكواد الخصم',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للعروض' },
+      { id: 'add', label: 'إضافة عروض' },
+      { id: 'edit', label: 'تعديل العروض' },
+      { id: 'delete', label: 'حذف العروض' }
+    ]
+  },
+  { 
     id: 'widgets', 
     label: 'واجهة المتجر والتصميم',
     subPermissions: [
@@ -102,7 +113,12 @@ const PERMISSIONS_SCHEMA = [
 ]
 
 export function AccountsClient({ accounts }: { accounts: any[] }) {
-  const [isFormVisible, setIsFormVisible] = useState(true)
+  const { hasPermission } = usePermissions()
+  const canAdd = hasPermission("accounts.add")
+  const canEdit = hasPermission("accounts.edit")
+  const canDelete = hasPermission("accounts.delete")
+
+  const [isFormVisible, setIsFormVisible] = useState(canAdd)
   const [editingItem, setEditingItem] = useState<any>(null)
   
   // State for permissions (stores full keys like "products.view")
@@ -246,17 +262,22 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                           <Switch 
                             checked={acc.isActive !== false} 
                             onCheckedChange={(checked) => handleUpdateStatus(acc.id, checked)}
+                            disabled={!canEdit}
                           />
-                          <Button variant="ghost" size="icon" onClick={() => { 
-                            setEditingItem(acc); 
-                            setSelectedPermissions(acc.permissions || []);
-                            setIsFormVisible(true) 
-                          }}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}>
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </Button>
+                          {canEdit && (
+                            <Button variant="ghost" size="icon" onClick={() => { 
+                              setEditingItem(acc); 
+                              setSelectedPermissions(acc.permissions || []);
+                              setIsFormVisible(true) 
+                            }}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button variant="ghost" size="icon" onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}>
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     )
@@ -271,8 +292,9 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
         </div>
 
         {/* Form Area */}
-        <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300">
-          <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
+        {(canAdd || editingItem) && (
+          <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300">
+            <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between shrink-0">
               <div>
                 <h2 className="text-lg font-semibold tracking-tight">{editingItem ? 'تعديل صلاحيات الحساب' : 'إضافة حساب جديد'}</h2>
@@ -383,6 +405,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
             </div>
           </div>
         </div>
+        )}
       </div>
 
       <ConfirmModal

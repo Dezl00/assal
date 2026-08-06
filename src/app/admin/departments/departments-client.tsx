@@ -7,8 +7,14 @@ import { createDepartment, deleteDepartment, updateDepartment } from "@/features
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { ImageUploader } from "@/components/ui/image-uploader"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function DepartmentsClient({ departments }: { departments: any[] }) {
+  const { hasPermission } = usePermissions()
+  const canAdd = hasPermission("categories.add")
+  const canEdit = hasPermission("categories.edit")
+  const canDelete = hasPermission("categories.delete")
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)
   
@@ -18,6 +24,10 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
   const [imageUrl, setImageUrl] = useState("")
 
   const [searchQuery, setSearchQuery] = useState("")
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  
+  // Local state for optimistic updates
+  const [localDepartments, setLocalDepartments] = useState(departments)
 
   useEffect(() => {
     if (editingDepartment) {
@@ -35,6 +45,7 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
   function resetForm() {
     setEditingDepartment(null)
     setImageUrl("")
+    setShowAdvanced(false)
     const form: any = document.getElementById("add-department-form")
     if (form) {
       form.reset()
@@ -77,6 +88,7 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
     const res = await deleteDepartment(departmentToDelete)
     if (res.success) {
       toast.success("تم الحذف بنجاح")
+      setLocalDepartments(prev => prev.filter(d => d.id !== departmentToDelete))
     } else {
       toast.error(res.error || "حدث خطأ أثناء الحذف")
     }
@@ -84,7 +96,24 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
     setDepartmentToDelete(null)
   }
 
-  const filteredDepartments = departments.filter(d => d.name.includes(searchQuery) || d.slug.includes(searchQuery))
+  async function toggleStatus(dept: any) {
+    if (!canEdit) return
+    const newStatus = !dept.isActive
+    // Optimistic update
+    setLocalDepartments(prev => prev.map(d => d.id === dept.id ? { ...d, isActive: newStatus } : d))
+    
+    const formData = new FormData()
+    formData.append("isActive", newStatus.toString())
+    const res = await updateDepartment(dept.id, formData)
+    
+    if (!res.success) {
+      toast.error("حدث خطأ أثناء التحديث")
+      // Revert
+      setLocalDepartments(prev => prev.map(d => d.id === dept.id ? { ...d, isActive: !newStatus } : d))
+    }
+  }
+
+  const filteredDepartments = localDepartments.filter(d => d.name.includes(searchQuery) || d.slug.includes(searchQuery))
 
   return (
     <div className="p-6 space-y-6">
@@ -95,25 +124,27 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
           <span className="text-foreground">إدارة المجالات</span>
         </nav>
         {/* On mobile we show the Add button, on desktop the form is always visible on the side */}
-        <Button onClick={handleAddDepartmentClick} className="gap-2 lg:hidden">
-          {isFormVisible && !editingDepartment ? (
-            <>
-              <X className="w-4 h-4" />
-              إلغاء
-            </>
-          ) : (
-            <>
-              <PlusCircle className="w-4 h-4" />
-              مجال جديد
-            </>
-          )}
-        </Button>
+        {canAdd && (
+          <Button onClick={handleAddDepartmentClick} className="gap-2 lg:hidden">
+            {isFormVisible && !editingDepartment ? (
+              <>
+                <X className="w-4 h-4" />
+                إلغاء
+              </>
+            ) : (
+              <>
+                <PlusCircle className="w-4 h-4" />
+                مجال جديد
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col lg:flex-row items-start gap-8 relative">
         
         {/* RIGHT/MAIN PANE: Search and List */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="flex-1 w-full min-w-0 flex flex-col gap-6">
           {/* SEARCH AND FILTER */}
           <div className="bg-card border border-border rounded-xl p-4 shadow-sm">
             <div className="relative max-w-md">
@@ -138,6 +169,7 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                     <th className="px-6 py-4 font-medium text-muted-foreground">الرابط</th>
                     <th className="px-6 py-4 font-medium text-muted-foreground text-center">الأقسام الرئيسية</th>
                     <th className="px-6 py-4 font-medium text-muted-foreground text-center">المنتجات</th>
+                    <th className="px-6 py-4 font-medium text-muted-foreground text-center">الحالة</th>
                     <th className="px-6 py-4 font-medium text-muted-foreground text-left">الإجراءات</th>
                   </tr>
                 </thead>
@@ -180,35 +212,45 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                         <td className="px-6 py-4 text-center">
                           <span className="font-medium">{dept._count?.products || 0}</span>
                         </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => toggleStatus(dept)}
+                            disabled={!canEdit}
+                            className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${dept.isActive ? 'bg-primary' : 'bg-muted'}`}
+                          >
+                            <span aria-hidden="true" className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${dept.isActive ? '-translate-x-4' : 'translate-x-0'}`} />
+                          </button>
+                        </td>
                         <td className="px-6 py-4">
-                          <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 gap-1"
-                              onClick={() => {
-                                setEditingDepartment(dept)
-                                // Scroll to form on mobile
-                                if (window.innerWidth < 1024) {
-                                  document.getElementById('add-department-form-container')?.scrollIntoView({ behavior: 'smooth' })
-                                }
-                              }}
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                              <span className="hidden sm:inline">تعديل</span>
-                            </Button>
-                            <Button 
-                              variant="destructive" 
-                              size="sm" 
-                              className="h-8 gap-1 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700"
-                              onClick={() => {
-                                setDepartmentToDelete(dept.id)
-                                setDeleteModalOpen(true)
-                              }}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              <span className="hidden sm:inline">حذف</span>
-                            </Button>
+                          <div className="flex justify-center gap-2">
+                            {canEdit && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                onClick={() => {
+                                  setEditingDepartment(dept)
+                                  if (window.innerWidth < 1024) {
+                                    document.getElementById('add-department-form-container')?.scrollIntoView({ behavior: 'smooth' })
+                                  }
+                                }}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            )}
+                            {canDelete && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => {
+                                  setDepartmentToDelete(dept.id)
+                                  setDeleteModalOpen(true)
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -220,9 +262,10 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
           </div>
         </div>
 
-        {/* LEFT PANE: Add/Edit Form (Sticky on desktop, toggleable on mobile) */}
-        <div id="add-department-form-container" className={`lg:col-span-1 ${!isFormVisible && !editingDepartment ? 'hidden lg:block' : 'block'}`}>
-          <div className="bg-card border border-border rounded-xl shadow-sm sticky top-[5.5rem]">
+        {/* LEFT PANE: Add/Edit Form */}
+        {(canAdd || editingDepartment) && (
+          <div id="add-department-form-container" className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible && !editingDepartment ? 'hidden lg:block' : 'block'}`}>
+            <div className="rounded-xl border border-border/50 bg-background shadow-sm overflow-hidden">
             <div className="p-4 border-b border-border bg-muted/20 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center text-primary">
@@ -260,27 +303,24 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الرابط (Slug) <span className="text-destructive">*</span></label>
-                  <input 
-                    type="text" 
-                    name="slug" 
-                    required 
-                    placeholder="مثال: clothing"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 ltr text-left"
-                    dir="ltr"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">الوصف (اختياري)</label>
-                  <textarea 
-                    name="description" 
-                    rows={3}
-                    placeholder="وصف قصير للمجال..."
-                    className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                  />
+                <div className="space-y-2 pt-4 border-t border-border/50">
+                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowAdvanced(!showAdvanced)}>
+                    <span className="text-sm font-medium text-muted-foreground">إعدادات متقدمة</span>
+                    <svg className={`w-4 h-4 text-muted-foreground transition-transform ${showAdvanced ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                  
+                  <div className={showAdvanced ? "pt-2" : "hidden"}>
+                    <label className="text-sm font-medium">الرابط (Slug)</label>
+                    <input 
+                      type="text" 
+                      name="slug" 
+                      placeholder="يترك فارغاً للتوليد التلقائي"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 mt-2"
+                      dir="ltr"
+                    />
+                  </div>
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} className="w-full h-10 flex items-center justify-center gap-2">
@@ -288,8 +328,9 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
                 </Button>
               </form>
             </div>
+          </div>
         </div>
-      </div>
+        )}
       </div>
 
       <ConfirmModal 

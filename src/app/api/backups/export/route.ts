@@ -30,7 +30,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const [products, categories, departments, brands, orders, users, themeConfig, branches, widgets] = await Promise.all([
+    const [products, categories, departments, brands, orders, users, themeConfig, branches, widgets, mediaAssets, collections] = await Promise.all([
       db.product.findMany({ include: { images: true } }),
       db.category.findMany(),
       db.department.findMany(),
@@ -39,13 +39,15 @@ export async function GET() {
       db.user.findMany(),
       db.themeConfig.findUnique({ where: { id: "default" } }),
       db.branch.findMany(),
-      db.widget.findMany({ include: { items: true } })
+      db.widget.findMany({ include: { items: true } }),
+      db.mediaAsset.findMany(),
+      db.collection.findMany({ include: { products: true } })
     ])
 
     const backupData = {
       metadata: {
         timestamp: new Date().toISOString(),
-        version: "1.0",
+        version: "1.1",
       },
       data: {
         products,
@@ -56,7 +58,9 @@ export async function GET() {
         users,
         themeConfig,
         branches,
-        widgets
+        widgets,
+        mediaAssets,
+        collections
       }
     }
 
@@ -67,6 +71,32 @@ export async function GET() {
 
     const publicPath = path.join(process.cwd(), "public");
     await addFolderToZipAsync(publicPath, zip, publicPath);
+
+    // Collect all URLs to download
+    const urlsToDownload = new Set<string>()
+    mediaAssets.forEach(m => urlsToDownload.add(m.url))
+    products.forEach(p => p.images.forEach(i => urlsToDownload.add(i.url)))
+    categories.forEach(c => c.imageUrl && urlsToDownload.add(c.imageUrl))
+    departments.forEach(d => d.imageUrl && urlsToDownload.add(d.imageUrl))
+    brands.forEach(b => b.logoUrl && urlsToDownload.add(b.logoUrl))
+    
+    // Download images and add to zip
+    const downloadPromises = Array.from(urlsToDownload).filter(url => url && url.startsWith('http')).map(async (url) => {
+      try {
+        const response = await fetch(url)
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer()
+          const fileName = url.split('/').pop() || `image-${Date.now()}.jpg`
+          // Remove query params from filename if any
+          const cleanFileName = fileName.split('?')[0]
+          zip.file(`images/${cleanFileName}`, arrayBuffer)
+        }
+      } catch (err) {
+        console.error(`Failed to download ${url} for backup`, err)
+      }
+    })
+
+    await Promise.all(downloadPromises)
 
     const zipBuffer = await zip.generateAsync({ type: "nodebuffer" })
 

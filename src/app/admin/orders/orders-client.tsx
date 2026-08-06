@@ -6,8 +6,13 @@ import { Search, Eye, Trash2, Box } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { updateOrderStatus, deleteOrder } from "@/features/orders/actions"
+import { usePermissions } from "@/hooks/use-permissions"
 
 export function OrdersClient({ orders }: { orders: any[] }) {
+  const { hasPermission } = usePermissions()
+  const canEdit = hasPermission("orders.edit")
+  const canDelete = hasPermission("orders.delete")
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   
@@ -87,6 +92,7 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                   <select
                     value={order.status}
                     onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                    disabled={!canEdit}
                     className={`text-xs font-semibold px-2.5 py-1 rounded-full appearance-none cursor-pointer outline-none ${statusColors[order.status] || "bg-gray-100 text-gray-800"}`}
                   >
                     {Object.entries(statusLabels).map(([val, label]) => (
@@ -120,17 +126,19 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                       <Eye className="h-3.5 w-3.5 ml-1.5" />
                       عرض
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                      onClick={() => {
-                        setOrderToDelete(order.id)
-                        setDeleteModalOpen(true)
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {canDelete && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                        onClick={() => {
+                          setOrderToDelete(order.id)
+                          setDeleteModalOpen(true)
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -182,6 +190,7 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                       <select
                         value={order.status}
                         onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        disabled={!canEdit}
                         className={`text-xs font-semibold px-2.5 py-1 rounded-full appearance-none cursor-pointer outline-none ${statusColors[order.status] || "bg-gray-100 text-gray-800"}`}
                       >
                         {Object.entries(statusLabels).map(([val, label]) => (
@@ -199,17 +208,19 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          onClick={() => {
-                            setOrderToDelete(order.id)
-                            setDeleteModalOpen(true)
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {canDelete && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              setOrderToDelete(order.id)
+                              setDeleteModalOpen(true)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </td>
                   </tr>
