@@ -142,6 +142,12 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
     return keys
   }, [])
 
+  const [localAccounts, setLocalAccounts] = useState(accounts)
+
+  React.useEffect(() => {
+    setLocalAccounts(accounts)
+  }, [accounts])
+
   function resetForm() {
     setEditingItem(null)
     setSelectedPermissions([])
@@ -182,8 +188,12 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
   }
 
   async function handleUpdateStatus(id: string, active: boolean) {
+    setLocalAccounts(prev => prev.map(a => a.id === id ? { ...a, isActive: active } : a))
     const res = await updateAccountStatus(id, active)
-    if (!res.success) toast.error(res.error || 'فشل تحديث الحالة')
+    if (!res.success) {
+      toast.error(res.error || 'فشل تحديث الحالة')
+      setLocalAccounts(prev => prev.map(a => a.id === id ? { ...a, isActive: !active } : a))
+    }
   }
 
   const handleSelectAll = (checked: boolean) => {
@@ -243,7 +253,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {accounts.map(acc => {
+                  {localAccounts.map(acc => {
                     const permCount = acc.permissions?.length || 0;
                     return (
                       <tr key={acc.id} className="border-b last:border-0 hover:bg-muted/20">
@@ -282,7 +292,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                       </tr>
                     )
                   })}
-                  {accounts.length === 0 && (
+                  {localAccounts.length === 0 && (
                     <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">لا توجد حسابات مسجلة</td></tr>
                   )}
                 </tbody>
@@ -291,12 +301,12 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
             {/* Mobile View */}
             <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-              {accounts.length === 0 ? (
+              {localAccounts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
                   لا توجد حسابات مسجلة
                 </div>
               ) : (
-                accounts.map(acc => {
+                localAccounts.map(acc => {
                   const permCount = acc.permissions?.length || 0;
                   return (
                     <div key={acc.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">

@@ -334,19 +334,6 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
     setLinkValue(val);
     setBtnBgColor(item.settings?.buttonBgColor || "primary");
     setBtnTextColor(item.settings?.buttonTextColor || "white");
-
-    const form: any = document.getElementById("add-item-form")
-    if (form) {
-      if (form.elements["title"]) form.elements["title"].value = item.title || ""
-      if (form.elements["buttonUrl"]) form.elements["buttonUrl"].value = item.buttonUrl || ""
-      if (form.elements["subtitle"]) form.elements["subtitle"].value = item.subtitle || ""
-      if (form.elements["buttonText"]) form.elements["buttonText"].value = item.buttonText || ""
-      if (form.elements["alignment"]) form.elements["alignment"].value = item.settings?.alignment || "center"
-      if (form.elements["buttonStyle"]) form.elements["buttonStyle"].value = item.settings?.buttonStyle || "solid"
-      if (form.elements["buttonCustomBgColor"]) form.elements["buttonCustomBgColor"].value = item.settings?.buttonCustomBgColor || ""
-      if (form.elements["buttonCustomTextColor"]) form.elements["buttonCustomTextColor"].value = item.settings?.buttonCustomTextColor || ""
-      if (form.elements["overlayOpacity"]) form.elements["overlayOpacity"].value = item.settings?.overlayOpacity ?? 40
-    }
   }
 
   function startEditWidget(widget: any) {
@@ -497,7 +484,7 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                     </div>
                   </div>
 
-                  <form onSubmit={saveWidgetSettings} className="space-y-4">
+                  <form key={`widget-${editingWidget.id}`} onSubmit={saveWidgetSettings} className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold">العنوان (يظهر فوق الواجهة)</label>
                       <input 
@@ -726,41 +713,45 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                         ))}
                       </div>
 
-                      <form onSubmit={handleAddContentItem} id="add-item-form" className={`p-4 rounded-xl border ${editingItemId ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : 'border-dashed border-border bg-muted/10'} space-y-4 transition-colors`}>
-                        <div className="flex items-center justify-between">
-                          <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                            {editingItemId ? "تعديل العنصر" : "إضافة عنصر جديد"}
-                          </h5>
-                          {editingItemId && (
-                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={cancelEditItem}>
-                              <X className="w-3 h-3" />
-                            </Button>
-                          )}
-                        </div>
-                        
-                        <ImageUploader 
-                          label="صورة العنصر" 
-                          value={newItemImage} 
-                          onChange={setNewItemImage} 
-                        />
-                        
-                        <div className="space-y-2">
-                          <input 
-                            name="title" 
-                            placeholder={editingWidget.type === "BrandSlider" ? "اسم الماركة (مطلوب لإنشاء الماركة)" : editingWidget.type === "ProductList" ? "اسم القائمة (مطلوب لإنشاء الرابط)" : "العنوان النصي (اختياري)"} 
-                            required={editingWidget.type === "BrandSlider" || editingWidget.type === "ProductList"}
-                            className="h-9 w-full rounded border border-input bg-background px-2 text-xs" 
-                          />
+                      {(() => {
+                        const currentItemData = editingItemId ? (editingWidget.items?.find((i: any) => i.id === editingItemId) || {}) : {};
+                        return (
+                          <form key={`item-${editingItemId || "new"}`} onSubmit={handleAddContentItem} id="add-item-form" className={`p-4 rounded-xl border ${editingItemId ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : 'border-dashed border-border bg-muted/10'} space-y-4 transition-colors`}>
+                            <div className="flex items-center justify-between">
+                              <h5 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {editingItemId ? "تعديل العنصر" : "إضافة عنصر جديد"}
+                              </h5>
+                              {editingItemId && (
+                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={cancelEditItem}>
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <ImageUploader 
+                              label="صورة العنصر" 
+                              value={newItemImage} 
+                              onChange={setNewItemImage} 
+                            />
+                            
+                            <div className="space-y-2">
+                              <input 
+                                name="title" 
+                                defaultValue={currentItemData.title || ""}
+                                placeholder={editingWidget.type === "BrandSlider" ? "اسم الماركة (مطلوب لإنشاء الماركة)" : editingWidget.type === "ProductList" ? "اسم القائمة (مطلوب لإنشاء الرابط)" : "العنوان النصي (اختياري)"} 
+                                required={editingWidget.type === "BrandSlider" || editingWidget.type === "ProductList"}
+                                className="h-9 w-full rounded border border-input bg-background px-2 text-xs" 
+                              />
                           
                           {editingWidget.type === "HeroSlider" && (
                             <div className="space-y-2 mt-2 border-t border-border/50 pt-2 pb-2">
-                              <input name="subtitle" placeholder="الوصف النصي (اختياري)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
-                              <input name="buttonText" placeholder="نص الزر (اختياري - افتراضي: تسوق الآن)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                              <input name="subtitle" defaultValue={currentItemData.subtitle || ""} placeholder="الوصف النصي (اختياري)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
+                              <input name="buttonText" defaultValue={currentItemData.buttonText || ""} placeholder="نص الزر (اختياري - افتراضي: تسوق الآن)" className="h-9 w-full rounded border border-input bg-background px-2 text-xs" />
                               
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
                                   <label className="text-[10px] text-muted-foreground block mb-1">المحاذاة</label>
-                                  <select name="alignment" className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                  <select name="alignment" defaultValue={currentItemData.settings?.alignment || "center"} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
                                     <option value="center">في المنتصف</option>
                                     <option value="right">لليمين</option>
                                     <option value="left">لليسار</option>
@@ -768,7 +759,7 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                                 </div>
                                 <div>
                                   <label className="text-[10px] text-muted-foreground block mb-1">شكل الزر</label>
-                                  <select name="buttonStyle" className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
+                                  <select name="buttonStyle" defaultValue={currentItemData.settings?.buttonStyle || "solid"} className="h-9 w-full rounded border border-input bg-background px-2 text-xs">
                                     <option value="solid">ممتلئ (Solid)</option>
                                     <option value="outline">مفرغ (Outline)</option>
                                   </select>
@@ -777,7 +768,7 @@ export function WidgetsClient({ initialWidgets, categories, departments }: { ini
                               <div className="grid grid-cols-2 gap-2 mt-2">
                                 <div>
                                   <label className="text-[10px] text-muted-foreground block mb-1">تعتيم الشريحة (الشفافية %)</label>
-                                  <input type="range" name="overlayOpacity" min="0" max="100" defaultValue="40" className="w-full h-9" />
+                                  <input type="range" name="overlayOpacity" min="0" max="100" defaultValue={currentItemData.settings?.overlayOpacity ?? 40} className="w-full h-9" />
                                 </div>
                               </div>
                               
