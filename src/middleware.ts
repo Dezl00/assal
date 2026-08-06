@@ -12,7 +12,7 @@ export default async function proxy(request: NextRequest) {
     }
     
     // Check role-based access
-    if (session.user?.role !== "ADMIN") {
+    if (session.user?.role !== "ADMIN" && session.user?.role !== "MANAGER") {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
