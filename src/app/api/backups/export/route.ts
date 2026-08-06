@@ -86,7 +86,8 @@ export async function GET() {
 
     // Add Widget images
     widgets.forEach(w => {
-      if (w.settings?.image) urlsToDownload.add(w.settings.image)
+      const settings = w.settings as any
+      if (settings?.image) urlsToDownload.add(settings.image)
       w.items?.forEach((item: any) => {
         if (item.desktopImage) urlsToDownload.add(item.desktopImage)
         if (item.mobileImage) urlsToDownload.add(item.mobileImage)
