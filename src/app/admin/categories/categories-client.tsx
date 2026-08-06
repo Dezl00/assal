@@ -31,28 +31,30 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
 
   useEffect(() => {
     if (editingCategory) {
-      const form: any = document.getElementById("add-category-form")
-      if (form) {
-        form.name.value = editingCategory.name || ""
-        form.slug.value = editingCategory.slug || ""
-        form.description.value = editingCategory.description || ""
-        setImageUrl(editingCategory.imageUrl || "")
-        
-        // Handle radio buttons and parent selection
-        const isSub = !!editingCategory.parentId
-        form.categoryType.value = isSub ? "sub" : "main"
-        
-        const select = document.getElementById('parentId-select') as HTMLSelectElement
-        if (select) {
-          select.disabled = !isSub
-          select.value = editingCategory.parentId || ""
-        }
+      setTimeout(() => {
+        const form: any = document.getElementById("add-category-form")
+        if (form) {
+          if (form.name) form.name.value = editingCategory.name || ""
+          if (form.slug) form.slug.value = editingCategory.slug || ""
+          if (form.description) form.description.value = editingCategory.description || ""
+          setImageUrl(editingCategory.imageUrl || "")
+          
+          // Handle radio buttons and parent selection
+          const isSub = !!editingCategory.parentId
+          if (form.categoryType) form.categoryType.value = isSub ? "sub" : "main"
+          
+          const select = document.getElementById('parentId-select') as HTMLSelectElement
+          if (select) {
+            select.disabled = !isSub
+            select.value = editingCategory.parentId || ""
+          }
 
-        const deptSelect = document.getElementById('departmentId-select') as HTMLSelectElement
-        if (deptSelect) {
-          deptSelect.value = editingCategory.departmentId || ""
+          const deptSelect = document.getElementById('departmentId-select') as HTMLSelectElement
+          if (deptSelect) {
+            deptSelect.value = editingCategory.departmentId || ""
+          }
         }
-      }
+      }, 0);
       setIsFormVisible(true)
       setCategoryType(editingCategory.parentId ? "sub" : "main")
     }
@@ -404,7 +406,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                     onBlur={async (e) => {
                       if (!editingCategory && e.target.value) {
                         const form = document.getElementById("add-category-form") as any;
-                        if (form && !form.slug.value) {
+                        if (form && form.slug && !form.slug.value) {
                           try {
                             const res = await fetch("/api/translate", {
                               method: "POST",
@@ -412,7 +414,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                               body: JSON.stringify({ text: e.target.value })
                             });
                             const data = await res.json();
-                            if (data.translated) {
+                            if (data.translated && form.slug) {
                               form.slug.value = data.translated;
                             }
                           } catch (err) {}

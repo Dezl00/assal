@@ -182,17 +182,16 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                             </span>
                           </td>
                           <td className="px-4 py-4 font-bold">{coupon.value} {coupon.type === "PERCENTAGE" ? "%" : "ج.م"}</td>
-                          <td className="px-4 py-4">
-                            <label className="flex items-center gap-2 cursor-pointer w-max relative">
+                          <td className="px-4 py-4 text-center flex justify-center items-center">
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
                               <input 
                                 type="checkbox" 
+                                className="sr-only peer" 
                                 checked={coupon.isActive}
-                                onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
-                                className="sr-only peer"
                                 disabled={!canEdit}
+                                onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
                               />
-                              <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto disabled:opacity-50"></div>
-                              <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
+                              <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 disabled:opacity-50"></div>
                             </label>
                           </td>
                           <td className="px-4 py-4">
@@ -232,16 +231,15 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                         <div className="flex items-start justify-between gap-3">
                           <div className="font-bold text-slate-800 text-lg" dir="ltr">{coupon.code}</div>
                           <div>
-                            <label className="flex items-center gap-2 cursor-pointer w-max relative">
-                              <span className="text-xs font-medium">{coupon.isActive ? "فعال" : "معطل"}</span>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
                               <input 
                                 type="checkbox" 
+                                className="sr-only peer" 
                                 checked={coupon.isActive}
-                                onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
-                                className="sr-only peer"
                                 disabled={!canEdit}
+                                onChange={(e) => handleUpdateCouponStatus(coupon.id, e.target.checked)}
                               />
-                              <div className="w-9 h-5 bg-muted-foreground/30 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 rtl:peer-checked:after:-translate-x-full rtl:after:right-[2px] rtl:after:left-auto disabled:opacity-50"></div>
+                              <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900 disabled:opacity-50"></div>
                             </label>
                           </div>
                         </div>

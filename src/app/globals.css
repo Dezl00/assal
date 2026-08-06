@@ -88,6 +88,8 @@
     --accent: 222.2 47.4% 11.2%;
     --accent-foreground: 210 40% 98%;
     --ring: 222.2 47.4% 11.2%;
+    --color-primary: hsl(222.2 47.4% 11.2%) !important;
+    --color-ring: hsl(222.2 47.4% 11.2%) !important;
   }
 
   body {

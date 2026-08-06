@@ -31,13 +31,15 @@ export function DepartmentsClient({ departments }: { departments: any[] }) {
 
   useEffect(() => {
     if (editingDepartment) {
-      const form: any = document.getElementById("add-department-form")
-      if (form) {
-        form.name.value = editingDepartment.name || ""
-        form.slug.value = editingDepartment.slug || ""
-        form.description.value = editingDepartment.description || ""
-        setImageUrl(editingDepartment.imageUrl || "")
-      }
+      setTimeout(() => {
+        const form: any = document.getElementById("add-department-form")
+        if (form) {
+          if (form.name) form.name.value = editingDepartment.name || ""
+          if (form.slug) form.slug.value = editingDepartment.slug || ""
+          if (form.description) form.description.value = editingDepartment.description || ""
+          setImageUrl(editingDepartment.imageUrl || "")
+        }
+      }, 0);
       setIsFormVisible(true)
     }
   }, [editingDepartment])

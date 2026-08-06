@@ -273,7 +273,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                               <Edit className="w-4 h-4" />
                             </Button>
                           )}
-                          {canDelete && (
+                          {canDelete && acc.role !== "ADMIN" && (
                             <Button variant="ghost" size="icon" onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}>
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </Button>
@@ -347,7 +347,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                               تعديل
                             </Button>
                           )}
-                          {canDelete && (
+                          {canDelete && acc.role !== "ADMIN" && (
                             <Button 
                               variant="outline" 
                               size="sm" 
