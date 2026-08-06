@@ -14,13 +14,20 @@ export default async function AnalyticsPage() {
   const yesterdayStart = new Date(new Date().setHours(0, 0, 0, 0))
   yesterdayStart.setDate(yesterdayStart.getDate() - 1)
 
+  // We will filter out US visits in JS or DB. DB is better.
   const pageVisits = await prisma.pageVisit.findMany({
-    where: { createdAt: { gte: thirtyDaysAgo } },
+    where: { 
+      createdAt: { gte: thirtyDaysAgo },
+      country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] }
+    },
     select: { createdAt: true, country: true, city: true, path: true }
   })
   
   const productViews = await prisma.productView.findMany({
-    where: { createdAt: { gte: thirtyDaysAgo } },
+    where: { 
+      createdAt: { gte: thirtyDaysAgo },
+      // Optional: if product views had country, we'd filter here too, but they don't
+    },
     include: { product: { select: { id: true, name: true } } }
   })
 
@@ -63,15 +70,65 @@ export default async function AnalyticsPage() {
     .sort((a: any, b: any) => b.count - a.count)
     .slice(0, 10)
 
+  // Translation helpers
+  const translateCountry = (c: string) => {
+    const map: any = {
+      'EG': 'مصر', 'Egypt': 'مصر',
+      'SA': 'السعودية', 'Saudi Arabia': 'السعودية',
+      'AE': 'الإمارات', 'United Arab Emirates': 'الإمارات',
+      'KW': 'الكويت', 'Kuwait': 'الكويت',
+      'QA': 'قطر', 'Qatar': 'قطر',
+      'OM': 'عمان', 'Oman': 'عمان',
+      'BH': 'البحرين', 'Bahrain': 'البحرين',
+      'JO': 'الأردن', 'Jordan': 'الأردن',
+      'MA': 'المغرب', 'Morocco': 'المغرب',
+      'DZ': 'الجزائر', 'Algeria': 'الجزائر',
+      'TN': 'تونس', 'Tunisia': 'تونس',
+      'IQ': 'العراق', 'Iraq': 'العراق',
+      'SD': 'السودان', 'Sudan': 'السودان',
+      'YE': 'اليمن', 'Yemen': 'اليمن',
+      'SY': 'سوريا', 'Syria': 'سوريا',
+      'PS': 'فلسطين', 'Palestine': 'فلسطين',
+      'LB': 'لبنان', 'Lebanon': 'لبنان',
+      'LY': 'ليبيا', 'Libya': 'ليبيا',
+    }
+    return map[c] || c
+  }
+
+  const translateCity = (c: string) => {
+    const map: any = {
+      'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة',
+      'Riyadh': 'الرياض', 'Jeddah': 'جدة', 'Mecca': 'مكة', 'Medina': 'المدينة',
+      'Dubai': 'دبي', 'Abu Dhabi': 'أبوظبي', 'Sharjah': 'الشارقة',
+      'Amman': 'عمان', 'Kuwait City': 'مدينة الكويت', 'Doha': 'الدوحة',
+      'Manama': 'المنامة', 'Muscat': 'مسقط', 'Baghdad': 'بغداد',
+      'Khartoum': 'الخرطوم', 'Damascus': 'دمشق', 'Beirut': 'بيروت',
+    }
+    return map[c] || c
+  }
+
+  const getPageName = (p: string) => {
+    if (p === '/') return 'الرئيسية'
+    if (p === '/products' || p.startsWith('/products?')) return 'جميع المنتجات'
+    if (p === '/checkout') return 'إتمام الطلب'
+    if (p === '/account') return 'حسابي'
+    if (p.startsWith('/category/')) return 'قسم: ' + decodeURIComponent(p.split('/category/')[1].split('?')[0])
+    if (p.startsWith('/department/')) return 'مجال: ' + decodeURIComponent(p.split('/department/')[1].split('?')[0])
+    if (p.startsWith('/product/')) return 'منتج: ' + decodeURIComponent(p.split('/product/')[1].split('?')[0])
+    if (p.startsWith('/search')) return 'نتائج البحث'
+    if (p.startsWith('/brands')) return 'الماركات'
+    return p
+  }
+
   // Countries and Cities (using PageVisits as base)
   const countryCounts = pageVisits.reduce((acc: any, v) => {
-    const c = v.country || 'غير محدد'
+    const c = translateCountry(v.country || 'غير محدد')
     acc[c] = (acc[c] || 0) + 1
     return acc
   }, {})
   
   const cityCounts = pageVisits.reduce((acc: any, v) => {
-    const c = v.city || 'غير محدد'
+    const c = translateCity(v.city || 'غير محدد')
     acc[c] = (acc[c] || 0) + 1
     return acc
   }, {})
@@ -88,7 +145,8 @@ export default async function AnalyticsPage() {
 
   const pathCounts = pageVisits.reduce((acc: any, v) => {
     if (v.path) {
-      acc[v.path] = (acc[v.path] || 0) + 1
+      const name = getPageName(v.path)
+      acc[name] = (acc[name] || 0) + 1
     }
     return acc
   }, {})

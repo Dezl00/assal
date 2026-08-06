@@ -152,7 +152,7 @@ export function AnalyticsClient({
               {topPages?.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
               {topPages?.map((p: any, i: number) => (
                 <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
-                  <span className="truncate max-w-[200px] font-medium text-left" dir="ltr">{p.path}</span>
+                  <span className="truncate max-w-[200px] font-medium">{p.path}</span>
                   <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} زيارة</span>
                 </div>
               ))}

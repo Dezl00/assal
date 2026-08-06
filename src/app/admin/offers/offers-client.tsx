@@ -138,7 +138,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
           
           {/* Coupons Tab */}
           {activeTab === 'coupons' && (
-            <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className={`flex flex-col lg:flex-row gap-6 items-start ${isFormVisible ? 'flex-col-reverse lg:flex-row' : ''}`}>
               
               {/* Main List Column */}
               <div className="flex-1 w-full bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden">
@@ -329,7 +329,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                           className="w-full h-24 bg-background border border-input rounded-md p-3 text-sm focus:border-primary resize-none"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium">كود الخصم المرتبط</label>
                           <select 

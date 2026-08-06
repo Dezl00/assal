@@ -301,7 +301,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
           {/* Branches Section */}
           {activeTab === "branches" && (
             <div className="p-6 h-full flex flex-col animate-in fade-in">
-              <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/50 pb-4 mb-4 gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">الفروع والمواقع</h2>
                   <p className="text-sm text-muted-foreground">تتم إضافة الفروع ليتم عرضها في تذييل الموقع.</p>
@@ -376,7 +376,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
               
               {/* Export & Auto Backup */}
               <div>
-                <div className="flex items-center justify-between border-b border-border/50 pb-4 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/50 pb-4 mb-4 gap-4">
                   <div>
                     <h2 className="text-lg font-semibold">النسخ الاحتياطي التلقائي والتصدير</h2>
                     <p className="text-sm text-muted-foreground mt-1">تكوين النسخ التلقائي وتصدير البيانات الحالية.</p>
@@ -407,7 +407,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
 
               {/* Import Backups */}
               <div className="pt-6 border-t border-border/50">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                   <div>
                     <h2 className="text-lg font-semibold text-red-600">استعادة واستيراد نسخة احتياطية</h2>
                     <p className="text-sm text-muted-foreground mt-1">تحذير: استعادة النسخة الاحتياطية ستقوم بحذف البيانات الحالية واستبدالها.</p>
