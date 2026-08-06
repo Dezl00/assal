@@ -102,7 +102,7 @@ const PERMISSIONS_SCHEMA = [
 ]
 
 export function AccountsClient({ accounts }: { accounts: any[] }) {
-  const [isFormVisible, setIsFormVisible] = useState(false)
+  const [isFormVisible, setIsFormVisible] = useState(true)
   const [editingItem, setEditingItem] = useState<any>(null)
   
   // State for permissions (stores full keys like "products.view")
@@ -210,9 +210,6 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
           <span>/</span>
           <span className="text-foreground">الحسابات والصلاحيات</span>
         </nav>
-        <Button onClick={() => { resetForm(); setIsFormVisible(!isFormVisible) }} className="lg:hidden gap-2">
-          {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة حساب</>}
-        </Button>
       </div>
 
       <div className="flex flex-col lg:flex-row-reverse gap-6 relative items-start">
@@ -274,7 +271,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
         </div>
 
         {/* Form Area */}
-        <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
+        <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300">
           <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between shrink-0">
               <div>
