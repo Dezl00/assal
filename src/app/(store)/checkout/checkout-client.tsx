@@ -401,7 +401,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
             <div className="border-t border-border/50 pt-6 space-y-4">
               
               {/* Coupon Input */}
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex gap-2 w-full max-w-full">
                 <input 
                   type="text" 
                   placeholder="كود الخصم" 
@@ -416,7 +416,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     type="button" 
                     onClick={handleApplyCoupon}
                     disabled={isValidatingCoupon || !couponCodeInput.trim()}
-                    className="h-12 px-6 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 font-bold shrink-0 w-full sm:w-auto"
+                    className="h-12 px-4 sm:px-6 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 font-bold shrink-0"
                   >
                     {isValidatingCoupon ? <Loader2 className="w-4 h-4 animate-spin" /> : "تطبيق"}
                   </Button>
@@ -425,7 +425,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     type="button" 
                     onClick={() => { setAppliedCoupon(null); setCouponCodeInput(""); }}
                     variant="destructive"
-                    className="h-12 px-6 rounded-xl font-bold shrink-0 w-full sm:w-auto"
+                    className="h-12 px-4 sm:px-6 rounded-xl font-bold shrink-0"
                   >
                     إلغاء
                   </Button>

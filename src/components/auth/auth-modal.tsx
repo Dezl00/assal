@@ -96,11 +96,11 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
           router.refresh()
         } else {
           if (check.role === "ADMIN" || check.role === "MANAGER" || (check.permissions && check.permissions.length > 0)) {
-            router.push("/admin")
+            window.location.href = "/admin"
           } else {
             router.push("/account")
+            router.refresh()
           }
-          router.refresh()
         }
       }
     } catch (err) {

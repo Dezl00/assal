@@ -261,10 +261,10 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 {user && (
                   <div className="absolute top-full left-0 w-48 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-200 z-50 mt-2">
                     {(user.role === 'ADMIN' || user.role === 'MANAGER') ? (
-                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
+                      <a href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                         <LayoutDashboard className="w-4 h-4" />
                         لوحة التحكم
-                      </Link>
+                      </a>
                     ) : (
                       <>
                         <Link href="/account" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
