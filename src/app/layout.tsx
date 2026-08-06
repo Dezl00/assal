@@ -81,7 +81,7 @@ export default async function RootLayout({
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
 
   return (
-    <html lang="ar" dir="rtl" className={fallbackFont.variable}>
+    <html lang="ar" dir="rtl" className={fallbackFont.variable} suppressHydrationWarning>
       <head>
         <style dangerouslySetInnerHTML={{__html: `
           :root {
@@ -91,7 +91,7 @@ export default async function RootLayout({
           }
         `}} />
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <NextTopLoader 
           color="var(--color-primary, #b79045)"
           initialPosition={0.08}
