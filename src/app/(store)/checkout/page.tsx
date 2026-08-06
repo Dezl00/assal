@@ -13,10 +13,10 @@ export default async function CheckoutPage() {
   
   let userDetails = null
   
-  if (session?.user?.email) {
+  if (session?.user?.id) {
     const dbUser = await db.user.findUnique({
-      where: { email: session.user.email },
-      select: { name: true, email: true, phone: true, address: true }
+      where: { id: session.user.id },
+      select: { id: true, name: true, email: true, phone: true, address: true }
     })
     if (dbUser) {
       userDetails = dbUser
