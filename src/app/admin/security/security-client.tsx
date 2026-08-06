@@ -54,16 +54,7 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
         </nav>
       </div>
 
-      <div className="flex border-b border-border/50">
-        {hasPerm('security.logs') && (
-          <button 
-            onClick={() => setActiveTab('logs')}
-            className={`px-4 py-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-colors ${activeTab === 'logs' ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-          >
-            <Shield className="w-4 h-4" /> سجل الأمان
-          </button>
-        )}
-      </div>
+
 
       {activeTab === 'logs' && hasPerm('security.logs') && (
         <div className="space-y-4">

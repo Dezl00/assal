@@ -178,7 +178,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col md:flex-row gap-6 relative items-start">
         {/* Tabs Sidebar */}
-        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide md:sticky md:top-4 border-b md:border-b-0 border-border/50 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide md:sticky md:top-4 border-b md:border-b-0 border-border/50">
           <button
             onClick={() => setActiveTab('shipping')}
             className={`shrink-0 flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'shipping' ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground hover:text-foreground'}`}

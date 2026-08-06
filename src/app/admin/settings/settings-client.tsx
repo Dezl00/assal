@@ -126,7 +126,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
 
       <div className="flex flex-col md:flex-row gap-6">
         {/* Tabs Sidebar */}
-        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide">
           {tabs.map(tab => (
             <button
               key={tab.id}

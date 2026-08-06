@@ -128,7 +128,7 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="flex flex-col gap-4 flex-1">
             {latestOrders.length > 0 ? latestOrders.map((order) => (
-              <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0 gap-2 hover:bg-muted/10 transition-colors rounded-lg sm:p-2 -mx-2 px-2">
+              <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/40 pb-3 last:border-0 last:pb-0 gap-2 hover:bg-muted/10 transition-colors rounded-lg sm:p-2">
                 <div className="flex flex-col">
                   <span className="font-medium">طلب #{order.id.slice(-6).toUpperCase()}</span>
                   <span className="text-sm text-muted-foreground">{order.user?.name || order.user?.phone || "عميل زائر"}</span>
