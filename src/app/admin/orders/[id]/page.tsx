@@ -4,15 +4,17 @@ import { OrderDetailsClient } from "./order-details-client"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
-export default async function AdminOrderPage({ params }: { params: { id: string } }) {
+export default async function AdminOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   
   if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
     redirect("/")
   }
 
+  const { id } = await params;
+
   const order = await db.order.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     include: {
       items: {
         include: {

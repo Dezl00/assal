@@ -3,15 +3,17 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { CustomerOrderDetailsClient } from "./customer-order-details-client"
 
-export default async function CustomerOrderPage({ params }: { params: { id: string } }) {
+export default async function CustomerOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   
   if (!session || !session.user) {
     redirect("/")
   }
 
+  const { id } = await params;
+
   const order = await db.order.findUnique({
-    where: { id: params.id },
+    where: { id: id },
     include: {
       items: {
         include: {

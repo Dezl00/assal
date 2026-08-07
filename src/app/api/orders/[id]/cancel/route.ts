@@ -3,14 +3,14 @@ import { auth } from "@/lib/auth";
 import { db as prisma } from "@/lib/db";
 import { sendNotification } from "@/lib/send-notification";
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth();
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orderId = params.id;
+    const { id: orderId } = await params;
     const order = await prisma.order.findUnique({ where: { id: orderId } });
 
     if (!order) {
