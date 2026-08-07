@@ -6,11 +6,15 @@ import { signOut } from "next-auth/react"
 import { toast } from "sonner"
 import { updateUserAccount } from "@/app/actions/user"
 import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
+import { Loader2, Bell, CheckCircle2, Truck, XCircle, Clock } from "lucide-react"
+import Link from "next/link"
+import { registerServiceWorkerAndSubscribe, unsubscribeFromPush } from "@/lib/push-client"
 
 export function AccountClient({ user }: { user: any }) {
   const [activeTab, setActiveTab] = useState<"orders" | "settings">("orders")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(user.orderUpdatesEnabled || false)
+  const [isUpdatingPush, setIsUpdatingPush] = useState(false)
 
   async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -29,7 +33,67 @@ export function AccountClient({ user }: { user: any }) {
       if (pwField) pwField.value = ''
       if (newPwField) newPwField.value = ''
     }
+    }
     setIsSubmitting(false)
+  }
+
+  const togglePushNotifications = async () => {
+    setIsUpdatingPush(true)
+    try {
+      if (!pushEnabled) {
+        const sub = await registerServiceWorkerAndSubscribe()
+        if (sub) {
+          // Update database
+          await updateUserAccount(new FormData()) // We should ideally add a specific action for this, but let's assume we can trigger a fast API call
+          await fetch('/api/user/settings', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderUpdatesEnabled: true })
+          })
+          setPushEnabled(true)
+          toast.success("تم تفعيل إشعارات المتصفح")
+        } else {
+          toast.error("يرجى السماح بالإشعارات من إعدادات المتصفح")
+        }
+      } else {
+        await unsubscribeFromPush()
+        await fetch('/api/user/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderUpdatesEnabled: false })
+        })
+        setPushEnabled(false)
+        toast.success("تم إيقاف إشعارات المتصفح")
+      }
+    } catch (error) {
+      toast.error("حدث خطأ")
+    }
+    setIsUpdatingPush(false)
+  }
+
+  const cancelOrder = async (orderId: string) => {
+    if (!confirm("هل أنت متأكد من إلغاء هذا الطلب؟")) return;
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "POST" })
+      if (res.ok) {
+        toast.success("تم إلغاء الطلب بنجاح")
+        window.location.reload()
+      } else {
+        toast.error("حدث خطأ أو أن الطلب لا يمكن إلغاؤه")
+      }
+    } catch (e) {
+      toast.error("حدث خطأ")
+    }
+  }
+
+  const getStatusStep = (status: string) => {
+    switch(status) {
+      case 'PENDING': return 1;
+      case 'PAID': return 2;
+      case 'SHIPPED': return 3;
+      case 'DELIVERED': return 4;
+      default: return 0;
+    }
   }
 
   return (
@@ -84,20 +148,51 @@ export function AccountClient({ user }: { user: any }) {
                 <div className="space-y-4">
                   {user.orders.map((order: any) => (
                     <div key={order.id} className="border border-border/50 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                      <div>
-                        <p className="font-bold">طلب #{order.id.slice(-6).toUpperCase()}</p>
-                        <p className="text-sm text-muted-foreground">{new Date(order.createdAt).toLocaleDateString('ar-EG')}</p>
-                      </div>
-                      <div className="text-start sm:text-end">
-                        <p className="font-bold text-primary">{order.totalAmount} ج.م</p>
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium mt-1 ${
-                          order.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-500' :
-                          order.status === 'DELIVERED' ? 'bg-green-500/10 text-green-500' :
-                          'bg-muted text-muted-foreground'
-                        }`}>
-                          {order.status === 'PENDING' ? 'قيد المراجعة' : 
-                           order.status === 'DELIVERED' ? 'تم التوصيل' : order.status}
-                        </span>
+                      <div className="flex-1 w-full sm:w-auto">
+                        <div className="flex justify-between items-start mb-2">
+                          <Link href={`/account/orders/${order.id}`} className="font-bold hover:text-primary transition-colors">طلب #{order.id.slice(-6).toUpperCase()}</Link>
+                          <p className="font-bold text-primary" dir="ltr">{order.totalAmount} ج.م</p>
+                        </div>
+                        <div className="flex justify-between items-center mb-4">
+                          <p className="text-sm text-muted-foreground font-sans" dir="ltr">{new Date(order.createdAt).toLocaleDateString('en-GB')} {new Date(order.createdAt).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}</p>
+                          {(order.status === 'PENDING' || order.status === 'PAID') && (
+                            <button 
+                              onClick={() => cancelOrder(order.id)}
+                              className="text-xs font-semibold text-destructive hover:bg-destructive/10 px-2 py-1 rounded transition-colors"
+                            >
+                              إلغاء الطلب
+                            </button>
+                          )}
+                        </div>
+                        
+                        {/* Timeline */}
+                        {order.status !== 'CANCELLED' ? (
+                          <div className="relative pt-2">
+                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-1/2 rounded-full overflow-hidden">
+                               <div className="h-full bg-primary transition-all duration-500" style={{ width: `${(getStatusStep(order.status) / 4) * 100}%` }}></div>
+                            </div>
+                            <div className="relative flex justify-between">
+                               {[
+                                 { step: 1, label: 'قيد التنفيذ', icon: Clock },
+                                 { step: 2, label: 'تم التأكيد', icon: CheckCircle2 },
+                                 { step: 3, label: 'جاري الشحن', icon: Truck },
+                                 { step: 4, label: 'مكتمل', icon: CheckCircle2 }
+                               ].map((s) => (
+                                 <div key={s.step} className="flex flex-col items-center gap-1">
+                                   <div className={`w-6 h-6 rounded-full flex items-center justify-center relative z-10 transition-colors ${getStatusStep(order.status) >= s.step ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-muted-foreground'}`}>
+                                     <s.icon className="w-3 h-3" />
+                                   </div>
+                                   <span className={`text-[10px] font-bold ${getStatusStep(order.status) >= s.step ? 'text-primary' : 'text-muted-foreground'}`}>{s.label}</span>
+                                 </div>
+                               ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full text-center py-2 bg-destructive/10 text-destructive font-bold text-sm rounded-lg flex items-center justify-center gap-2">
+                            <XCircle className="w-4 h-4" />
+                            تم الإلغاء
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -155,6 +250,27 @@ export function AccountClient({ user }: { user: any }) {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">كلمة المرور الجديدة</label>
                     <input name="newPassword" type="password" className="w-full h-12 px-4 bg-background border border-input rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t border-border/50">
+                  <h3 className="text-lg font-semibold text-primary pb-2 flex items-center gap-2">
+                    <Bell className="w-5 h-5" /> الإشعارات
+                  </h3>
+                  
+                  <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border/50">
+                    <div>
+                      <p className="font-medium">إشعارات المتصفح (Web Push)</p>
+                      <p className="text-xs text-muted-foreground">تلقي تحديثات فورية بصوت عندما تتغير حالة طلبك</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={togglePushNotifications}
+                      disabled={isUpdatingPush}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${pushEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pushEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
                   </div>
                 </div>
 

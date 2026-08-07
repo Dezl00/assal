@@ -6,6 +6,7 @@ import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTem
 import { cn } from "@/lib/utils"
 import { signOut, useSession, SessionProvider } from "next-auth/react"
 import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
+import { NotificationsDropdown } from "@/components/notifications-dropdown"
 
 export function AdminLayoutClient({
   children,
@@ -207,9 +208,7 @@ function AdminLayoutInner({
               <span className="hidden sm:inline">عرض المتجر</span>
               <ExternalLink className="h-3.5 w-3.5 md:h-4 md:w-4" />
             </Link>
-             <button className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center text-primary transition-colors ms-2">
-               <Bell className="h-4 w-4 md:h-5 md:w-5" />
-             </button>
+            <NotificationsDropdown isAdmin={true} />
           </div>
         </header>
         {/* Spacer for fixed header */}

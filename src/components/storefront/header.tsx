@@ -8,6 +8,7 @@ import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
 import { useRouter } from "next/navigation"
 import { searchProductsLive } from "@/features/search/actions"
+import { NotificationsDropdown } from "@/components/notifications-dropdown"
 
 export function StorefrontHeader({ menuItems, themeConfig, user, categories = [], departments = [] }: { menuItems?: any[], themeConfig?: any, user?: any, categories?: any[], departments?: any[] }) {
   const { getTotals, setIsOpen } = useCartStore()
@@ -237,7 +238,13 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
 
               <div className="h-8 w-px bg-border mx-1"></div>
               
-              {/* User Button */}
+              {/* Notifications */}
+              {user && (
+                <div className="flex items-center justify-center border border-border bg-background rounded-full w-11 h-11 shadow-sm">
+                  <NotificationsDropdown isAdmin={user.role === 'ADMIN' || user.role === 'MANAGER'} />
+                </div>
+              )}
+              
               {/* User Dropdown */}
               <div className="relative group/user">
                 <button 

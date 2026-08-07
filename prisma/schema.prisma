@@ -27,6 +27,9 @@ model User {
   activityLogs  ActivityLog[]
   permissions   String[]  @default([])
   isActive      Boolean   @default(true)
+  orderUpdatesEnabled Boolean @default(true) // Customer setting for push notifications
+  notifications Notification[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Widget {
@@ -271,6 +274,10 @@ model ThemeConfig {
   promoPopupDescription String?
   promoPopupCode        String?
   
+  // Notification Toggles for Admin
+  adminOrderNotifications Boolean @default(true)
+  adminNewCustomerNotifications Boolean @default(true)
+  
   updatedAt     DateTime @updatedAt
 }
 
@@ -375,4 +382,27 @@ model Coupon {
   expiresAt  DateTime?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String?  // If null, it is an admin notification
+  user      User?    @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   // e.g. "ORDER_CREATED", "ORDER_SHIPPED", "NEW_CUSTOMER", "ORDER_CANCELLED"
+  link      String?  // Link to order or user profile
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String?  // If null, it belongs to an admin user session
+  user      User?    @relation(fields: [userId], references: [id])
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  role      Role?    // Track if this subscription belongs to an admin or customer
+  createdAt DateTime @default(now())
 }

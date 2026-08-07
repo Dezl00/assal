@@ -7,8 +7,11 @@ import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { updateOrderStatus, deleteOrder } from "@/features/orders/actions"
 import { usePermissions } from "@/hooks/use-permissions"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function OrdersClient({ orders }: { orders: any[] }) {
+  const router = useRouter()
   const { hasPermission } = usePermissions()
   const canEdit = hasPermission("orders.edit")
   const canDelete = hasPermission("orders.delete")
@@ -35,10 +38,19 @@ export function OrdersClient({ orders }: { orders: any[] }) {
     const res = await updateOrderStatus(orderId, newStatus)
     if (res.success) {
       toast.success("تم تحديث حالة الطلب بنجاح")
+      router.refresh()
     } else {
       toast.error(res.error || "حدث خطأ أثناء التحديث")
     }
   }
+
+  // Real-time polling every 10 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh()
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [router])
 
   async function confirmDelete() {
     if (!orderToDelete) return
@@ -113,19 +125,17 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                  <span className="text-xs text-muted-foreground font-sans" dir="ltr">
+                    {new Date(order.createdAt).toLocaleDateString('en-GB')} {new Date(order.createdAt).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}
                   </span>
                   <div className="flex items-center gap-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 text-xs hover:bg-primary/10 hover:text-primary"
-                      onClick={() => toast("تفاصيل الطلب ستتوفر قريباً")}
+                    <Link 
+                      href={`/admin/orders/${order.id}`}
+                      className="h-8 text-xs hover:bg-primary/10 hover:text-primary flex items-center justify-center px-3 rounded-md transition-colors"
                     >
                       <Eye className="h-3.5 w-3.5 ml-1.5" />
                       عرض
-                    </Button>
+                    </Link>
                     {canDelete && (
                       <Button 
                         variant="ghost" 
@@ -177,13 +187,13 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-medium">
+                    <td className="px-6 py-4 font-medium text-right font-sans" dir="ltr">
                       {order.user?.name || order.user?.email || "عميل غير مسجل"}
                     </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                    <td className="px-6 py-4 text-muted-foreground font-sans" dir="ltr">
+                      {new Date(order.createdAt).toLocaleDateString('en-GB')} {new Date(order.createdAt).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}
                     </td>
-                    <td className="px-6 py-4 font-medium">
+                    <td className="px-6 py-4 font-medium font-sans" dir="ltr">
                       {order.totalAmount.toFixed(2)} ج.م
                     </td>
                     <td className="px-6 py-4">
@@ -200,14 +210,12 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-muted-foreground hover:text-primary"
-                          onClick={() => toast("تفاصيل الطلب ستتوفر قريباً")}
+                        <Link 
+                          href={`/admin/orders/${order.id}`}
+                          className="h-8 w-8 text-muted-foreground hover:text-primary flex items-center justify-center rounded-md transition-colors"
                         >
                           <Eye className="h-4 w-4" />
-                        </Button>
+                        </Link>
                         {canDelete && (
                           <Button 
                             variant="ghost" 

@@ -64,6 +64,21 @@ export async function submitOrder(data: {
         data: { usedCount: { increment: 1 } }
       })
     }
+    
+    // Notify Admin
+    const { sendNotification } = await import("@/lib/send-notification")
+    const config = await db.themeConfig.findUnique({ where: { id: "default" } })
+    if (config?.adminOrderNotifications !== false) {
+      await sendNotification({
+        userId: undefined, // Admins
+        targetRole: "ADMIN",
+        title: "طلب جديد",
+        message: `تم استلام طلب جديد #${order.id.slice(-6).toUpperCase()} بقيمة ${order.totalAmount} ج.م`,
+        type: "ORDER_CREATED",
+        link: `/admin/orders/${order.id}`,
+        sound: true
+      })
+    }
 
     return { success: true, orderId: order.id }
   } catch (error) {
