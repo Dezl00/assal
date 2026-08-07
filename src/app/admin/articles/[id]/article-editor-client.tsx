@@ -27,6 +27,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
 
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   async function handleSave() {
     if (!title.trim()) {
@@ -77,6 +78,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
       toast.error("حدث خطأ أثناء الحذف")
     } finally {
       setIsDeleting(false)
+      setIsConfirmOpen(false)
     }
   }
 
@@ -95,16 +97,20 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
         </div>
         <div className="flex items-center gap-3">
           {isEditing && (
-            <ConfirmModal
-              title="تأكيد الحذف"
-              description="هل أنت متأكد من حذف هذا المقال؟ لا يمكن التراجع عن هذا الإجراء."
-              onConfirm={handleDelete}
-            >
-              <Button variant="destructive" className="gap-2" disabled={isDeleting}>
+            <>
+              <Button variant="destructive" className="gap-2" onClick={() => setIsConfirmOpen(true)} disabled={isDeleting}>
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 حذف
               </Button>
-            </ConfirmModal>
+              <ConfirmModal
+                isOpen={isConfirmOpen}
+                title="تأكيد الحذف"
+                description="هل أنت متأكد من حذف هذا المقال؟ لا يمكن التراجع عن هذا الإجراء."
+                onConfirm={handleDelete}
+                onCancel={() => setIsConfirmOpen(false)}
+                isLoading={isDeleting}
+              />
+            </>
           )}
           <Button onClick={handleSave} disabled={isSaving} className="gap-2">
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
