@@ -81,6 +81,7 @@ export function RichTextEditor({ value, onChange }: { value: string, onChange: (
   return (
     <div className="bg-white rounded-lg border border-border overflow-hidden [&_.ql-container]:min-h-[400px] [&_.ql-container]:text-base [&_.ql-editor]:min-h-[400px] [&_.ql-editor]:text-right [&_.ql-editor]:rtl">
       <ReactQuill
+        // @ts-ignore
         ref={quillRef}
         theme="snow"
         value={value}
