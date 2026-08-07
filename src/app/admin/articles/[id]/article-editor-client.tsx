@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+
 import { Switch } from "@/components/ui/switch"
 import { RichTextEditor } from "@/components/admin/rich-text-editor"
 import { ImageUploader } from "@/components/ui/image-uploader"
@@ -117,7 +117,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white p-6 rounded-xl border border-border space-y-4">
             <div className="space-y-2">
-              <Label>عنوان المقال <span className="text-destructive">*</span></Label>
+              <label className="text-sm font-medium">عنوان المقال <span className="text-destructive">*</span></label>
               <Input 
                 value={title} 
                 onChange={e => setTitle(e.target.value)} 
@@ -127,7 +127,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
             </div>
             
             <div className="space-y-2">
-              <Label>محتوى المقال <span className="text-destructive">*</span></Label>
+              <label className="text-sm font-medium">محتوى المقال <span className="text-destructive">*</span></label>
               <RichTextEditor value={content} onChange={setContent} />
             </div>
           </div>
@@ -138,12 +138,12 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
             <h3 className="font-bold">الإعدادات</h3>
             
             <div className="flex items-center justify-between">
-              <Label className="cursor-pointer">تفعيل المقال</Label>
+              <label className="text-sm font-medium cursor-pointer">تفعيل المقال</label>
               <Switch checked={isActive} onCheckedChange={setIsActive} />
             </div>
 
             <div className="pt-4 border-t border-border">
-              <Label className="block mb-2">صورة الغلاف</Label>
+              <label className="text-sm font-medium block mb-2">صورة الغلاف</label>
               <div className="aspect-video w-full">
                 <ImageUploader value={imageUrl} onChange={setImageUrl} label="اختر صورة الغلاف" />
               </div>
@@ -154,7 +154,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
             <h3 className="font-bold">تحسين محركات البحث (SEO)</h3>
             
             <div className="space-y-2">
-              <Label>عنوان SEO</Label>
+              <label className="text-sm font-medium">عنوان SEO</label>
               <Input 
                 value={seoTitle} 
                 onChange={e => setSeoTitle(e.target.value)} 
@@ -163,7 +163,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
             </div>
             
             <div className="space-y-2">
-              <Label>وصف SEO</Label>
+              <label className="text-sm font-medium">وصف SEO</label>
               <textarea 
                 value={seoDesc} 
                 onChange={e => setSeoDesc(e.target.value)} 
