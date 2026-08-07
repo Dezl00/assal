@@ -32,8 +32,9 @@ export async function getActiveArticles(limit?: number) {
 
 export async function getArticleBySlug(slug: string) {
   try {
+    const decodedSlug = decodeURIComponent(slug)
     const article = await db.article.findUnique({
-      where: { slug }
+      where: { slug: decodedSlug }
     })
     return { success: true, article }
   } catch (error) {
