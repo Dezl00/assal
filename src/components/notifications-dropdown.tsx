@@ -28,7 +28,10 @@ export function NotificationsDropdown({ isAdmin = false }: { isAdmin?: boolean }
     if (data?.unreadCount !== undefined) {
       // If unread count increased, play sound
       if (data.unreadCount > prevUnreadRef.current && isAdmin) {
-        audioRef.current?.play().catch(e => console.error("Audio play failed:", e));
+        audioRef.current?.play().catch(() => {
+          // Browser blocked auto-play because user hasn't interacted with the page yet.
+          // This is normal and expected, no need to log an error.
+        });
       }
       prevUnreadRef.current = data.unreadCount;
     }
