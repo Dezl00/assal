@@ -125,7 +125,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     let finalPhone = user?.phone || ""
     let finalAddress = user?.address || ""
     let finalCity = user?.city || ""
-    let finalGovName = ""
+    let finalGovName = user?.governorate || ""
 
     if (useNewAddress) {
       finalPhone = formData.get("customerPhone") as string

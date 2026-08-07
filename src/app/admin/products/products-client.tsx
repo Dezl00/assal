@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo, useRef } from "react"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Search, Edit, Trash2, PlusCircle, X, Loader2, Download, Upload, CheckSquare, Square, Filter, Eye, EyeOff, Check } from "lucide-react"
 import { createProduct, deleteProduct, updateProduct, toggleProductStatus, bulkDeleteProducts, bulkToggleProductsStatus, bulkUpdateProducts } from "@/features/products/actions"
@@ -766,8 +767,8 @@ export function ProductsClient({ products, categories, brands = [], departments 
       />
 
       {/* Import Conflicts Modal */}
-      {importConflicts && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in">
+      {importConflicts && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 animate-in fade-in">
           <div className="bg-background rounded-xl border border-border/50 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-border/50 flex items-center justify-between">
               <h2 className="text-xl font-bold">معاينة المنتجات المستوردة</h2>
@@ -841,12 +842,12 @@ export function ProductsClient({ products, categories, brands = [], departments 
               )}
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
 
       {/* Bulk Edit Modal */}
-      {bulkEditOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      {bulkEditOpen && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
           <div className="bg-card w-full max-w-5xl rounded-xl shadow-lg border border-border/50 flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-border/50 flex items-center justify-between">
               <h2 className="text-lg font-semibold">تعديل جماعي سريع ({bulkEditData.length} منتجات)</h2>
@@ -941,7 +942,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
               </Button>
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
 
     </div>

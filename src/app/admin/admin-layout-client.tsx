@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { signOut, useSession, SessionProvider } from "next-auth/react"
 import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
 import { NotificationsDropdown } from "@/components/notifications-dropdown"
+import { PushNotificationPrompt } from "@/components/admin/push-notification-prompt"
 
 export function AdminLayoutClient({
   children,
@@ -169,7 +170,7 @@ function AdminLayoutInner({
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col md:mr-72 min-h-screen">
-        <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-background px-4 md:px-8 shrink-0 fixed top-0 left-0 right-0 md:right-72 z-[60]">
+        <header className="flex h-14 md:h-16 items-center justify-between border-b border-border bg-background px-4 md:px-8 shrink-0 fixed top-0 left-0 right-0 md:right-72 z-40">
           
           {/* Mobile Header Left */}
           <div className="flex items-center gap-3 md:hidden">
@@ -246,6 +247,8 @@ function AdminLayoutInner({
           })}
         </div>
       </nav>
+
+      <PushNotificationPrompt />
     </div>
   )
 }

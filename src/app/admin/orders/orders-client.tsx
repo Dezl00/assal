@@ -19,6 +19,9 @@ export function OrdersClient({ orders }: { orders: any[] }) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   
+  const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter, setStatusFilter] = useState("ALL")
+  
   // Status dictionary for arabic translation
   const statusLabels: Record<string, string> = {
     "PENDING": "قيد التنفيذ",
@@ -33,6 +36,19 @@ export function OrdersClient({ orders }: { orders: any[] }) {
     "SHIPPED": "bg-green-100 text-green-800",
     "CANCELLED": "bg-red-100 text-red-800"
   }
+
+  const filteredOrders = orders.filter((order) => {
+    const matchesSearch = 
+      order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (order.user?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.user?.phone || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.phone || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.customerName || "").toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesStatus = statusFilter === "ALL" || order.status === statusFilter
+
+    return matchesSearch && matchesStatus
+  })
 
   async function handleStatusChange(orderId: string, newStatus: string) {
     const res = await updateOrderStatus(orderId, newStatus)
@@ -80,19 +96,43 @@ export function OrdersClient({ orders }: { orders: any[] }) {
             <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="ابحث برقم الطلب..."
+              placeholder="ابحث برقم الطلب، اسم العميل، او رقم الهاتف..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="h-10 w-full rounded-md border border-input bg-transparent pr-10 pl-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
         </div>
+        
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap gap-2 px-4 py-3 border-b border-border/50">
+          <Button 
+            variant={statusFilter === "ALL" ? "default" : "outline"} 
+            size="sm" 
+            onClick={() => setStatusFilter("ALL")}
+          >
+            الكل
+          </Button>
+          {Object.entries(statusLabels).map(([val, label]) => (
+            <Button 
+              key={val} 
+              variant={statusFilter === val ? "default" : "outline"} 
+              size="sm" 
+              onClick={() => setStatusFilter(val)}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
+
         {/* Mobile View */}
         <div className="md:hidden divide-y divide-border/50">
-          {orders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
-              لا توجد طلبات حتى الآن.
+              لا توجد طلبات متطابقة مع بحثك.
             </div>
           ) : (
-            orders.map((order) => (
+            filteredOrders.map((order) => (
               <div key={order.id} className="p-4 space-y-4 transition-colors hover:bg-muted/30">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -170,14 +210,14 @@ export function OrdersClient({ orders }: { orders: any[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {orders.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                    لا توجد طلبات حتى الآن.
+                    لا توجد طلبات متطابقة مع بحثك.
                   </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
                   <tr key={order.id} className="transition-colors hover:bg-muted/30">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">

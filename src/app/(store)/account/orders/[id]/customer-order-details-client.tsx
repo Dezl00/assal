@@ -114,14 +114,14 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
             {order.items.map((item: any) => (
               <div key={item.id} className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors">
                 <div className="w-16 h-16 bg-background rounded-lg border border-border overflow-hidden shrink-0">
-                  {item.product?.imageUrl ? (
-                    <img src={item.product.imageUrl} alt="" className="w-full h-full object-cover" />
+                  {item.product?.images?.[0]?.url ? (
+                    <img src={item.product.images[0].url} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <Package className="w-8 h-8 m-4 text-muted-foreground/30" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-sm truncate">{item.productName}</h4>
+                  <h4 className="font-bold text-sm truncate">{item.product?.name || "منتج غير معروف"}</h4>
                   <p className="text-xs text-muted-foreground mt-1">الكمية: <span className="font-sans font-bold" dir="ltr">{item.quantity}</span></p>
                 </div>
                 <div className="text-right shrink-0">
@@ -136,24 +136,32 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
         <div className="flex flex-col md:flex-row gap-8">
           <div className="flex-1 space-y-4">
             <h3 className="text-lg font-bold border-b border-border/50 pb-2">عنوان التوصيل</h3>
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>{order.city} - {order.address}</p>
-              {order.postalCode && <p className="font-sans">Postal: {order.postalCode}</p>}
-              <p className="font-sans" dir="ltr">Phone: {order.phone}</p>
+            <div className="text-sm text-muted-foreground space-y-2 bg-muted/30 p-4 rounded-xl border border-border/50">
+              <p><span className="font-medium text-foreground">المدينة:</span> {order.city}</p>
+              <p><span className="font-medium text-foreground">العنوان:</span> {order.address}</p>
+              {order.country && <p><span className="font-medium text-foreground">الدولة:</span> {order.country}</p>}
+              {order.postalCode && <p><span className="font-medium text-foreground">الرمز البريدي:</span> <span className="font-sans">{order.postalCode}</span></p>}
+              <p><span className="font-medium text-foreground">رقم الهاتف:</span> <span className="font-sans" dir="ltr">{order.phone}</span></p>
             </div>
           </div>
           
-          <div className="flex-1 bg-muted/30 rounded-xl p-6">
+          <div className="flex-1 bg-muted/30 rounded-xl p-6 border border-border/50">
             <h3 className="text-lg font-bold border-b border-border/50 pb-2 mb-4">ملخص الدفع</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">المجموع الفرعي</span>
-                <span className="font-sans font-medium" dir="ltr">{enNumber(order.totalAmount)} EGP</span>
+                <span className="font-sans font-medium" dir="ltr">{enNumber(order.totalAmount - (order.shippingCost || 0) + (order.discount || 0))} EGP</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">تكلفة الشحن</span>
-                <span className="font-sans font-medium" dir="ltr">0.00 EGP</span>
+                <span className="font-sans font-medium" dir="ltr">{enNumber(order.shippingCost || 0)} EGP</span>
               </div>
+              {(order.discount > 0) && (
+                <div className="flex justify-between text-destructive">
+                  <span>الخصم</span>
+                  <span className="font-sans font-medium" dir="ltr">-{enNumber(order.discount)} EGP</span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold border-t border-border/50 pt-4 mt-2">
                 <span>الإجمالي</span>
                 <span className="font-sans text-primary" dir="ltr">{enNumber(order.totalAmount)} EGP</span>

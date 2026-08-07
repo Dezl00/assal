@@ -18,7 +18,11 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
     include: {
       items: {
         include: {
-          product: true
+          product: {
+            include: {
+              images: true
+            }
+          }
         }
       },
       user: true,

@@ -17,7 +17,11 @@ export default async function CustomerOrderPage({ params }: { params: Promise<{ 
     include: {
       items: {
         include: {
-          product: true
+          product: {
+            include: {
+              images: true
+            }
+          }
         }
       },
       user: true,

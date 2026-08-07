@@ -102,12 +102,12 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
                         <td className="py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-muted rounded-md overflow-hidden shrink-0">
-                              {item.product?.imageUrl && (
-                                <img src={item.product.imageUrl} alt="" className="w-full h-full object-cover" />
+                              {item.product?.images?.[0]?.url && (
+                                <img src={item.product.images[0].url} alt="" className="w-full h-full object-cover" />
                               )}
                             </div>
                             <div>
-                              <p className="font-semibold">{item.productName}</p>
+                              <p className="font-semibold">{item.product?.name || "منتج غير معروف"}</p>
                               <p className="text-xs text-muted-foreground font-sans mt-0.5" dir="ltr">{enNumber(item.price)} EGP</p>
                             </div>
                           </div>
@@ -125,12 +125,18 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
               <div className="mt-6 pt-6 border-t border-border/50 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">المجموع الفرعي</span>
-                  <span className="font-sans font-medium" dir="ltr">{enNumber(order.totalAmount)} EGP</span>
+                  <span className="font-sans font-medium" dir="ltr">{enNumber(order.totalAmount - (order.shippingCost || 0) + (order.discount || 0))} EGP</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">الشحن</span>
-                  <span className="font-sans font-medium" dir="ltr">0.00 EGP</span>
+                  <span className="text-muted-foreground">تكلفة الشحن</span>
+                  <span className="font-sans font-medium" dir="ltr">{enNumber(order.shippingCost || 0)} EGP</span>
                 </div>
+                {(order.discount > 0) && (
+                  <div className="flex justify-between text-sm text-destructive">
+                    <span>الخصم</span>
+                    <span className="font-sans font-medium" dir="ltr">-{enNumber(order.discount)} EGP</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-lg font-bold border-t border-border/50 pt-3">
                   <span>الإجمالي</span>
                   <span className="font-sans text-primary" dir="ltr">{enNumber(order.totalAmount)} EGP</span>
@@ -146,7 +152,7 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
               <div className="space-y-3">
                 {order.status === "PENDING" && (
                   <Button 
-                    className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white" 
+                    className="w-full gap-2 bg-blue-500 hover:bg-blue-600 text-white border-0 shadow-none" 
                     onClick={() => handleStatusUpdate("PAID")}
                     disabled={isUpdating}
                   >
@@ -155,7 +161,7 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
                 )}
                 {(order.status === "PENDING" || order.status === "PAID") && (
                   <Button 
-                    className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white border-0 shadow-none"
                     onClick={() => handleStatusUpdate("SHIPPED")}
                     disabled={isUpdating}
                   >
@@ -164,7 +170,7 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
                 )}
                 {order.status !== "CANCELLED" && (
                   <Button 
-                    className="w-full gap-2 bg-red-600 hover:bg-red-700 text-white" 
+                    className="w-full gap-2 bg-red-500 hover:bg-red-600 text-white border-0 shadow-none" 
                     variant="destructive"
                     onClick={() => handleStatusUpdate("CANCELLED")}
                     disabled={isUpdating}
@@ -190,12 +196,12 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
       </div>
 
       {/* --- Print Only UI --- */}
-      <div className="hidden print:block print:bg-white print:text-black font-sans w-full max-w-4xl mx-auto p-8" dir="ltr">
+      <div className="hidden print:block print:bg-white print:text-black font-sans w-full max-w-4xl mx-auto p-8" dir="rtl">
         <style dangerouslySetInnerHTML={{__html: `
           @media print {
             body * { visibility: hidden; }
             .print\\:block, .print\\:block * { visibility: visible; }
-            .print\\:block { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
+            .print\\:block { position: absolute; left: 0; top: 0; right: 0; width: 100%; margin: 0; padding: 20px; }
             @page { margin: 0; }
           }
         `}} />
@@ -206,53 +212,53 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="h-16 w-auto object-contain mb-2" />
             ) : (
-              <h1 className="text-3xl font-bold uppercase tracking-wider">{storeName || 'STORE'}</h1>
+              <h1 className="text-3xl font-bold uppercase tracking-wider">{storeName || 'المتجر'}</h1>
             )}
-            <p className="text-sm text-gray-500 mt-2 uppercase tracking-wide">Official Invoice</p>
+            <p className="text-sm text-gray-500 mt-2 tracking-wide">فاتورة رسمية</p>
           </div>
-          <div className="text-right">
-            <h2 className="text-4xl font-light text-gray-400 uppercase tracking-widest mb-2">INVOICE</h2>
-            <p className="font-bold">#{order.id.slice(-6).toUpperCase()}</p>
-            <p className="text-sm text-gray-600 mt-1">{enDate(order.createdAt)}</p>
+          <div className="text-left">
+            <h2 className="text-4xl font-light text-gray-400 uppercase tracking-widest mb-2">فاتورة</h2>
+            <p className="font-bold font-sans" dir="ltr">#{order.id.slice(-6).toUpperCase()}</p>
+            <p className="text-sm text-gray-600 mt-1 font-sans" dir="ltr">{enDate(order.createdAt)}</p>
           </div>
         </div>
 
         {/* Print Details */}
         <div className="flex justify-between mb-12">
-          <div className="w-1/2 pr-4">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Billed To</h3>
-            <p className="font-bold text-lg">{order.user?.name || order.user?.email || "Guest Customer"}</p>
-            <p className="text-gray-600 mt-1">{order.user?.email}</p>
-            {order.user?.phone && <p className="text-gray-600">{order.user?.phone}</p>}
+          <div className="w-1/2 pl-4">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">بيانات العميل</h3>
+            <p className="font-bold text-lg">{order.user?.name || order.user?.email || "عميل زائر"}</p>
+            <p className="text-gray-600 mt-1 font-sans" dir="ltr">{order.user?.email}</p>
+            {order.user?.phone && <p className="text-gray-600 font-sans" dir="ltr">{order.user?.phone}</p>}
           </div>
-          <div className="w-1/2 pl-4 text-right">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Ship To</h3>
+          <div className="w-1/2 pr-4 text-left">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">عنوان الشحن</h3>
             <p className="font-bold">{order.address}</p>
-            <p className="text-gray-600">{order.city}{order.postalCode ? `, ${order.postalCode}` : ''}</p>
-            <p className="text-gray-600">{order.country || 'Egypt'}</p>
-            <p className="text-gray-600">{order.phone}</p>
+            <p className="text-gray-600">{order.city}{order.postalCode ? ` - ${order.postalCode}` : ''}</p>
+            <p className="text-gray-600">{order.country || 'مصر'}</p>
+            <p className="text-gray-600 font-sans" dir="ltr">{order.phone}</p>
           </div>
         </div>
 
         {/* Print Items */}
-        <table className="w-full text-left mb-8 border-collapse">
+        <table className="w-full text-right mb-8 border-collapse">
           <thead>
             <tr className="border-b-2 border-black text-xs uppercase tracking-wider text-gray-500">
-              <th className="py-3 font-bold">Item Description</th>
-              <th className="py-3 font-bold text-center">Qty</th>
-              <th className="py-3 font-bold text-right">Unit Price</th>
-              <th className="py-3 font-bold text-right">Amount</th>
+              <th className="py-3 font-bold text-right">المنتج</th>
+              <th className="py-3 font-bold text-center">الكمية</th>
+              <th className="py-3 font-bold text-left">السعر</th>
+              <th className="py-3 font-bold text-left">الإجمالي</th>
             </tr>
           </thead>
           <tbody>
             {order.items.map((item: any) => (
               <tr key={item.id} className="border-b border-gray-200">
                 <td className="py-4 pr-4">
-                  <p className="font-bold text-gray-900">{item.productName}</p>
+                  <p className="font-bold text-gray-900">{item.product?.name || 'منتج غير معروف'}</p>
                 </td>
-                <td className="py-4 text-center text-gray-700">{item.quantity}</td>
-                <td className="py-4 text-right text-gray-700">{enNumber(item.price)} EGP</td>
-                <td className="py-4 text-right font-bold text-gray-900">{enNumber(item.price * item.quantity)} EGP</td>
+                <td className="py-4 text-center text-gray-700 font-sans" dir="ltr">{item.quantity}</td>
+                <td className="py-4 text-left text-gray-700 font-sans" dir="ltr">{enNumber(item.price)} EGP</td>
+                <td className="py-4 text-left font-bold text-gray-900 font-sans" dir="ltr">{enNumber(item.price * item.quantity)} EGP</td>
               </tr>
             ))}
           </tbody>
@@ -262,23 +268,29 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
         <div className="flex justify-end">
           <div className="w-1/2 sm:w-1/3">
             <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
-              <span>Subtotal</span>
-              <span>{enNumber(order.totalAmount)} EGP</span>
+              <span>المجموع الفرعي</span>
+              <span className="font-sans" dir="ltr">{enNumber(order.totalAmount - (order.shippingCost || 0) + (order.discount || 0))} EGP</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
-              <span>Shipping</span>
-              <span>0.00 EGP</span>
+              <span>تكلفة الشحن</span>
+              <span className="font-sans" dir="ltr">{enNumber(order.shippingCost || 0)} EGP</span>
             </div>
+            {(order.discount > 0) && (
+              <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
+                <span>الخصم</span>
+                <span className="font-sans" dir="ltr">-{enNumber(order.discount)} EGP</span>
+              </div>
+            )}
             <div className="flex justify-between py-3 font-bold text-xl">
-              <span>Total</span>
-              <span>{enNumber(order.totalAmount)} EGP</span>
+              <span>الإجمالي</span>
+              <span className="font-sans" dir="ltr">{enNumber(order.totalAmount)} EGP</span>
             </div>
           </div>
         </div>
         
         {/* Footer */}
         <div className="mt-20 pt-8 border-t border-gray-200 text-center text-sm text-gray-500">
-          <p>Thank you for your business!</p>
+          <p>شكراً لثقتكم بنا!</p>
         </div>
       </div>
 

@@ -166,22 +166,22 @@ export function AccountClient({ user }: { user: any }) {
                         
                         {/* Timeline */}
                         {order.status !== 'CANCELLED' ? (
-                          <div className="relative pt-2">
-                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-1/2 rounded-full overflow-hidden">
-                               <div className="h-full bg-primary transition-all duration-500" style={{ width: `${(getStatusStep(order.status) / 4) * 100}%` }}></div>
+                          <div className="relative pt-4 pb-4 px-2 mt-2">
+                            <div className="absolute top-8 left-6 right-6 h-1.5 bg-muted rounded-full overflow-hidden">
+                               <div className="h-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${(getStatusStep(order.status) / 4) * 100}%` }}></div>
                             </div>
                             <div className="relative flex justify-between">
                                {[
-                                 { step: 1, label: 'قيد التنفيذ', icon: Clock },
+                                 { step: 1, label: 'قيد المراجعة', icon: Clock },
                                  { step: 2, label: 'تم التأكيد', icon: CheckCircle2 },
                                  { step: 3, label: 'جاري الشحن', icon: Truck },
                                  { step: 4, label: 'مكتمل', icon: CheckCircle2 }
                                ].map((s) => (
-                                 <div key={s.step} className="flex flex-col items-center gap-1">
-                                   <div className={`w-6 h-6 rounded-full flex items-center justify-center relative z-10 transition-colors ${getStatusStep(order.status) >= s.step ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-muted-foreground'}`}>
-                                     <s.icon className="w-3 h-3" />
+                                 <div key={s.step} className="flex flex-col items-center gap-2">
+                                   <div className={`w-8 h-8 rounded-full flex items-center justify-center relative z-10 transition-colors shadow-sm ${getStatusStep(order.status) >= s.step ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-muted-foreground'}`}>
+                                     <s.icon className="w-4 h-4" />
                                    </div>
-                                   <span className={`text-[10px] font-bold ${getStatusStep(order.status) >= s.step ? 'text-primary' : 'text-muted-foreground'}`}>{s.label}</span>
+                                   <span className={`text-[11px] font-bold ${getStatusStep(order.status) >= s.step ? 'text-primary' : 'text-muted-foreground'}`}>{s.label}</span>
                                  </div>
                                ))}
                             </div>

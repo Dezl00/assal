@@ -59,30 +59,32 @@ export function NotificationsDropdown({ isAdmin = false }: { isAdmin?: boolean }
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full w-10 h-10 transition-colors">
           <Bell className="w-5 h-5" />
           {data?.unreadCount > 0 && (
-            <span className="absolute top-1 right-1.5 w-2 h-2 bg-destructive rounded-full ring-2 ring-background">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-black text-white border-[3px] border-background shadow-md animate-in zoom-in">
+              {data.unreadCount > 9 ? '9+' : data.unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b border-border/50">
-          <h3 className="font-semibold text-sm">الإشعارات</h3>
+      <PopoverContent className="w-[340px] p-0 rounded-2xl border-border/40 shadow-xl overflow-hidden" align="end" sideOffset={8}>
+        <div className="flex items-center justify-between p-4 bg-muted/20 border-b border-border/40">
+          <h3 className="font-bold text-sm">الإشعارات</h3>
           {data?.unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-auto p-0 text-xs text-primary hover:text-primary/80">
-              <Check className="w-3 h-3 mr-1" />
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-auto p-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-md transition-colors font-medium">
+              <Check className="w-3.5 h-3.5 ml-1.5" />
               تحديد كـ مقروء
             </Button>
           )}
         </div>
-        <div className="max-h-[300px] overflow-y-auto">
+        <div className="max-h-[350px] overflow-y-auto scrollbar-thin">
           {!data?.notifications || data.notifications.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground text-xs">
-              <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
-              لا توجد إشعارات جديدة
+            <div className="p-10 text-center flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+                <Bell className="w-5 h-5 text-muted-foreground/50" />
+              </div>
+              <p className="text-muted-foreground text-sm font-medium">لا توجد إشعارات جديدة</p>
             </div>
           ) : (
             <div className="flex flex-col">
@@ -91,15 +93,17 @@ export function NotificationsDropdown({ isAdmin = false }: { isAdmin?: boolean }
                   key={notif.id}
                   href={notif.link || "#"}
                   onClick={() => { if (!notif.isRead) markAsRead(notif.id) }}
-                  className={`p-3 text-sm border-b border-border/50 hover:bg-muted/50 transition-colors ${!notif.isRead ? 'bg-primary/5' : ''}`}
+                  className={`p-4 text-sm border-b border-border/40 hover:bg-muted/30 transition-all duration-200 group relative ${!notif.isRead ? 'bg-primary/[0.03]' : ''}`}
                 >
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="font-medium text-[13px]">{notif.title}</div>
-                    {!notif.isRead && <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{notif.message}</div>
-                  <div className="text-[10px] text-muted-foreground/70 mt-2">
-                    {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: ar })}
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1">
+                      <div className={`font-semibold text-[13px] ${!notif.isRead ? 'text-foreground' : 'text-foreground/80'}`}>{notif.title}</div>
+                      <div className="text-[13px] text-muted-foreground mt-1.5 leading-relaxed">{notif.message}</div>
+                      <div className="text-[11px] text-muted-foreground/60 mt-2.5 font-sans" dir="ltr">
+                        {formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true, locale: ar })}
+                      </div>
+                    </div>
+                    {!notif.isRead && <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0 mt-1 shadow-sm ring-2 ring-primary/20" />}
                   </div>
                 </Link>
               ))}

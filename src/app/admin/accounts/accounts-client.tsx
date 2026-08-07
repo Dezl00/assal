@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { PlusCircle, Edit, Trash2, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
 import { deleteAccount, createAccount, updateAccount, updateAccountStatus } from "@/features/accounts/actions"
@@ -187,13 +187,17 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
     setDeleteModalOpen(false)
   }
 
-  async function handleUpdateStatus(id: string, active: boolean) {
+  const [isPending, startTransition] = useTransition()
+
+  function handleUpdateStatus(id: string, active: boolean) {
     setLocalAccounts(prev => prev.map(a => a.id === id ? { ...a, isActive: active } : a))
-    const res = await updateAccountStatus(id, active)
-    if (!res.success) {
-      toast.error(res.error || 'فشل تحديث الحالة')
-      setLocalAccounts(prev => prev.map(a => a.id === id ? { ...a, isActive: !active } : a))
-    }
+    startTransition(async () => {
+      const res = await updateAccountStatus(id, active)
+      if (!res.success) {
+        toast.error(res.error || 'فشل تحديث الحالة')
+        setLocalAccounts(prev => prev.map(a => a.id === id ? { ...a, isActive: !active } : a))
+      }
+    })
   }
 
   const handleSelectAll = (checked: boolean) => {
