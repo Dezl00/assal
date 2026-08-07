@@ -10,6 +10,7 @@ import { ValuesSlider } from "./widgets/values-slider"
 import { StoreFeatures } from "./widgets/store-features"
 import { ProductList } from "./widgets/product-list"
 import { FeaturedProductWidget } from "./widgets/featured-product"
+import { LatestArticlesWidget } from "./widgets/latest-articles"
 
 export function WidgetRenderer({ widget }: { widget: any }) {
   // Common visibility classes based on settings
@@ -82,6 +83,12 @@ export function WidgetRenderer({ widget }: { widget: any }) {
       return (
         <section className={`w-full ${visibilityClass}`}>
           <StoreFeatures widget={widget} />
+        </section>
+      )
+    case "LatestArticles":
+      return (
+        <section className={`w-full py-16 ${visibilityClass}`}>
+          <LatestArticlesWidget widget={widget} />
         </section>
       )
     default:

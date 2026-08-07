@@ -2,7 +2,7 @@
 import React, { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X, Bell, Tag, Truck } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X, Bell, Tag, Truck, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { signOut, useSession, SessionProvider } from "next-auth/react"
 import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
@@ -61,6 +61,7 @@ function AdminLayoutInner({
     { name: "طرق الدفع والشحن", href: "/admin/shipping-payment", icon: Truck, show: hasPerm('settings') },
     { name: "الإحصائيات", href: "/admin/analytics", icon: LayoutDashboard, show: hasPerm('analytics') },
     { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate, show: hasPerm('widgets') },
+    { name: "المقالات", href: "/admin/articles", icon: BookOpen, show: hasPerm('widgets') },
     { name: "الحسابات والصلاحيات", href: "/admin/accounts", icon: FolderTree, show: hasPerm('accounts') },
     { name: "سجل الأمان", href: "/admin/security", icon: LayoutDashboard, show: hasPerm('security') },
     { name: "الإعدادات", href: "/admin/settings", icon: Settings, show: hasPerm('settings') },
