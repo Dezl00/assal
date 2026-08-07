@@ -17,7 +17,7 @@ export async function registerServiceWorkerAndSubscribe() {
     // Wait until SW is active
     await navigator.serviceWorker.ready;
 
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    const vapidPublicKey = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '').trim().replace(/=/g, '');
     if (!vapidPublicKey) {
       console.error("VAPID public key is not set.");
       return null;
