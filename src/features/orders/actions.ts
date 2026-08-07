@@ -26,7 +26,11 @@ export async function updateOrderStatus(orderId: string, status: string) {
           where: { id: orderId },
           include: {
             items: {
-              include: { product: true }
+              include: { 
+                product: {
+                  include: { images: true }
+                } 
+              }
             }
           }
         });
