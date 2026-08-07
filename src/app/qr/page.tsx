@@ -184,7 +184,7 @@ export default function CompactQRCodeGenerator() {
       const exportQR = createExportInstance();
       const buffer = await exportQR.getRawData("png");
       if (!buffer) return;
-      const blob = new Blob([buffer], { type: "image/png" });
+      const blob = new Blob([buffer as any], { type: "image/png" });
       const dataUrl = URL.createObjectURL(blob);
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [100, 100] });
       pdf.addImage(dataUrl, "PNG", 10, 10, 80, 80);
