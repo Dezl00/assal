@@ -77,11 +77,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               <div className="flex items-center gap-2">
                 <button 
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-primary hover:text-white transition-colors"
-                  onClick={() => {
-                    // This is a client-side interaction in a server component. We can just use a simple anchor mailto or copy link, 
-                    // but for now let's just make it visually clickable or add a client component for share.
-                    // Assuming basic copy link functionality could be added.
-                  }}
+
                   title="مشاركة"
                 >
                   <Share2 className="w-4 h-4" />
