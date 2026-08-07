@@ -27,7 +27,7 @@ export async function sendNotification({ userId, targetRole, title, message, typ
     });
 
     // 2. Find push subscriptions
-    let pushSubs = [];
+    let pushSubs: any[] = [];
     if (userId) {
       pushSubs = await prisma.pushSubscription.findMany({
         where: { userId }
