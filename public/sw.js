@@ -5,6 +5,7 @@ self.addEventListener('push', function (event) {
       body: data.body,
       icon: data.icon || '/favicon.ico',
       badge: data.badge || '/favicon.ico',
+      image: data.image || undefined,
       vibrate: data.vibrate || [200, 100, 200, 100, 200, 100, 200],
       data: {
         url: data.url || '/',

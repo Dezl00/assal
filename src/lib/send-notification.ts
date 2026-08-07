@@ -9,9 +9,10 @@ interface SendNotificationOptions {
   type: string;
   link?: string;
   sound?: boolean; // Whether to play sound for push
+  image?: string;  // Large image to display in the push notification
 }
 
-export async function sendNotification({ userId, targetRole, title, message, type, link, sound = true }: SendNotificationOptions) {
+export async function sendNotification({ userId, targetRole, title, message, type, link, sound = true, image }: SendNotificationOptions) {
   try {
     // 1. Save to database (in-app notification)
     // If it's an admin notification (userId is null), we just save one record with userId = null.
@@ -44,6 +45,7 @@ export async function sendNotification({ userId, targetRole, title, message, typ
       title,
       body: message,
       icon: '/icon-512x512.png', // Assuming PWA icon exists, fallback to favicon
+      image: image || undefined,
       url: link || '/',
       vibrate: sound ? [200, 100, 200, 100, 200, 100, 200] : [200],
       sound: sound ? '/sounds/bell.ogg' : undefined,

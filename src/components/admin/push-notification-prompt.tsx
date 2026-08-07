@@ -10,7 +10,11 @@ export function PushNotificationPrompt() {
   useEffect(() => {
     const checkNotification = () => {
       if (!("Notification" in window)) return;
-      if (Notification.permission === "granted") return;
+      if (Notification.permission === "granted") {
+        // Silently update subscription so backend gets latest role (e.g. if they just logged in as Admin)
+        import("@/lib/push-client").then(m => m.registerServiceWorkerAndSubscribe().catch(() => {}));
+        return;
+      }
 
       const lastPromptTime = localStorage.getItem("lastPushPromptTime");
       const now = new Date().getTime();
