@@ -2,10 +2,10 @@
 
 import React, { useMemo, useRef, useCallback } from "react"
 import dynamic from "next/dynamic"
-import "react-quill/dist/quill.snow.css"
+import "react-quill-new/dist/quill.snow.css"
 import { toast } from "sonner"
 
-const ReactQuill = dynamic(() => import("react-quill"), { 
+const ReactQuill = dynamic(() => import("react-quill-new"), { 
   ssr: false,
   loading: () => <div className="min-h-[400px] bg-slate-50 border border-border rounded-lg flex items-center justify-center text-muted-foreground animate-pulse">جاري تحميل المحرر...</div>
 })
