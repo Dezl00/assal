@@ -16,7 +16,11 @@ export default async function CheckoutPage() {
   if (session?.user?.id) {
     const dbUser = await db.user.findUnique({
       where: { id: session.user.id },
-      select: { id: true, name: true, email: true, phone: true, address: true }
+      select: { 
+        id: true, name: true, email: true, phone: true, address: true,
+        addresses: { orderBy: { isDefault: 'desc' } },
+        contactNumbers: { orderBy: { isDefault: 'desc' } }
+      }
     })
     if (dbUser) {
       userDetails = dbUser

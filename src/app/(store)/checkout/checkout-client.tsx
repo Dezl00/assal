@@ -20,8 +20,22 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   const [isSummaryOpen, setIsSummaryOpen] = useState(false)
   
   // -- Shipping State --
-  const hasSavedAddress = !!(user?.address && user?.phone && user?.city)
-  const [useNewAddress, setUseNewAddress] = useState(!hasSavedAddress)
+  const hasSavedAddresses = user?.addresses && user.addresses.length > 0
+  const legacyHasAddress = !!(user?.address && user?.city)
+  const defaultAddress = user?.addresses?.find((a: any) => a.isDefault) || user?.addresses?.[0]
+  
+  const [selectedAddressId, setSelectedAddressId] = useState<string>(
+    hasSavedAddresses ? defaultAddress.id : (legacyHasAddress ? "legacy" : "new")
+  )
+  
+  const hasSavedContacts = user?.contactNumbers && user.contactNumbers.length > 0
+  const legacyHasPhone = !!user?.phone
+  const defaultContact = user?.contactNumbers?.find((c: any) => c.isDefault) || user?.contactNumbers?.[0]
+  
+  const [selectedContactId, setSelectedContactId] = useState<string>(
+    hasSavedContacts ? defaultContact.id : (legacyHasPhone ? "legacy" : "new")
+  )
+
   const [selectedGovId, setSelectedGovId] = useState("")
   const [selectedCityId, setSelectedCityId] = useState("")
   
@@ -51,7 +65,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   let baseShippingCost = 0
   let isShippingCalculated = false
 
-  if (useNewAddress) {
+  if (selectedAddressId === "new") {
     if (selectedGov?.hideCities) {
       baseShippingCost = selectedGov.shippingCost || 0
       isShippingCalculated = true
@@ -59,20 +73,37 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
       baseShippingCost = selectedCity.shippingCost || 0
       isShippingCalculated = true
     }
-  } else if (user?.city || user?.governorate) {
-    for (const gov of governorates) {
-      if (gov.name === user.governorate) {
-        if (gov.hideCities) {
-          baseShippingCost = gov.shippingCost || 0
-          isShippingCalculated = true
-          break
-        }
+  } else {
+    // Find gov and city for selected or legacy address
+    let searchGov = ""
+    let searchCity = ""
+    
+    if (selectedAddressId === "legacy") {
+      searchGov = user?.governorate || ""
+      searchCity = user?.city || ""
+    } else {
+      const addr = user?.addresses?.find((a: any) => a.id === selectedAddressId)
+      if (addr) {
+        searchGov = addr.governorate || ""
+        searchCity = addr.city || ""
       }
-      const c = gov.cities.find((city: any) => city.name === user.city)
-      if (c) {
-        baseShippingCost = c.shippingCost || 0
-        isShippingCalculated = true
-        break
+    }
+
+    if (searchGov) {
+      for (const gov of governorates) {
+        if (gov.name === searchGov) {
+          if (gov.hideCities) {
+            baseShippingCost = gov.shippingCost || 0
+            isShippingCalculated = true
+            break
+          }
+          const c = gov.cities.find((city: any) => city.name === searchCity)
+          if (c) {
+            baseShippingCost = c.shippingCost || 0
+            isShippingCalculated = true
+            break
+          }
+        }
       }
     }
   }
@@ -122,13 +153,21 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     
-    let finalPhone = user?.phone || ""
-    let finalAddress = user?.address || ""
-    let finalCity = user?.city || ""
-    let finalGovName = user?.governorate || ""
+    let finalPhone = ""
+    let finalAddress = ""
+    let finalCity = ""
+    let finalGovName = ""
 
-    if (useNewAddress) {
+    if (selectedContactId === "new") {
       finalPhone = formData.get("customerPhone") as string
+    } else if (selectedContactId === "legacy") {
+      finalPhone = user?.phone || ""
+    } else {
+      const contact = user?.contactNumbers?.find((c: any) => c.id === selectedContactId)
+      finalPhone = contact ? contact.number : ""
+    }
+
+    if (selectedAddressId === "new") {
       finalAddress = formData.get("address") as string
       if (!selectedGov || (!selectedCity && !selectedGov.hideCities)) {
         toast.error("يرجى اختيار المحافظة والمدينة")
@@ -137,10 +176,21 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
       }
       finalGovName = selectedGov.name
       finalCity = selectedCity?.name || ""
-    } else if (!hasSavedAddress) {
-        toast.error("يرجى إدخال عنوان التوصيل")
+    } else if (selectedAddressId === "legacy") {
+      finalAddress = user?.address || ""
+      finalCity = user?.city || ""
+      finalGovName = user?.governorate || ""
+    } else {
+      const addr = user?.addresses?.find((a: any) => a.id === selectedAddressId)
+      if (addr) {
+        finalAddress = addr.address || ""
+        finalCity = addr.city || ""
+        finalGovName = addr.governorate || ""
+      } else {
+        toast.error("حدث خطأ في تحديد العنوان")
         setIsSubmitting(false)
         return
+      }
     }
 
     const selectedPayment = paymentMethods.find((p: any) => p.id === selectedPaymentId)
@@ -231,68 +281,138 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold mb-6">بيانات التوصيل</h2>
             
-            {user?.address && user?.phone && (
-              <div className="mb-8">
-                <div 
-                  className={`border-2 rounded-xl p-4 cursor-pointer transition-colors ${!useNewAddress ? 'border-primary bg-primary/5' : 'border-border/50'}`}
-                  onClick={() => setUseNewAddress(false)}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${!useNewAddress ? 'border-primary' : 'border-muted-foreground'}`}>
-                      {!useNewAddress && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+            {/* CONTACT NUMBERS */}
+            <h3 className="font-bold mb-3 text-lg">رقم التواصل</h3>
+            {hasSavedContacts && (
+              <div className="space-y-3 mb-4">
+                {user.contactNumbers.map((contact: any) => (
+                  <div 
+                    key={contact.id}
+                    onClick={() => setSelectedContactId(contact.id)}
+                    className={`border-2 rounded-xl p-4 cursor-pointer transition-colors flex items-center gap-3 ${selectedContactId === contact.id ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedContactId === contact.id ? 'border-primary' : 'border-muted-foreground'}`}>
+                      {selectedContactId === contact.id && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                     </div>
-                    <span className="font-bold">استخدام العنوان المحفوظ</span>
+                    <div>
+                      <span className="font-bold text-sm block">{contact.title}</span>
+                      <span className="text-muted-foreground text-sm block" dir="ltr">{contact.number}</span>
+                    </div>
                   </div>
-                  <div className="mr-8 text-sm text-muted-foreground space-y-1">
-                    <p><span className="font-semibold text-foreground">الاسم:</span> {user.name}</p>
-                    <p><span className="font-semibold text-foreground">الجوال:</span> <span dir="ltr">{user.phone}</span></p>
-                    <p><span className="font-semibold text-foreground">العنوان:</span> {user.address}</p>
-                  </div>
+                ))}
+              </div>
+            )}
+            {!hasSavedContacts && legacyHasPhone && (
+              <div 
+                onClick={() => setSelectedContactId("legacy")}
+                className={`border-2 rounded-xl p-4 mb-4 cursor-pointer transition-colors flex items-center gap-3 ${selectedContactId === "legacy" ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+              >
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedContactId === "legacy" ? 'border-primary' : 'border-muted-foreground'}`}>
+                  {selectedContactId === "legacy" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                 </div>
+                <div>
+                  <span className="font-bold text-sm block">الرقم المحفوظ</span>
+                  <span className="text-muted-foreground text-sm block" dir="ltr">{user.phone}</span>
+                </div>
+              </div>
+            )}
+            <div 
+              onClick={() => setSelectedContactId("new")}
+              className={`border-2 rounded-xl p-4 mb-8 cursor-pointer transition-colors flex items-center gap-3 ${selectedContactId === "new" ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+            >
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedContactId === "new" ? 'border-primary' : 'border-muted-foreground'}`}>
+                {selectedContactId === "new" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+              </div>
+              <span className="font-bold text-sm">استخدام رقم جديد لطلب اليوم</span>
+            </div>
 
-                <div 
-                  className={`border-2 rounded-xl p-4 cursor-pointer transition-colors mt-4 ${useNewAddress ? 'border-primary bg-primary/5' : 'border-border/50'}`}
-                  onClick={() => setUseNewAddress(true)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${useNewAddress ? 'border-primary' : 'border-muted-foreground'}`}>
-                      {useNewAddress && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+            {/* ADDRESSES */}
+            <h3 className="font-bold mb-3 text-lg">عنوان التوصيل</h3>
+            {hasSavedAddresses && (
+              <div className="space-y-3 mb-4">
+                {user.addresses.map((addr: any) => (
+                  <div 
+                    key={addr.id}
+                    onClick={() => setSelectedAddressId(addr.id)}
+                    className={`border-2 rounded-xl p-4 cursor-pointer transition-colors ${selectedAddressId === addr.id ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedAddressId === addr.id ? 'border-primary' : 'border-muted-foreground'}`}>
+                        {selectedAddressId === addr.id && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                      </div>
+                      <span className="font-bold text-sm">{addr.title}</span>
                     </div>
-                    <span className="font-bold">إدخال عنوان جديد</span>
+                    <div className="mr-8 text-sm text-muted-foreground space-y-1">
+                      <p>{addr.address}</p>
+                      <p>{addr.city} {addr.city && addr.governorate ? ' - ' : ''} {addr.governorate}</p>
+                    </div>
                   </div>
+                ))}
+              </div>
+            )}
+            
+            {!hasSavedAddresses && legacyHasAddress && (
+              <div 
+                className={`border-2 rounded-xl p-4 mb-4 cursor-pointer transition-colors ${selectedAddressId === "legacy" ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+                onClick={() => setSelectedAddressId("legacy")}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedAddressId === "legacy" ? 'border-primary' : 'border-muted-foreground'}`}>
+                    {selectedAddressId === "legacy" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                  </div>
+                  <span className="font-bold text-sm">العنوان المحفوظ</span>
+                </div>
+                <div className="mr-8 text-sm text-muted-foreground space-y-1">
+                  <p>{user.address}</p>
+                  <p>{user.city} - {user.governorate}</p>
                 </div>
               </div>
             )}
 
-            {useNewAddress && (
+            <div 
+              className={`border-2 rounded-xl p-4 mb-6 cursor-pointer transition-colors ${selectedAddressId === "new" ? 'border-primary bg-primary/5' : 'border-border/50'}`}
+              onClick={() => setSelectedAddressId("new")}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedAddressId === "new" ? 'border-primary' : 'border-muted-foreground'}`}>
+                  {selectedAddressId === "new" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                </div>
+                <span className="font-bold text-sm">استخدام عنوان جديد لطلب اليوم</span>
+              </div>
+            </div>
+
+            {(selectedAddressId === "new" || selectedContactId === "new") && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">الاسم الكامل <span className="text-destructive">*</span></label>
+                    <label className="text-sm font-medium">الاسم الكامل</label>
                     <input 
                       disabled
                       value={user?.name || ""}
                       className="w-full h-12 bg-muted border border-border/50 rounded-xl px-4 opacity-70 cursor-not-allowed"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">رقم الهاتف <span className="text-destructive">*</span></label>
-                    <input 
-                      name="customerPhone"
-                      required
-                      type="tel"
-                      dir="ltr"
-                      pattern="^01[0-9]{9}$"
-                      maxLength={11}
-                      placeholder="01XXXXXXXXX"
-                      onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity("رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01")}
-                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-                      className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                    />
-                  </div>
+                  {selectedContactId === "new" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">رقم الهاتف <span className="text-destructive">*</span></label>
+                      <input 
+                        name="customerPhone"
+                        required
+                        type="tel"
+                        dir="ltr"
+                        pattern="^01[0-9]{9}$"
+                        maxLength={11}
+                        placeholder="01XXXXXXXXX"
+                        onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity("رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01")}
+                        onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
+                        className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {selectedAddressId === "new" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {governorates.length > 1 && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">المحافظة <span className="text-destructive">*</span></label>
@@ -335,19 +455,22 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     </div>
                   )}
                 </div>
+                )}
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">عنوان التوصيل بالتفصيل <span className="text-destructive">*</span></label>
-                  <textarea 
-                    name="address"
-                    required
-                    rows={3}
-                    placeholder="اسم الحي، الشارع، رقم المبنى أو أي علامة مميزة"
-                    onInvalid={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("يرجى إدخال عنوان التوصيل بالتفصيل")}
-                    onInput={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("")}
-                    className="w-full bg-background border border-input rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none"
-                  />
-                </div>
+                {selectedAddressId === "new" && (
+                  <div className="space-y-2 mt-6">
+                    <label className="text-sm font-medium">عنوان التوصيل بالتفصيل <span className="text-destructive">*</span></label>
+                    <textarea 
+                      name="address"
+                      required
+                      rows={3}
+                      placeholder="اسم الحي، الشارع، رقم المبنى أو أي علامة مميزة"
+                      onInvalid={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("يرجى إدخال عنوان التوصيل بالتفصيل")}
+                      onInput={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("")}
+                      className="w-full bg-background border border-input rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none"
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

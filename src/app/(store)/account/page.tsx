@@ -20,8 +20,23 @@ export default async function AccountPage() {
   const user = await db.user.findUnique({
     where: { id: session.user.id },
     include: {
-      orders: {
+      addresses: {
         orderBy: { createdAt: "desc" }
+      },
+      contactNumbers: {
+        orderBy: { createdAt: "desc" }
+      },
+      orders: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          items: {
+            include: {
+              product: {
+                include: { images: true }
+              }
+            }
+          }
+        }
       }
     }
   })
@@ -40,15 +55,20 @@ export default async function AccountPage() {
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
     })),
+    addresses: user.addresses.map((addr) => ({
+      ...addr,
+      createdAt: addr.createdAt.toISOString(),
+      updatedAt: addr.updatedAt.toISOString(),
+    })),
+    contactNumbers: user.contactNumbers.map((contact) => ({
+      ...contact,
+      createdAt: contact.createdAt.toISOString(),
+      updatedAt: contact.updatedAt.toISOString(),
+    }))
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-[70vh]">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">مرحباً بك، {user.name || 'عميلنا العزيز'}!</h1>
-        <p className="text-muted-foreground mt-2">من خلال لوحة تحكم حسابك يمكنك استعراض طلباتك السابقة وتعديل بياناتك بسهولة.</p>
-      </div>
-
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 min-h-[70vh]">
       <AccountClient user={serializedUser} />
     </div>
   )

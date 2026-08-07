@@ -30,6 +30,8 @@ model User {
   orderUpdatesEnabled Boolean @default(false) // Customer setting for push notifications
   notifications Notification[]
   pushSubscriptions PushSubscription[]
+  addresses     Address[]
+  contactNumbers ContactNumber[]
 }
 
 model Widget {
@@ -224,9 +226,34 @@ model OrderItem {
 model Menu {
   id          String     @id @default(cuid())
   name        String     @unique // e.g., 'header-menu', 'footer-menu'
+  description String?
   items       MenuItem[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   // e.g., المنزل، العمل
+  address     String   // Full details
+  city        String?
+  governorate String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactNumber {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   // e.g., رقمي الثاني، أخي
+  number      String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model MenuItem {
