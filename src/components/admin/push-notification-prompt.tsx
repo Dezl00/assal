@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function PushNotificationPrompt() {
+export function PushNotificationPrompt({
+  title = "تفعيل الإشعارات",
+  description = "احصل على تنبيهات فورية عند استلام طلبات جديدة مباشرة على جهازك لتتمكن من متابعتها بسهولة.",
+  isAdmin = false
+}: {
+  title?: string;
+  description?: string;
+  isAdmin?: boolean;
+}) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -67,8 +75,8 @@ export function PushNotificationPrompt() {
           <Bell className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h3 className="font-bold text-lg mb-1 text-foreground">تفعيل الإشعارات</h3>
-          <p className="text-sm text-muted-foreground mb-4">احصل على تنبيهات فورية عند استلام طلبات جديدة مباشرة على جهازك لتتمكن من متابعتها بسهولة.</p>
+          <h3 className="font-bold text-lg mb-1 text-foreground">{title}</h3>
+          <p className="text-sm text-muted-foreground mb-4">{description}</p>
           <div className="flex gap-2">
             <Button onClick={handleEnable} className="flex-1 rounded-xl">
               تفعيل الآن

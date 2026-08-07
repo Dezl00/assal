@@ -9,6 +9,7 @@ import { MobileBottomNav } from "@/components/storefront/mobile-bottom-nav"
 import { auth } from "@/lib/auth"
 import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
 import { PromoPopup } from "@/components/storefront/promo-popup"
+import { PushNotificationPrompt } from "@/components/admin/push-notification-prompt"
 
 export const dynamic = "force-dynamic"
 
@@ -76,6 +77,13 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <FloatingWhatsApp number={themeConfig.whatsappNumber} />
       )}
       <PromoPopup settings={themeConfig} />
+      {user && (
+        <PushNotificationPrompt 
+          title="تفعيل إشعارات الطلبات"
+          description="احصل على إشعارات فورية بحالة طلبك ومسار الشحن مباشرة على جهازك."
+          isAdmin={false}
+        />
+      )}
     </div>
   )
 }

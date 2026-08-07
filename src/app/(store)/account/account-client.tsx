@@ -266,9 +266,9 @@ export function AccountClient({ user }: { user: any }) {
                       type="button"
                       onClick={togglePushNotifications}
                       disabled={isUpdatingPush}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${pushEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                      className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 ${pushEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                     >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pushEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <span className={`pointer-events-none block h-6 w-6 rounded-full bg-white shadow-lg ring-0 transition-transform ${pushEnabled ? '-translate-x-7' : 'translate-x-0'}`} />
                     </button>
                   </div>
                 </div>

@@ -25,14 +25,14 @@ export async function updateOrderStatus(orderId: string, status: string) {
         const fullOrder = await db.order.findUnique({
           where: { id: orderId },
           include: {
-            orderItems: {
+            items: {
               include: { product: true }
             }
           }
         });
         
-        if (fullOrder?.orderItems?.[0]?.product?.images) {
-          const images = fullOrder.orderItems[0].product.images as any[];
+        if (fullOrder?.items?.[0]?.product?.images) {
+          const images = fullOrder.items[0].product.images as any[];
           if (images && images.length > 0) {
             imageUrl = images[0].url;
           }

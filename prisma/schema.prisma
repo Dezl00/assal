@@ -27,7 +27,7 @@ model User {
   activityLogs  ActivityLog[]
   permissions   String[]  @default([])
   isActive      Boolean   @default(true)
-  orderUpdatesEnabled Boolean @default(true) // Customer setting for push notifications
+  orderUpdatesEnabled Boolean @default(false) // Customer setting for push notifications
   notifications Notification[]
   pushSubscriptions PushSubscription[]
 }
