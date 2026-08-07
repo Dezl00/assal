@@ -33,7 +33,6 @@ export function AccountClient({ user }: { user: any }) {
       if (pwField) pwField.value = ''
       if (newPwField) newPwField.value = ''
     }
-    }
     setIsSubmitting(false)
   }
 

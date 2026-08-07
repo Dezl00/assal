@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
+
   /* Tailwind v4 Shadcn Mappings */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

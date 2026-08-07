@@ -15,7 +15,12 @@ const fallbackFont = IBM_Plex_Sans_Arabic({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  let theme = null;
+  try {
+    theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  } catch (e) {
+    // Ignore DB error during build/metadata generation if Neon is asleep
+  }
   
   const storeName = theme?.storeName || "عسل";
   const storeDescription = theme?.storeDescription || "أفضل المنتجات وأعلاها جودة";
@@ -78,7 +83,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  let theme = null;
+  try {
+    theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  } catch (e) {
+    // Ignore DB error for root layout if Neon is asleep
+  }
 
   return (
     <html lang="ar" dir="rtl" className={fallbackFont.variable} suppressHydrationWarning>

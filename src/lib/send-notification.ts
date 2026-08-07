@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { db as prisma } from "@/lib/db";
 import { webpush } from "@/lib/web-push";
 
 interface SendNotificationOptions {
@@ -79,3 +79,4 @@ export async function sendNotification({ userId, targetRole, title, message, typ
     return { success: false, error };
   }
 }
+

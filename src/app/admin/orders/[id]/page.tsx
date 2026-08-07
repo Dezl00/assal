@@ -1,12 +1,11 @@
 import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 import { OrderDetailsClient } from "./order-details-client"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
 export default async function AdminOrderPage({ params }: { params: { id: string } }) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
   
   if (!session || (session.user.role !== "ADMIN" && session.user.role !== "MANAGER")) {
     redirect("/")

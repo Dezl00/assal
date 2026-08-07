@@ -1,352 +1,430 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import QRCodeStyling, { DrawType, TypeNumber, Mode, ErrorCorrectionLevel, DotType, CornerSquareType, CornerDotType } from "qr-code-styling";
+import QRCodeStyling, { DotType, CornerSquareType, CornerDotType } from "qr-code-styling";
 import { jsPDF } from "jspdf";
-import { Download, QrCode, FileText, Image as ImageIcon, Link as LinkIcon, Palette, Wifi, Contact, Mail, ImagePlus, Check, MonitorSmartphone } from "lucide-react";
+import { Download, QrCode, FileText, Image as ImageIcon, Link as LinkIcon, Palette, Wifi, Contact, Mail, ImagePlus, MonitorSmartphone, MessageCircle, MessageSquare, MapPin, Bitcoin, LayoutTemplate, BoxSelect, Moon, Sun, Circle, Square, Squircle } from "lucide-react";
+import { toast } from "sonner";
 
-type QRType = "url" | "wifi" | "vcard" | "email";
+type QRType = "url" | "wifi" | "vcard" | "email" | "whatsapp" | "sms" | "geo" | "crypto";
+type TabType = "content" | "design";
 
-export default function AdvancedQRCodeGenerator() {
+export default function CompactQRCodeGenerator() {
+  const [activeTab, setActiveTab] = useState<TabType>("content");
   const [qrType, setQrType] = useState<QRType>("url");
   const qrRef = useRef<HTMLDivElement>(null);
   const qrCodeInstance = useRef<QRCodeStyling | null>(null);
+  const updateTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Data States
   const [url, setUrl] = useState("https://example.com");
-  
-  // WiFi
   const [ssid, setSsid] = useState("");
   const [wifiPassword, setWifiPassword] = useState("");
   const [wifiEncryption, setWifiEncryption] = useState("WPA");
-  const [wifiHidden, setWifiHidden] = useState(false);
-
-  // vCard
   const [vcardName, setVcardName] = useState("");
   const [vcardPhone, setVcardPhone] = useState("");
   const [vcardEmail, setVcardEmail] = useState("");
-  const [vcardCompany, setVcardCompany] = useState("");
-
-  // Email
   const [emailTo, setEmailTo] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
+  const [waPhone, setWaPhone] = useState("");
+  const [waText, setWaText] = useState("");
+  const [smsPhone, setSmsPhone] = useState("");
+  const [smsText, setSmsText] = useState("");
+  const [geoLat, setGeoLat] = useState("");
+  const [geoLng, setGeoLng] = useState("");
+  const [cryptoType, setCryptoType] = useState("bitcoin");
+  const [cryptoAddress, setCryptoAddress] = useState("");
+  const [cryptoAmount, setCryptoAmount] = useState("");
 
-  // Styling States
+  // Color & Shapes
   const [dotsColor, setDotsColor] = useState("#4f46e5");
-  const [bgColor, setBgColor] = useState("#ffffff");
-  const [dotsType, setDotsType] = useState<DotType>("rounded");
-  const [cornersSquareType, setCornersSquareType] = useState<CornerSquareType>("extra-rounded");
+  const [dotsType, setDotsType] = useState<DotType>("dots");
+  const [cornersSquareType, setCornersSquareType] = useState<CornerSquareType>("dot");
   const [cornersDotType, setCornersDotType] = useState<CornerDotType>("dot");
+  const [qrDensity, setQrDensity] = useState<number>(0);
   
   // Logo
   const [logoFile, setLogoFile] = useState<string | null>(null);
+  const [logoSize, setLogoSize] = useState<number>(0.4);
+  const [logoMargin, setLogoMargin] = useState<number>(5);
 
   useEffect(() => {
+    setIsDarkMode(false);
+    document.documentElement.classList.remove('dark');
+    
     if (typeof window !== 'undefined') {
       qrCodeInstance.current = new QRCodeStyling({
         width: 300,
         height: 300,
-        imageOptions: {
-          crossOrigin: "anonymous",
-          margin: 10,
-        },
+        type: "svg", // Render as SVG so it's sharp at any scale
+        imageOptions: { crossOrigin: "anonymous", margin: 10 },
       });
+      // Append only once on mount!
+      if (qrRef.current) {
+        qrRef.current.innerHTML = "";
+        qrCodeInstance.current.append(qrRef.current);
+      }
     }
   }, []);
 
+  const toggleDarkMode = () => {
+    if (typeof document !== 'undefined') {
+      const newMode = !isDarkMode;
+      setIsDarkMode(newMode);
+      if (newMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+
   useEffect(() => {
     updateQRCode();
-  }, [qrType, url, ssid, wifiPassword, wifiEncryption, wifiHidden, vcardName, vcardPhone, vcardEmail, vcardCompany, emailTo, emailSubject, emailBody, dotsColor, bgColor, dotsType, cornersSquareType, cornersDotType, logoFile]);
+  }, [qrType, url, ssid, wifiPassword, wifiEncryption, vcardName, vcardPhone, vcardEmail, emailTo, emailSubject, emailBody, waPhone, waText, smsPhone, smsText, geoLat, geoLng, cryptoType, cryptoAddress, cryptoAmount, dotsColor, dotsType, cornersSquareType, cornersDotType, logoFile, logoSize, logoMargin, qrDensity]);
 
   const generateDataString = () => {
     switch (qrType) {
-      case "url":
-        return url || "https://example.com";
-      case "wifi":
-        return `WIFI:T:${wifiEncryption};S:${ssid};P:${wifiPassword};H:${wifiHidden ? 'true' : 'false'};;`;
-      case "vcard":
-        return `BEGIN:VCARD\nVERSION:3.0\nN:${vcardName}\nTEL:${vcardPhone}\nEMAIL:${vcardEmail}\nORG:${vcardCompany}\nEND:VCARD`;
-      case "email":
-        return `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-      default:
-        return "https://example.com";
+      case "url": return url || "https://example.com";
+      case "wifi": return `WIFI:T:${wifiEncryption};S:${ssid};P:${wifiPassword};;`;
+      case "vcard": return `BEGIN:VCARD\nVERSION:3.0\nN:${vcardName}\nTEL:${vcardPhone}\nEMAIL:${vcardEmail}\nEND:VCARD`;
+      case "email": return `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      case "whatsapp": return `https://wa.me/${waPhone}?text=${encodeURIComponent(waText)}`;
+      case "sms": return `smsto:${smsPhone}:${smsText}`;
+      case "geo": return `geo:${geoLat},${geoLng}`;
+      case "crypto": return `${cryptoType}:${cryptoAddress}${cryptoAmount ? `?amount=${cryptoAmount}` : ''}`;
+      default: return "https://example.com";
     }
   };
 
   const updateQRCode = () => {
     if (!qrCodeInstance.current) return;
     
-    const data = generateDataString();
+    if (updateTimer.current) clearTimeout(updateTimer.current);
     
-    qrCodeInstance.current.update({
-      data,
-      image: logoFile || undefined,
-      dotsOptions: {
-        color: dotsColor,
-        type: dotsType
-      },
-      backgroundOptions: {
-        color: bgColor,
-      },
-      cornersSquareOptions: {
-        type: cornersSquareType,
-        color: dotsColor,
-      },
-      cornersDotOptions: {
-        type: cornersDotType,
-        color: dotsColor,
+    updateTimer.current = setTimeout(() => {
+      try {
+        qrCodeInstance.current?.update({
+          width: 300,
+          height: 300,
+          data: generateDataString(),
+          margin: 5,
+          qrOptions: { 
+            errorCorrectionLevel: "H",
+            typeNumber: qrDensity as any
+          },
+          image: logoFile || undefined,
+          dotsOptions: { type: dotsType, color: dotsColor },
+          backgroundOptions: { color: "#ffffff" },
+          cornersSquareOptions: { type: cornersSquareType, color: dotsColor },
+          cornersDotOptions: { type: cornersDotType, color: dotsColor },
+          imageOptions: { crossOrigin: "anonymous", margin: logoMargin, imageSize: logoSize }
+        });
+      } catch (error) {
+        if (qrDensity !== 0) {
+          toast.error("هذه الكثافة لا تستوعب كمية البيانات. تم الرجوع للوضع التلقائي.");
+          setQrDensity(0);
+        } else {
+          toast.error("حدث خطأ أثناء رسم الرمز، يرجى تقليل كمية البيانات!");
+        }
       }
-    });
-
-    if (qrRef.current) {
-      qrRef.current.innerHTML = "";
-      qrCodeInstance.current.append(qrRef.current);
-    }
+    }, 40); // 40ms debounce ensures UI doesn't freeze during color drag
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        setLogoFile(event.target?.result as string);
-      };
+      reader.onload = (event) => setLogoFile(event.target?.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleDownload = async (extension: "png" | "jpeg" | "svg") => {
-    if (!qrCodeInstance.current) return;
-    qrCodeInstance.current.download({
-      extension: extension,
-      name: "QRMaker"
+  // Create a lightweight canvas-based instance just for export (tiny file sizes)
+  const createExportInstance = () => {
+    return new QRCodeStyling({
+      width: 200,
+      height: 200,
+      type: "canvas", // Canvas produces tiny PNGs (3-5 KB)
+      data: generateDataString(),
+      margin: 5,
+      qrOptions: { 
+        errorCorrectionLevel: "H",
+        typeNumber: qrDensity as any
+      },
+      image: logoFile || undefined,
+      dotsOptions: { type: dotsType, color: dotsColor },
+      backgroundOptions: { color: "#ffffff" },
+      cornersSquareOptions: { type: cornersSquareType, color: dotsColor },
+      cornersDotOptions: { type: cornersDotType, color: dotsColor },
+      imageOptions: { crossOrigin: "anonymous", margin: logoMargin, imageSize: logoSize }
     });
   };
 
-  const handleDownloadPDF = async () => {
-    if (!qrCodeInstance.current) return;
+  const handleDownload = async (extension: "png" | "jpeg" | "svg") => {
+    if (extension === "svg") {
+      // For SVG, use the preview instance directly (vector = no size issue)
+      qrCodeInstance.current?.download({ extension, name: "QRMaker" });
+      return;
+    }
+    // For PNG/JPEG, create a fresh lightweight canvas instance
     try {
-      const buffer = await qrCodeInstance.current.getRawData("png");
+      const exportQR = createExportInstance();
+      exportQR.download({ extension, name: "QRMaker" });
+    } catch (err) {
+      toast.error("حدث خطأ أثناء التحميل!");
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      const exportQR = createExportInstance();
+      const buffer = await exportQR.getRawData("png");
       if (!buffer) return;
-      
       const blob = new Blob([buffer], { type: "image/png" });
       const dataUrl = URL.createObjectURL(blob);
-      
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: [100, 100]
-      });
-      
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [100, 100] });
       pdf.addImage(dataUrl, "PNG", 10, 10, 80, 80);
       pdf.save("QRMaker.pdf");
       URL.revokeObjectURL(dataUrl);
     } catch(err) {
-      console.error(err);
+      toast.error("حدث خطأ أثناء التحميل!");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex flex-col font-sans">
-      <header className="w-full py-6 px-4 md:px-8 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between shadow-sm sticky top-0 z-10">
-        <div className="flex items-center gap-3 max-w-7xl mx-auto w-full">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
-            <QrCode className="text-white w-7 h-7" />
+    <div className={`min-h-screen ${isDarkMode ? 'dark bg-zinc-950' : 'bg-white'} flex flex-col font-sans transition-colors duration-300`}>
+      <header className="w-full py-4 px-4 bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-10 transition-colors duration-300">
+        <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center text-white">
+              <QrCode className="w-5 h-5" />
+            </div>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white">QRMaker</h1>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">QRMaker Pro</h1>
-            <p className="text-xs text-gray-500 font-medium">أداة احترافية لإنشاء الرموز</p>
-          </div>
+          <button onClick={toggleDarkMode} className="p-2 rounded-md bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors border border-gray-200 dark:border-zinc-700">
+            {isDarkMode ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-500" />}
+          </button>
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 grid lg:grid-cols-12 gap-8 items-start mt-4">
+      {/* Main container structured to center items vertically and horizontally */}
+      <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto p-4 lg:p-6">
         
-        {/* Left Column: Data Input */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-zinc-800">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-100 border-b pb-3 border-gray-100 dark:border-zinc-800">
-              <MonitorSmartphone className="w-5 h-5 text-indigo-500" />
-              المحتوى (Content Type)
-            </h2>
-            
-            <div className="grid grid-cols-2 gap-2 mb-6">
-              <button onClick={() => setQrType("url")} className={`py-2 px-3 flex flex-col items-center gap-1 rounded-xl text-sm font-medium transition-all ${qrType === "url" ? "bg-indigo-50 text-indigo-700 border-indigo-200 border" : "bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100"}`}>
-                <LinkIcon className="w-4 h-4" /> رابط
-              </button>
-              <button onClick={() => setQrType("wifi")} className={`py-2 px-3 flex flex-col items-center gap-1 rounded-xl text-sm font-medium transition-all ${qrType === "wifi" ? "bg-indigo-50 text-indigo-700 border-indigo-200 border" : "bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100"}`}>
-                <Wifi className="w-4 h-4" /> واي فاي
-              </button>
-              <button onClick={() => setQrType("vcard")} className={`py-2 px-3 flex flex-col items-center gap-1 rounded-xl text-sm font-medium transition-all ${qrType === "vcard" ? "bg-indigo-50 text-indigo-700 border-indigo-200 border" : "bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100"}`}>
-                <Contact className="w-4 h-4" /> جهة اتصال
-              </button>
-              <button onClick={() => setQrType("email")} className={`py-2 px-3 flex flex-col items-center gap-1 rounded-xl text-sm font-medium transition-all ${qrType === "email" ? "bg-indigo-50 text-indigo-700 border-indigo-200 border" : "bg-gray-50 text-gray-600 border border-transparent hover:bg-gray-100"}`}>
-                <Mail className="w-4 h-4" /> بريد
-              </button>
-            </div>
-
-            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {qrType === "url" && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الرابط أو النص</label>
-                  <textarea value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm min-h-[100px]" />
-                </div>
-              )}
-
-              {qrType === "wifi" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">اسم الشبكة (SSID)</label>
-                    <input type="text" value={ssid} onChange={(e) => setSsid(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">كلمة المرور</label>
-                    <input type="password" value={wifiPassword} onChange={(e) => setWifiPassword(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">التشفير</label>
-                    <select value={wifiEncryption} onChange={(e) => setWifiEncryption(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white">
-                      <option value="WPA">WPA/WPA2</option>
-                      <option value="WEP">WEP</option>
-                      <option value="nopass">بدون تشفير</option>
-                    </select>
-                  </div>
-                </>
-              )}
-
-              {qrType === "vcard" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل</label>
-                    <input type="text" value={vcardName} onChange={(e) => setVcardName(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
-                    <input type="tel" value={vcardPhone} onChange={(e) => setVcardPhone(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
-                    <input type="email" value={vcardEmail} onChange={(e) => setVcardEmail(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">الشركة</label>
-                    <input type="text" value={vcardCompany} onChange={(e) => setVcardCompany(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                </>
-              )}
-
-              {qrType === "email" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">إلى (البريد الإلكتروني)</label>
-                    <input type="email" value={emailTo} onChange={(e) => setEmailTo(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">الموضوع</label>
-                    <input type="text" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">الرسالة</label>
-                    <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none text-sm min-h-[80px]" />
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Middle Column: Styling Options */}
-        <div className="lg:col-span-4 bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-gray-200 dark:border-zinc-800 space-y-6">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800 border-b pb-3 border-gray-100">
-            <Palette className="w-5 h-5 text-purple-500" />
-            التصميم (Design)
-          </h2>
-
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">الألوان (Colors)</label>
-              <div className="flex gap-4">
-                <div className="flex-1 bg-gray-50 p-2 rounded-xl flex items-center justify-between border border-gray-100">
-                  <span className="text-xs text-gray-600 font-medium">النقاط</span>
-                  <input type="color" value={dotsColor} onChange={(e) => setDotsColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 p-0" />
-                </div>
-                <div className="flex-1 bg-gray-50 p-2 rounded-xl flex items-center justify-between border border-gray-100">
-                  <span className="text-xs text-gray-600 font-medium">الخلفية</span>
-                  <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 p-0" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">شكل النقاط (Dots)</label>
-              <select value={dotsType} onChange={(e) => setDotsType(e.target.value as DotType)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none text-sm bg-gray-50">
-                <option value="square">مربعات (Square)</option>
-                <option value="dots">دوائر (Dots)</option>
-                <option value="rounded">حواف دائرية (Rounded)</option>
-                <option value="classy">أنيق (Classy)</option>
-                <option value="classy-rounded">أنيق دائري (Classy Rounded)</option>
-                <option value="extra-rounded">دائري جداً (Extra Rounded)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">شكل الزوايا (Corners)</label>
-              <div className="grid grid-cols-2 gap-3">
-                <select value={cornersSquareType} onChange={(e) => setCornersSquareType(e.target.value as CornerSquareType)} className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none text-xs bg-gray-50">
-                  <option value="square">مربع (الإطار)</option>
-                  <option value="dot">دائري (الإطار)</option>
-                  <option value="extra-rounded">شبه دائري</option>
-                </select>
-                <select value={cornersDotType} onChange={(e) => setCornersDotType(e.target.value as CornerDotType)} className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 outline-none text-xs bg-gray-50">
-                  <option value="square">مربع (المركز)</option>
-                  <option value="dot">دائري (المركز)</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">الشعار (Logo)</label>
-              <div className="relative">
-                <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" id="logo-upload" />
-                <label htmlFor="logo-upload" className="flex items-center justify-center gap-2 w-full py-3 px-4 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-600 hover:border-purple-500 hover:text-purple-600 transition-colors cursor-pointer bg-gray-50 hover:bg-purple-50">
-                  <ImagePlus className="w-5 h-5" />
-                  {logoFile ? "تغيير الشعار" : "رفع شعار"}
-                </label>
-                {logoFile && (
-                  <button onClick={() => setLogoFile(null)} className="mt-2 text-xs text-red-500 font-medium hover:underline w-full text-center">
-                    إزالة الشعار
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Preview & Export */}
-        <div className="lg:col-span-4 flex flex-col items-center justify-center p-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-zinc-900 dark:to-zinc-800 rounded-3xl border border-indigo-100 dark:border-zinc-800 min-h-[500px]">
+        <div className="grid lg:grid-cols-12 gap-6 w-full items-start">
           
-          <div className="bg-white p-4 rounded-3xl shadow-xl shadow-indigo-200/50 dark:shadow-none mb-8 transition-all duration-300 hover:scale-105">
-            <div ref={qrRef} className="w-[300px] h-[300px] flex items-center justify-center bg-gray-50 rounded-2xl overflow-hidden">
-              {/* QR Rendered Here */}
+          {/* Left Column: Settings Panel */}
+          <div className="lg:col-span-7 flex flex-col gap-3 w-full">
+            
+            {/* Tabs */}
+            <div className="bg-white dark:bg-zinc-900 p-1.5 rounded-lg border border-gray-200 dark:border-zinc-800 flex gap-1.5 transition-colors duration-300">
+              <button onClick={() => setActiveTab("content")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-bold transition-all whitespace-nowrap ${activeTab === "content" ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-zinc-800"}`}>
+                <MonitorSmartphone className="w-4 h-4" /> المحتوى
+              </button>
+              <button onClick={() => setActiveTab("design")} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-bold transition-all whitespace-nowrap ${activeTab === "design" ? "bg-black text-white dark:bg-white dark:text-black" : "text-gray-500 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-zinc-800"}`}>
+                <Palette className="w-4 h-4" /> التصميم والأشكال
+              </button>
+            </div>
+
+            <div className="bg-white dark:bg-zinc-900 p-4 rounded-lg border border-gray-200 dark:border-zinc-800 min-h-[400px] transition-colors duration-300">
+              
+              <style jsx>{`
+                .flat-input {
+                  width: 100%; padding: 0.5rem 0.75rem; border-radius: 0.375rem; 
+                  background-color: #ffffff; border: 1px solid #e5e7eb; color: #111827;
+                  transition: all 0.2s; outline: none; font-size: 0.875rem;
+                }
+                .flat-input:focus { border-color: #4f46e5; }
+                :global(.dark) .flat-input { background-color: #18181b; border-color: #27272a; color: #f4f4f5; }
+                :global(.dark) .flat-input:focus { border-color: #6366f1; }
+              `}</style>
+
+              {/* CONTENT TAB */}
+              {activeTab === "content" && (
+                <div className="animate-in fade-in duration-300">
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {[
+                      { id: "url", icon: LinkIcon, label: "رابط" },
+                      { id: "whatsapp", icon: MessageCircle, label: "واتساب" },
+                      { id: "sms", icon: MessageSquare, label: "SMS" },
+                      { id: "wifi", icon: Wifi, label: "واي فاي" },
+                      { id: "vcard", icon: Contact, label: "جهة اتصال" },
+                      { id: "email", icon: Mail, label: "بريد" },
+                      { id: "geo", icon: MapPin, label: "موقع" },
+                      { id: "crypto", icon: Bitcoin, label: "كريبتو" }
+                    ].map((type) => (
+                      <button 
+                        key={type.id} 
+                        onClick={() => setQrType(type.id as QRType)} 
+                        className={`flex-1 min-w-[70px] py-2 flex flex-col items-center gap-1 rounded-md text-[10px] font-bold transition-colors border ${qrType === type.id ? "bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-500 dark:text-indigo-300" : "bg-transparent text-gray-500 border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800"}`}
+                      >
+                        <type.icon className="w-4 h-4" /> {type.label}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {qrType === "url" && (
+                      <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">الرابط أو النص</label><textarea value={url} onChange={(e) => setUrl(e.target.value)} className="flat-input min-h-[80px]" /></div>
+                    )}
+                    {qrType === "whatsapp" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">رقم الهاتف</label><input type="text" value={waPhone} onChange={(e) => setWaPhone(e.target.value)} placeholder="+966xxxxxxxxx" className="flat-input" /></div>
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">الرسالة</label><textarea value={waText} onChange={(e) => setWaText(e.target.value)} className="flat-input h-[38px]" /></div>
+                      </div>
+                    )}
+                    {qrType === "sms" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">رقم الهاتف</label><input type="text" value={smsPhone} onChange={(e) => setSmsPhone(e.target.value)} className="flat-input" /></div>
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">النص</label><textarea value={smsText} onChange={(e) => setSmsText(e.target.value)} className="flat-input h-[38px]" /></div>
+                      </div>
+                    )}
+                    {qrType === "geo" && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">خط العرض (Lat)</label><input type="text" value={geoLat} onChange={(e) => setGeoLat(e.target.value)} className="flat-input" /></div>
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">خط الطول (Lng)</label><input type="text" value={geoLng} onChange={(e) => setGeoLng(e.target.value)} className="flat-input" /></div>
+                      </div>
+                    )}
+                    {qrType === "crypto" && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">العملة</label><select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} className="flat-input"><option value="bitcoin">Bitcoin</option><option value="ethereum">Ethereum</option></select></div>
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">العنوان</label><input type="text" value={cryptoAddress} onChange={(e) => setCryptoAddress(e.target.value)} className="flat-input" /></div>
+                        <div><label className="block text-xs font-bold mb-1.5 text-gray-800 dark:text-gray-200">المبلغ</label><input type="text" value={cryptoAmount} onChange={(e) => setCryptoAmount(e.target.value)} className="flat-input" /></div>
+                      </div>
+                    )}
+                    {qrType === "wifi" && (<div className="grid grid-cols-1 md:grid-cols-2 gap-3"><input value={ssid} onChange={e=>setSsid(e.target.value)} placeholder="SSID" className="flat-input"/><input value={wifiPassword} onChange={e=>setWifiPassword(e.target.value)} placeholder="Password" type="password" className="flat-input"/></div>)}
+                    {qrType === "vcard" && (<div className="grid grid-cols-1 md:grid-cols-2 gap-3"><input value={vcardName} onChange={e=>setVcardName(e.target.value)} placeholder="Name" className="flat-input"/><input value={vcardPhone} onChange={e=>setVcardPhone(e.target.value)} placeholder="Phone" className="flat-input"/></div>)}
+                    {qrType === "email" && (<div className="grid grid-cols-1 md:grid-cols-2 gap-3"><input value={emailTo} onChange={e=>setEmailTo(e.target.value)} placeholder="To" className="flat-input"/><input value={emailBody} onChange={e=>setEmailBody(e.target.value)} placeholder="Body" className="flat-input"/></div>)}
+                  </div>
+                </div>
+              )}
+
+              {/* DESIGN TAB */}
+              {activeTab === "design" && (
+                <div className="animate-in fade-in duration-300 space-y-6">
+                  
+                  {/* Single Color Row */}
+                  <div className="bg-white dark:bg-zinc-800/30 p-3 rounded-lg border border-gray-200 dark:border-zinc-700 flex items-center justify-between">
+                    <label className="text-xs font-bold text-gray-800 dark:text-gray-200">لون الرمز</label>
+                    <input type="color" value={dotsColor} onChange={(e) => setDotsColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent" />
+                  </div>
+
+                  <hr className="border-gray-100 dark:border-zinc-800" />
+
+                  {/* Shapes Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold mb-2 text-gray-500">النقاط (Dots)</label>
+                      <div className="flex gap-2">
+                        {[{ id: "dots", icon: Circle }, { id: "square", icon: Square }, { id: "rounded", icon: Squircle }].map(shape => (
+                          <button key={shape.id} onClick={() => setDotsType(shape.id as DotType)} className={`flex-1 flex justify-center py-2 rounded-md border transition-colors ${dotsType === shape.id ? "bg-gray-100 border-gray-400 text-black dark:bg-zinc-700 dark:border-zinc-500 dark:text-white" : "border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"}`}>
+                            <shape.icon className="w-5 h-5" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold mb-2 text-gray-500">الإطار (Frame)</label>
+                      <div className="flex gap-2">
+                        {[{ id: "dot", icon: Circle }, { id: "square", icon: Square }, { id: "extra-rounded", icon: Squircle }].map(shape => (
+                          <button key={shape.id} onClick={() => setCornersSquareType(shape.id as CornerSquareType)} className={`flex-1 flex justify-center py-2 rounded-md border transition-colors ${cornersSquareType === shape.id ? "bg-gray-100 border-gray-400 text-black dark:bg-zinc-700 dark:border-zinc-500 dark:text-white" : "border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"}`}>
+                            <shape.icon className="w-5 h-5" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold mb-2 text-gray-500">المركز (Center)</label>
+                      <div className="flex gap-2">
+                        {[{ id: "dot", icon: Circle }, { id: "square", icon: Square }].map(shape => (
+                          <button key={shape.id} onClick={() => setCornersDotType(shape.id as CornerDotType)} className={`flex-1 flex justify-center py-2 rounded-md border transition-colors ${cornersDotType === shape.id ? "bg-gray-100 border-gray-400 text-black dark:bg-zinc-700 dark:border-zinc-500 dark:text-white" : "border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"}`}>
+                            <shape.icon className="w-5 h-5 fill-current" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Density */}
+                  <div className="pt-2">
+                    <div className="flex gap-2">
+                      <button onClick={() => setQrDensity(0)} className={`flex-1 flex justify-center items-center h-10 rounded-md border transition-colors ${qrDensity === 0 ? "bg-gray-100 border-gray-400 text-black dark:bg-zinc-700 dark:border-zinc-500 dark:text-white" : "border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"}`}>
+                        <div className="grid grid-cols-2 gap-0.5 opacity-80">
+                          <div className="w-2 h-2 bg-current rounded-sm"></div><div className="w-2 h-2 bg-current rounded-sm"></div>
+                          <div className="w-2 h-2 bg-current rounded-sm"></div><div className="w-2 h-2 bg-current rounded-sm"></div>
+                        </div>
+                      </button>
+                      <button onClick={() => setQrDensity(15)} className={`flex-1 flex justify-center items-center h-10 rounded-md border transition-colors ${qrDensity === 15 ? "bg-gray-100 border-gray-400 text-black dark:bg-zinc-700 dark:border-zinc-500 dark:text-white" : "border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"}`}>
+                        <div className="grid grid-cols-3 gap-[1px] opacity-80">
+                          {[...Array(9)].map((_, i) => <div key={i} className="w-[5px] h-[5px] bg-current rounded-sm"></div>)}
+                        </div>
+                      </button>
+                      <button onClick={() => setQrDensity(30)} className={`flex-1 flex justify-center items-center h-10 rounded-md border transition-colors ${qrDensity === 30 ? "bg-gray-100 border-gray-400 text-black dark:bg-zinc-700 dark:border-zinc-500 dark:text-white" : "border-gray-200 text-gray-400 hover:bg-gray-50 dark:border-zinc-700 dark:hover:bg-zinc-800"}`}>
+                        <div className="grid grid-cols-4 gap-[1px] opacity-80">
+                          {[...Array(16)].map((_, i) => <div key={i} className="w-[3px] h-[3px] bg-current rounded-[1px]"></div>)}
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <hr className="border-gray-100 dark:border-zinc-800" />
+
+                  {/* Logo Section */}
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <label className="text-xs font-bold text-gray-800 dark:text-gray-200">الشعار (Logo)</label>
+                      {logoFile && <button onClick={() => setLogoFile(null)} className="text-[10px] font-bold text-red-500 hover:underline">إزالة</button>}
+                    </div>
+                    
+                    {!logoFile ? (
+                      <input type="file" accept="image/*" onChange={handleLogoUpload} className="block w-full text-xs text-gray-700 dark:text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 dark:file:bg-zinc-800 dark:file:text-gray-200 cursor-pointer border border-dashed border-gray-300 dark:border-zinc-700 rounded-md p-1.5" />
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4 p-3 bg-white dark:bg-zinc-800/30 rounded-lg border border-gray-200 dark:border-zinc-700">
+                        <div>
+                          <div className="flex justify-between mb-1 text-[10px] font-bold text-gray-600 dark:text-gray-400"><label>حجم الشعار</label><span>{Math.round(logoSize * 100)}%</span></div>
+                          <input type="range" min="0.1" max="0.6" step="0.05" value={logoSize} onChange={(e) => setLogoSize(parseFloat(e.target.value))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none accent-black dark:accent-white" />
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1 text-[10px] font-bold text-gray-600 dark:text-gray-400"><label>تفريغ حول الشعار</label><span>{logoMargin}px</span></div>
+                          <input type="range" min="0" max="30" step="1" value={logoMargin} onChange={(e) => setLogoMargin(parseInt(e.target.value))} className="w-full h-1 bg-gray-200 rounded-lg appearance-none accent-black dark:accent-white" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="w-full space-y-3 bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-white/50">
-            <h3 className="text-center text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider flex items-center justify-center gap-2">
-              <Download className="w-4 h-4 text-indigo-500" />
-              تصدير (Export)
-            </h3>
-            <div className="grid grid-cols-3 gap-2">
-              <button onClick={() => handleDownload("png")} className="flex flex-col items-center gap-1 py-2 px-2 bg-white border border-gray-200 rounded-lg hover:border-indigo-500 hover:text-indigo-600 transition-all shadow-sm">
-                <span className="text-sm font-bold">PNG</span>
-              </button>
-              <button onClick={() => handleDownload("svg")} className="flex flex-col items-center gap-1 py-2 px-2 bg-white border border-gray-200 rounded-lg hover:border-purple-500 hover:text-purple-600 transition-all shadow-sm">
-                <span className="text-sm font-bold">SVG</span>
-              </button>
-              <button onClick={handleDownloadPDF} className="flex flex-col items-center gap-1 py-2 px-2 bg-white border border-gray-200 rounded-lg hover:border-pink-500 hover:text-pink-600 transition-all shadow-sm">
-                <span className="text-sm font-bold">PDF</span>
-              </button>
+          {/* Right Column: Preview & Export */}
+          <div className="lg:col-span-5 flex flex-col items-center p-4 bg-white dark:bg-zinc-900 rounded-lg border border-gray-200 dark:border-zinc-800 min-h-[400px] transition-colors duration-300">
+            <h2 className="text-sm font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-1.5 w-full justify-center">
+              <BoxSelect className="w-4 h-4 text-gray-400" /> المعاينة
+            </h2>
+
+            <div className="bg-white dark:bg-zinc-950 p-4 rounded-xl mb-6 w-full flex justify-center items-center overflow-hidden border border-gray-200 dark:border-zinc-800 transition-colors duration-300 min-h-[350px]">
+              <div ref={qrRef} className="flex items-center justify-center bg-transparent w-full max-w-[300px]" />
+            </div>
+
+            <div className="w-full mt-auto">
+              <div className="flex gap-2">
+                <button onClick={() => handleDownload("png")} className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black rounded-md transition-colors border border-transparent">
+                  <ImageIcon className="w-4 h-4" />
+                  <span className="text-xs font-bold">PNG</span>
+                </button>
+                <button onClick={() => handleDownload("svg")} className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black rounded-md transition-colors border border-transparent">
+                  <ImagePlus className="w-4 h-4" />
+                  <span className="text-xs font-bold">SVG</span>
+                </button>
+                <button onClick={handleDownloadPDF} className="flex-1 flex flex-col items-center justify-center gap-1.5 py-3 px-2 bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black rounded-md transition-colors border border-transparent">
+                  <FileText className="w-4 h-4" />
+                  <span className="text-xs font-bold">PDF</span>
+                </button>
+              </div>
             </div>
           </div>
 
