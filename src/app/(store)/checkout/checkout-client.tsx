@@ -28,13 +28,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     hasSavedAddresses ? defaultAddress.id : (legacyHasAddress ? "legacy" : "new")
   )
   
-  const hasSavedContacts = user?.contactNumbers && user.contactNumbers.length > 0
-  const legacyHasPhone = !!user?.phone
-  const defaultContact = user?.contactNumbers?.find((c: any) => c.isDefault) || user?.contactNumbers?.[0]
-  
-  const [selectedContactId, setSelectedContactId] = useState<string>(
-    hasSavedContacts ? defaultContact.id : (legacyHasPhone ? "legacy" : "new")
-  )
+
 
   const [selectedGovId, setSelectedGovId] = useState("")
   const [selectedCityId, setSelectedCityId] = useState("")
@@ -158,17 +152,11 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     let finalCity = ""
     let finalGovName = ""
 
-    if (selectedContactId === "new") {
-      finalPhone = formData.get("customerPhone") as string
-    } else if (selectedContactId === "legacy") {
-      finalPhone = user?.phone || ""
-    } else {
-      const contact = user?.contactNumbers?.find((c: any) => c.id === selectedContactId)
-      finalPhone = contact ? contact.number : ""
-    }
+
 
     if (selectedAddressId === "new") {
       finalAddress = formData.get("address") as string
+      finalPhone = formData.get("customerPhone") as string
       if (!selectedGov || (!selectedCity && !selectedGov.hideCities)) {
         toast.error("يرجى اختيار المحافظة والمدينة")
         setIsSubmitting(false)
@@ -180,12 +168,14 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
       finalAddress = user?.address || ""
       finalCity = user?.city || ""
       finalGovName = user?.governorate || ""
+      finalPhone = user?.phone || ""
     } else {
       const addr = user?.addresses?.find((a: any) => a.id === selectedAddressId)
       if (addr) {
         finalAddress = addr.address || ""
         finalCity = addr.city || ""
         finalGovName = addr.governorate || ""
+        finalPhone = addr.phone || ""
       } else {
         toast.error("حدث خطأ في تحديد العنوان")
         setIsSubmitting(false)
@@ -281,51 +271,6 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
             <h2 className="text-2xl font-bold mb-6">بيانات التوصيل</h2>
             
-            {/* CONTACT NUMBERS */}
-            <h3 className="font-bold mb-3 text-lg">رقم التواصل</h3>
-            {hasSavedContacts && (
-              <div className="space-y-3 mb-4">
-                {user.contactNumbers.map((contact: any) => (
-                  <div 
-                    key={contact.id}
-                    onClick={() => setSelectedContactId(contact.id)}
-                    className={`border-2 rounded-xl p-4 cursor-pointer transition-colors flex items-center gap-3 ${selectedContactId === contact.id ? 'border-primary bg-primary/5' : 'border-border/50'}`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedContactId === contact.id ? 'border-primary' : 'border-muted-foreground'}`}>
-                      {selectedContactId === contact.id && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                    </div>
-                    <div>
-                      <span className="font-bold text-sm block">{contact.title}</span>
-                      <span className="text-muted-foreground text-sm block" dir="ltr">{contact.number}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {!hasSavedContacts && legacyHasPhone && (
-              <div 
-                onClick={() => setSelectedContactId("legacy")}
-                className={`border-2 rounded-xl p-4 mb-4 cursor-pointer transition-colors flex items-center gap-3 ${selectedContactId === "legacy" ? 'border-primary bg-primary/5' : 'border-border/50'}`}
-              >
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedContactId === "legacy" ? 'border-primary' : 'border-muted-foreground'}`}>
-                  {selectedContactId === "legacy" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                </div>
-                <div>
-                  <span className="font-bold text-sm block">الرقم المحفوظ</span>
-                  <span className="text-muted-foreground text-sm block" dir="ltr">{user.phone}</span>
-                </div>
-              </div>
-            )}
-            <div 
-              onClick={() => setSelectedContactId("new")}
-              className={`border-2 rounded-xl p-4 mb-8 cursor-pointer transition-colors flex items-center gap-3 ${selectedContactId === "new" ? 'border-primary bg-primary/5' : 'border-border/50'}`}
-            >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedContactId === "new" ? 'border-primary' : 'border-muted-foreground'}`}>
-                {selectedContactId === "new" && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-              </div>
-              <span className="font-bold text-sm">استخدام رقم جديد لطلب اليوم</span>
-            </div>
-
             {/* ADDRESSES */}
             <h3 className="font-bold mb-3 text-lg">عنوان التوصيل</h3>
             {hasSavedAddresses && (
@@ -345,6 +290,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     <div className="mr-8 text-sm text-muted-foreground space-y-1">
                       <p>{addr.address}</p>
                       <p>{addr.city} {addr.city && addr.governorate ? ' - ' : ''} {addr.governorate}</p>
+                      <p className="font-mono mt-1 text-foreground" dir="ltr">{addr.phone}</p>
                     </div>
                   </div>
                 ))}
@@ -381,7 +327,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
               </div>
             </div>
 
-            {(selectedAddressId === "new" || selectedContactId === "new") && (
+            {selectedAddressId === "new" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -392,27 +338,24 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                       className="w-full h-12 bg-muted border border-border/50 rounded-xl px-4 opacity-70 cursor-not-allowed"
                     />
                   </div>
-                  {selectedContactId === "new" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">رقم الهاتف <span className="text-destructive">*</span></label>
-                      <input 
-                        name="customerPhone"
-                        required
-                        type="tel"
-                        dir="ltr"
-                        pattern="^01[0-9]{9}$"
-                        maxLength={11}
-                        placeholder="01XXXXXXXXX"
-                        onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity("رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01")}
-                        onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-                        className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                      />
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">رقم الهاتف <span className="text-destructive">*</span></label>
+                    <input 
+                      name="customerPhone"
+                      required
+                      type="tel"
+                      dir="ltr"
+                      pattern="^01[0-9]{9}$"
+                      maxLength={11}
+                      placeholder="01XXXXXXXXX"
+                      onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity("رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01")}
+                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
+                      className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                    />
+                  </div>
                 </div>
 
-                {selectedAddressId === "new" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {governorates.length > 1 && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">المحافظة <span className="text-destructive">*</span></label>
@@ -455,7 +398,6 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     </div>
                   )}
                 </div>
-                )}
 
                 {selectedAddressId === "new" && (
                   <div className="space-y-2 mt-6">

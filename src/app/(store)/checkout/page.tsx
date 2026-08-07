@@ -18,8 +18,7 @@ export default async function CheckoutPage() {
       where: { id: session.user.id },
       select: { 
         id: true, name: true, email: true, phone: true, address: true,
-        addresses: { orderBy: { isDefault: 'desc' } },
-        contactNumbers: { orderBy: { isDefault: 'desc' } }
+        addresses: { orderBy: { isDefault: 'desc' } }
       }
     })
     if (dbUser) {

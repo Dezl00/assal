@@ -23,9 +23,6 @@ export default async function AccountPage() {
       addresses: {
         orderBy: { createdAt: "desc" }
       },
-      contactNumbers: {
-        orderBy: { createdAt: "desc" }
-      },
       orders: {
         orderBy: { createdAt: "desc" },
         include: {
@@ -59,17 +56,23 @@ export default async function AccountPage() {
       ...addr,
       createdAt: addr.createdAt.toISOString(),
       updatedAt: addr.updatedAt.toISOString(),
-    })),
-    contactNumbers: user.contactNumbers.map((contact) => ({
-      ...contact,
-      createdAt: contact.createdAt.toISOString(),
-      updatedAt: contact.updatedAt.toISOString(),
     }))
   }
 
+  const governorates = await db.governorate.findMany({
+    where: { isActive: true },
+    include: {
+      cities: {
+        where: { isActive: true },
+        orderBy: { name: "asc" }
+      }
+    },
+    orderBy: { name: "asc" }
+  })
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 min-h-[70vh]">
-      <AccountClient user={serializedUser} />
+      <AccountClient user={serializedUser} governorates={governorates} />
     </div>
   )
 }

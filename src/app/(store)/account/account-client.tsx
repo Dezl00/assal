@@ -12,13 +12,16 @@ import { registerServiceWorkerAndSubscribe, unsubscribeFromPush } from "@/lib/pu
 import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
 
-type Tab = "main" | "orders" | "addresses" | "contacts" | "settings" | "security" | "notifications"
+type Tab = "main" | "orders" | "addresses" | "settings" | "security" | "notifications"
 
-export function AccountClient({ user }: { user: any }) {
+export function AccountClient({ user, governorates }: { user: any, governorates: any[] }) {
   const [activeTab, setActiveTab] = useState<Tab>("main")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(user.orderUpdatesEnabled || false)
   const [isUpdatingPush, setIsUpdatingPush] = useState(false)
+  
+  const [selectedGovId, setSelectedGovId] = useState("")
+  const selectedGov = useMemo(() => governorates.find((g: any) => g.id === selectedGovId), [governorates, selectedGovId])
 
   // Find the most recent active order
   const activeOrder = useMemo(() => {
@@ -106,7 +109,6 @@ export function AccountClient({ user }: { user: any }) {
   const tabs = [
     { id: "orders", label: "طلباتي", icon: Package },
     { id: "addresses", label: "العناوين", icon: MapPin },
-    { id: "contacts", label: "أرقام التواصل", icon: Phone },
     { id: "settings", label: "إعدادات الحساب", icon: User },
     { id: "security", label: "إعدادات الأمان", icon: Shield },
     { id: "notifications", label: "الإشعارات", icon: Bell },
@@ -451,7 +453,8 @@ export function AccountClient({ user }: { user: any }) {
                               <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-1 rounded-full">الافتراضي</span>
                             )}
                           </div>
-                          <p className="text-muted-foreground text-sm leading-relaxed mb-4">{address.address}</p>
+                          <p className="text-muted-foreground text-sm leading-relaxed mb-1">{address.address}</p>
+                          <p className="text-muted-foreground text-sm font-bold mb-4" dir="ltr">{address.phone}</p>
                           <div className="flex gap-2">
                             {!address.isDefault && (
                               <button 
@@ -503,14 +506,51 @@ export function AccountClient({ user }: { user: any }) {
                         <label className="text-sm font-bold text-foreground">اسم العنوان (مثال: المنزل، العمل)</label>
                         <input name="title" required type="text" className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none" />
                       </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-foreground">رقم التواصل للطلب</label>
+                        <input 
+                          name="phone" 
+                          required 
+                          type="tel" 
+                          dir="ltr"
+                          pattern="^01[0-9]{9}$"
+                          maxLength={11}
+                          placeholder="01XXXXXXXXX"
+                          className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none text-right" 
+                        />
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-foreground">المحافظة</label>
-                          <input name="governorate" required type="text" className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none" />
+                          <select 
+                            name="governorate" 
+                            required 
+                            value={selectedGov?.name || ""}
+                            onChange={(e) => {
+                              const gov = governorates.find((g: any) => g.name === e.target.value)
+                              if (gov) setSelectedGovId(gov.id)
+                            }}
+                            className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none"
+                          >
+                            <option value="" disabled>اختر المحافظة...</option>
+                            {governorates.map((g: any) => (
+                              <option key={g.id} value={g.name}>{g.name}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className="space-y-2">
                           <label className="text-sm font-bold text-foreground">المدينة</label>
-                          <input name="city" required type="text" className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none" />
+                          <select 
+                            name="city" 
+                            required 
+                            disabled={!selectedGov || selectedGov.hideCities}
+                            className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                          >
+                            <option value="" disabled>اختر المدينة...</option>
+                            {selectedGov?.cities?.map((c: any) => (
+                              <option key={c.id} value={c.name}>{c.name}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -523,90 +563,6 @@ export function AccountClient({ user }: { user: any }) {
                       </div>
                       <Button type="submit" className="w-full sm:w-auto h-12 px-8 gold-gradient text-white font-bold rounded-xl mt-4">
                         إضافة العنوان
-                      </Button>
-                    </form>
-                  </div>
-                </div>
-              )}
-
-              {/* CONTACTS TAB */}
-              {activeTab === "contacts" && (
-                <div className="space-y-6">
-                  {user.contactNumbers && user.contactNumbers.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {user.contactNumbers.map((contact: any) => (
-                        <div key={contact.id} className={`p-5 rounded-3xl border-2 transition-all flex items-center justify-between ${contact.isDefault ? 'border-primary bg-primary/5' : 'border-border/50 bg-card hover:border-primary/50'}`}>
-                          <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Phone className={`w-4 h-4 ${contact.isDefault ? 'text-primary' : 'text-muted-foreground'}`} />
-                              <h3 className="font-bold text-sm">{contact.title}</h3>
-                              {contact.isDefault && (
-                                <span className="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full ml-2">الافتراضي</span>
-                              )}
-                            </div>
-                            <p className="font-mono text-lg" dir="ltr">{contact.number}</p>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            {!contact.isDefault && (
-                              <button 
-                                onClick={async () => {
-                                  const { setDefaultContactNumber } = await import('@/app/actions/contact')
-                                  await setDefaultContactNumber(contact.id)
-                                }}
-                                className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors"
-                              >
-                                تعيين كافتراضي
-                              </button>
-                            )}
-                            <button 
-                              onClick={async () => {
-                                if (!confirm('هل أنت متأكد من حذف هذا الرقم؟')) return;
-                                const { deleteContactNumber } = await import('@/app/actions/contact')
-                                await deleteContactNumber(contact.id)
-                              }}
-                              className="text-xs font-bold text-destructive hover:bg-destructive/10 px-2 py-1 rounded transition-colors"
-                            >
-                              حذف
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-16 bg-card border border-border/50 rounded-3xl shadow-sm">
-                      <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Phone className="w-10 h-10 text-muted-foreground/50" />
-                      </div>
-                      <p className="text-foreground font-bold text-xl mb-1">لا يوجد أرقام تواصل إضافية</p>
-                      <p className="text-muted-foreground text-sm">أضف رقماً إضافياً لسهولة التواصل أثناء التوصيل.</p>
-                    </div>
-                  )}
-
-                  <div className="bg-card border border-border/50 rounded-3xl p-6 sm:p-8 shadow-sm mt-8">
-                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><Phone className="w-6 h-6 text-primary" /> إضافة رقم جديد</h3>
-                    <form action={async (formData) => {
-                      const { addContactNumber } = await import('@/app/actions/contact')
-                      const res = await addContactNumber(formData)
-                      if (res.error) toast.error(res.error)
-                      else {
-                        toast.success('تمت الإضافة بنجاح')
-                        ;(document.getElementById('add-contact-form') as HTMLFormElement)?.reset()
-                      }
-                    }} id="add-contact-form" className="space-y-4 max-w-xl">
-                      <div className="space-y-2">
-                        <label className="text-sm font-bold text-foreground">وصف الرقم (مثال: رقمي الثاني، أخي)</label>
-                        <input name="title" required type="text" className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-bold text-foreground">رقم الهاتف</label>
-                        <input name="number" required type="tel" dir="ltr" className="w-full h-12 px-4 bg-muted/30 border border-border/50 rounded-xl focus:bg-background focus:ring-2 focus:ring-primary outline-none text-right" />
-                      </div>
-                      <div className="flex items-center gap-2 pt-2">
-                        <input type="checkbox" name="isDefault" value="true" id="isDefaultContact" className="w-4 h-4 rounded border-border/50 text-primary focus:ring-primary" />
-                        <label htmlFor="isDefaultContact" className="text-sm font-bold cursor-pointer">تعيين كرقم التواصل الافتراضي للطلبات</label>
-                      </div>
-                      <Button type="submit" className="w-full sm:w-auto h-12 px-8 gold-gradient text-white font-bold rounded-xl mt-4">
-                        إضافة الرقم
                       </Button>
                     </form>
                   </div>

@@ -13,10 +13,15 @@ export async function addAddress(formData: FormData) {
     const address = formData.get("address") as string
     const city = formData.get("city") as string
     const governorate = formData.get("governorate") as string
+    const phone = formData.get("phone") as string
     const isDefault = formData.get("isDefault") === "true"
 
-    if (!title || !address || !governorate) {
+    if (!title || !address || !governorate || !phone) {
       return { error: "يرجى تعبئة الحقول المطلوبة" }
+    }
+
+    if (!/^01[0-9]{9}$/.test(phone)) {
+      return { error: "رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01" }
     }
 
     const existingAddressesCount = await db.address.count({ where: { userId: session.user.id } })
@@ -36,6 +41,7 @@ export async function addAddress(formData: FormData) {
         address,
         city,
         governorate,
+        phone,
         isDefault: shouldBeDefault
       }
     })

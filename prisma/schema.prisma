@@ -31,7 +31,6 @@ model User {
   notifications Notification[]
   pushSubscriptions PushSubscription[]
   addresses     Address[]
-  contactNumbers ContactNumber[]
 }
 
 model Widget {
@@ -240,21 +239,13 @@ model Address {
   address     String   // Full details
   city        String?
   governorate String?
+  phone       String   @default("") // Added for unified addresses
   isDefault   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model ContactNumber {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String   // e.g., رقمي الثاني، أخي
-  number      String
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+
 
 model MenuItem {
   id          String     @id @default(cuid())
