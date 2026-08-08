@@ -67,7 +67,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 __html: article.content.replace(
                   /<a[^>]*href="(https?:\/\/(?:www\.)?youtube\.com\/embed\/[^"]+)"[^>]*>.*?<\/a>/gi,
                   '<iframe class="ql-video" frameborder="0" allowfullscreen="true" src="$1"></iframe>'
-                ) 
+                ).replace(/&nbsp;/g, ' ') 
               }}
             />
             

@@ -151,7 +151,6 @@
   }
   .ql-align-justify {
     text-align: justify;
-    text-justify: inter-word;
   }
 }
 
@@ -159,7 +158,7 @@
 .prose p, .prose li, .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6, .prose span, .prose strong, .prose em, .prose blockquote,
 .ql-editor p, .ql-editor li, .ql-editor h1, .ql-editor h2, .ql-editor h3, .ql-editor h4, .ql-editor h5, .ql-editor h6, .ql-editor span, .ql-editor strong, .ql-editor em, .ql-editor blockquote {
   word-break: normal !important;
-  overflow-wrap: normal !important;
+  overflow-wrap: break-word !important;
   -webkit-hyphens: none !important;
   hyphens: none !important;
 }
