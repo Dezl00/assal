@@ -126,7 +126,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           <div className="bg-white p-6 rounded-xl border border-border space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">عنوان المقال <span className="text-destructive">*</span></label>
@@ -138,7 +138,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
               />
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <label className="text-sm font-medium">محتوى المقال <span className="text-destructive">*</span></label>
               <RichTextEditor value={content} onChange={setContent} />
             </div>

@@ -79,7 +79,7 @@ export function RichTextEditor({ value, onChange }: { value: string, onChange: (
   ]
 
   return (
-    <div className="bg-white rounded-lg border border-border overflow-hidden [&_.ql-container]:min-h-[400px] [&_.ql-container]:text-base [&_.ql-editor]:min-h-[400px] [&_.ql-editor]:text-right [&_.ql-editor]:rtl">
+    <div className="bg-white rounded-lg border border-border overflow-hidden min-w-0 break-words [&_.ql-container]:min-h-[400px] [&_.ql-container]:text-base [&_.ql-editor]:min-h-[400px] [&_.ql-editor]:text-right [&_.ql-editor]:rtl [&_.ql-editor]:break-words">
       <ReactQuill
         // @ts-ignore
         ref={quillRef}
