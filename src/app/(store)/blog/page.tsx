@@ -59,7 +59,7 @@ export default async function BlogPage() {
                     {article.title}
                   </h2>
                   <div 
-                    className="prose prose-slate prose-sm text-muted-foreground line-clamp-3 mb-6 flex-1 break-words overflow-hidden"
+                    className="prose prose-slate prose-sm text-muted-foreground line-clamp-3 mb-6 flex-1 overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: article.content.replace(/<[^>]*>?/gm, '') }} 
                   />
                   <div className="inline-flex items-center gap-2 text-primary font-medium mt-auto">

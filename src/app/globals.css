@@ -140,9 +140,25 @@
     background-color: #000;
   }
 
-  /* Override Quill's text-justify which breaks Arabic words */
+  /* Quill text alignments */
+  .prose .ql-align-center {
+    text-align: center;
+  }
+  .prose .ql-align-right {
+    text-align: right;
+  }
+  .prose .ql-align-left {
+    text-align: left;
+  }
   .prose .ql-align-justify {
-    text-align: right !important;
+    text-align: justify;
+    text-justify: inter-word;
+  }
+  
+  /* Prevent word breaking in the middle of a word for Arabic text */
+  .prose, .prose * {
+    word-break: normal !important;
+    overflow-wrap: normal !important;
   }
 }
 
