@@ -23,15 +23,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const { slug } = await params
   const [{ article }, { articles: allArticles }] = await Promise.all([
     getArticleBySlug(slug),
-    getActiveArticles(4) // Fetch 4, we'll exclude current
+    getActiveArticles(6) // Fetch 6, we'll exclude current to get 5
   ])
 
   if (!article || !article.isActive) {
     notFound()
   }
 
-  // Get related articles (exclude current one, take up to 3)
-  const relatedArticles = allArticles?.filter((a: any) => a.id !== article.id).slice(0, 3) || []
+  // Get related articles (exclude current one, take up to 5)
+  const relatedArticles = allArticles?.filter((a: any) => a.id !== article.id).slice(0, 5) || []
 
   return (
     <div className="bg-white min-h-screen pb-20">
@@ -46,7 +46,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </h1>
           
           {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full mt-2">
+          <nav className="flex items-center flex-nowrap whitespace-nowrap overflow-x-auto max-w-full no-scrollbar gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full mt-2">
             <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <Link href="/blog" className="hover:text-white transition-colors">الأدلة والنصائح</Link>
@@ -81,11 +81,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
           {/* Related Articles Sidebar (Left Side in RTL) */}
           {relatedArticles.length > 0 && (
-            <div className="w-full md:w-1/3 shrink-0">
-              <div className="sticky top-24">
-                <h2 className="text-2xl font-bold text-foreground mb-6 pb-2 border-b border-border/50">مقالات قد تعجبك</h2>
-                <div className="flex flex-col gap-6">
-                  {relatedArticles.map((rel: any) => (
+            <div className="w-full md:w-1/3 shrink-0 self-start sticky top-24">
+              <h2 className="text-2xl font-bold text-foreground mb-6 pb-2 border-b border-border/50">مقالات قد تعجبك</h2>
+              <div className="flex flex-col gap-6">
+                {relatedArticles.map((rel: any) => (
                     <Link href={`/blog/${rel.slug}`} key={rel.id} className="group flex gap-4 items-start">
                       <div className="w-24 h-24 shrink-0 rounded-xl bg-slate-100 overflow-hidden relative">
                         {rel.imageUrl ? (
@@ -110,7 +109,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                       </div>
                     </Link>
                   ))}
-                </div>
               </div>
             </div>
           )}
