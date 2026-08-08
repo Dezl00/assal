@@ -130,12 +130,14 @@
   }
 
   /* Ensure Quill videos display correctly in prose */
-  .prose iframe.ql-video {
+  .prose iframe {
     width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: 0.75rem;
     margin-top: 2em;
     margin-bottom: 2em;
+    display: block;
+    background-color: #000;
   }
 }
 
