@@ -11,7 +11,7 @@ import { ImageUploader } from "@/components/ui/image-uploader"
 import { Switch } from "@/components/ui/switch"
 import { User as UserIcon } from "lucide-react"
 
-export function SettingsClient({ config, branches = [], backups = [] }: { config: any, branches?: any[], backups?: any[] }) {
+export function SettingsClient({ config, branches = [], backups = [], initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], initialIsAdmin?: boolean, initialPermissions?: string[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Branch states
@@ -79,10 +79,10 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
     else toast.error("فشل الحذف")
   }
 
-  const { data: session, update: updateSession } = useSession()
+  const { data: session, status, update: updateSession } = useSession()
   const currentUser = session?.user
-  const permissions = currentUser?.permissions || []
-  const isAdmin = currentUser?.role === "ADMIN"
+  const permissions = status === "loading" ? initialPermissions : (currentUser?.permissions || initialPermissions)
+  const isAdmin = status === "loading" ? initialIsAdmin : (currentUser?.role === "ADMIN" ?? initialIsAdmin)
 
   async function handleProfileSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -160,25 +160,6 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                     </div>
                 </div>
 
-                <div className={activeTab === "profile" ? "block space-y-6 animate-in fade-in" : "hidden"}>
-                  <h2 className="text-lg font-semibold border-b border-border/50 pb-2">تعديل بيانات الحساب</h2>
-                  <div className="space-y-4 max-w-xl">
-                    <p className="text-sm text-muted-foreground">تحديث اسمك أو كلمة المرور الخاصة بك.</p>
-                    <form onSubmit={handleProfileSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">الاسم</label>
-                        <input name="name" type="text" required defaultValue={currentUser?.name || ''} className="w-full h-10 px-3 border rounded-md" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">كلمة المرور الجديدة <span className="text-muted-foreground text-xs">(اختياري)</span></label>
-                        <input name="password" type="password" className="w-full h-10 px-3 border rounded-md" />
-                      </div>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديلات الشخصية'}
-                      </Button>
-                    </form>
-                  </div>
-                </div>
 
                 <div className={activeTab === "appearance" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">المظهر والهوية</h2>

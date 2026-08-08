@@ -1,6 +1,7 @@
 import React from "react"
 import { db } from "@/lib/db"
 import { SettingsClient } from "./settings-client"
+import { auth } from "@/auth"
 
 export const dynamic = "force-dynamic"
 
@@ -41,6 +42,11 @@ export default async function SettingsPage() {
     orderBy: { createdAt: 'desc' }
   })
 
+  const session = await auth()
+  const currentUser = session?.user
+  const isAdmin = currentUser?.role === "ADMIN"
+  const permissions = currentUser?.permissions || []
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -49,7 +55,13 @@ export default async function SettingsPage() {
         <span className="text-foreground">الإعدادات</span>
       </nav>
 
-      <SettingsClient config={config} branches={branches} backups={backups} />
+      <SettingsClient 
+        config={config} 
+        branches={branches} 
+        backups={backups} 
+        initialIsAdmin={isAdmin} 
+        initialPermissions={permissions} 
+      />
     </div>
   )
 }
