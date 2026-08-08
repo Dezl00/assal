@@ -108,6 +108,15 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               ))}
 
               <Link 
+                href="/blog"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
+              >
+                الأدلة والنصائح
+                <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+              </Link>
+
+              <Link 
                 href="/brands"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"

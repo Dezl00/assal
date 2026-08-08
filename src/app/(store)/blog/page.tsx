@@ -3,7 +3,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export const metadata = {
-  title: "المدونة - متجر عسل",
+  title: "الأدلة والنصائح",
   description: "أحدث المقالات والأخبار عن العسل ومنتجاتنا",
 }
 
@@ -11,12 +11,22 @@ export default async function BlogPage() {
   const { articles } = await getActiveArticles()
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-20 min-h-screen">
-      <div className="max-w-3xl mx-auto text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">المدونة</h1>
-        <p className="text-xl text-muted-foreground">
-          اكتشف أحدث المقالات والنصائح حول العسل الطبيعي وفوائده
-        </p>
+    <div className="container mx-auto px-4 py-12 md:py-20 min-h-screen max-w-7xl">
+      {/* Page Header */}
+      <div className="mb-12 relative overflow-hidden rounded-3xl bg-primary p-10 sm:p-16 text-center shadow-lg shadow-primary/20">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">الأدلة والنصائح</h1>
+          
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <span className="text-white font-medium">الأدلة والنصائح</span>
+          </nav>
+        </div>
       </div>
 
       {!articles || articles.length === 0 ? (

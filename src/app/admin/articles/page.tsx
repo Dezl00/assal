@@ -1,7 +1,8 @@
 import { getArticles } from "@/features/articles/actions"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Plus } from "lucide-react"
+import { ArticleActionsClient } from "./article-actions-client"
 
 export default async function ArticlesAdminPage() {
   const { articles } = await getArticles()
@@ -58,16 +59,10 @@ export default async function ArticlesAdminPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
-                    {new Date(article.createdAt).toLocaleDateString('ar-EG')}
+                    {new Date(article.createdAt).toLocaleDateString('en-GB')}
                   </td>
                   <td className="px-6 py-4 text-left">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link href={`/admin/articles/${article.id}`}>
-                        <Button variant="ghost" size="icon" className="hover:text-primary">
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </Link>
-                    </div>
+                    <ArticleActionsClient article={article} />
                   </td>
                 </tr>
               ))

@@ -60,7 +60,7 @@ function generateSlug(title: string) {
     .toLowerCase()
     .replace(/[^\w\s\u0600-\u06FF-]/g, "")
     .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "") + "-" + Date.now().toString().slice(-4)
+    .replace(/^-+|-+$/g, "")
 }
 
 export async function createArticle(data: {
@@ -113,16 +113,10 @@ export async function updateArticle(id: string, data: {
   if (!session?.user || session.user.role === "CUSTOMER") return { success: false, error: "غير مصرح لك" }
 
   try {
-    let slug
-    if (data.title) {
-      slug = generateSlug(data.title)
-    }
-
     const article = await db.article.update({
       where: { id },
       data: {
         ...data,
-        ...(slug && { slug })
       }
     })
     

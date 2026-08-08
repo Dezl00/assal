@@ -161,6 +161,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 </div>
               )}
               
+              <Link href="/blog" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الأدلة والنصائح</Link>
               <Link href="/brands" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الماركات</Link>
               <Link href="/products?discounted=true" className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors">عروض وخصومات</Link>
             </nav>

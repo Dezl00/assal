@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -128,4 +129,28 @@
       -ms-overflow-style: none;
   }
 }
-\n\n@layer utilities {\n  .container {\n    width: 100%;\n    margin-right: auto;\n    margin-left: auto;\n    padding-right: 1rem;\n    padding-left: 1rem;\n  }\n  @media (min-width: 640px) {\n    .container { max-width: 640px; padding-right: 2rem; padding-left: 2rem; }\n  }\n  @media (min-width: 768px) {\n    .container { max-width: 768px; padding-right: 2rem; padding-left: 2rem; }\n  }\n  @media (min-width: 1024px) {\n    .container { max-width: 1024px; padding-right: 2rem; padding-left: 2rem; }\n  }\n  @media (min-width: 1280px) {\n    .container { max-width: 1280px; padding-right: 2rem; padding-left: 2rem; }\n  }\n  @media (min-width: 1536px) {\n    .container { max-width: 1536px; padding-right: 2rem; padding-left: 2rem; }\n  }\n}\n\n
+
+@layer utilities {
+  .container {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container { max-width: 640px; padding-right: 2rem; padding-left: 2rem; }
+  }
+  @media (min-width: 768px) {
+    .container { max-width: 768px; padding-right: 2rem; padding-left: 2rem; }
+  }
+  @media (min-width: 1024px) {
+    .container { max-width: 1024px; padding-right: 2rem; padding-left: 2rem; }
+  }
+  @media (min-width: 1280px) {
+    .container { max-width: 1280px; padding-right: 2rem; padding-left: 2rem; }
+  }
+  @media (min-width: 1536px) {
+    .container { max-width: 1536px; padding-right: 2rem; padding-left: 2rem; }
+  }
+}
