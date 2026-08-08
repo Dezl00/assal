@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Search, Edit, Trash2, Folder, PlusCircle, X, Loader2 } from "lucide-react"
-import { createCategory, deleteCategory, updateCategory } from "@/features/categories/actions"
+import { createCategory, deleteCategory, updateCategory, bulkUpdateCategories } from "@/features/categories/actions"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { ImageUploader } from "@/components/ui/image-uploader"
@@ -25,6 +25,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   const [imageUrl, setImageUrl] = useState("")
   const [categoryType, setCategoryType] = useState<"main" | "sub">("main")
   const [showAdvanced, setShowAdvanced] = useState(false)
+  
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   
   // Local state for optimistic updates
   const [localCategories, setLocalCategories] = useState(categories)
@@ -145,6 +148,79 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     }
   }
 
+  function handleSelect(id: string, isParent: boolean) {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(prev => prev.filter(i => i !== id))
+      return
+    }
+
+    if (selectedIds.length > 0) {
+      const firstSelectedId = selectedIds[0]
+      const firstSelected = localCategories.find(c => c.id === firstSelectedId)
+      const firstIsParent = !firstSelected?.parentId
+
+      if (isParent !== firstIsParent) {
+        toast.error("لا يمكن تحديد أقسام رئيسية وفرعية معاً في نفس الوقت")
+        return
+      }
+    }
+    setSelectedIds(prev => [...prev, id])
+  }
+
+  function handleSelectAll() {
+    if (selectedIds.length === filteredCategories.length && filteredCategories.length > 0) {
+      setSelectedIds([])
+      return
+    }
+    
+    if (filteredCategories.length === 0) return
+
+    // We can only select all if they are all of the same type, or we just select the type of the first one
+    const firstIsParent = !filteredCategories[0].parentId
+    const selectableIds = filteredCategories
+      .filter(c => (!c.parentId) === firstIsParent)
+      .map(c => c.id)
+
+    setSelectedIds(selectableIds)
+    if (selectableIds.length < filteredCategories.length) {
+      toast.info("تم تحديد الأقسام من نفس النوع فقط")
+    }
+  }
+
+  async function executeBulkUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!selectedIds.length) return
+
+    setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    const data: any = {}
+    
+    if (formData.has("departmentId")) {
+      data.departmentId = formData.get("departmentId") as string
+    }
+    if (formData.has("parentId")) {
+      data.parentId = formData.get("parentId") as string
+    }
+
+    const res = await bulkUpdateCategories(selectedIds, data)
+    setIsSubmitting(false)
+    
+    if (res.success) {
+      toast.success("تم التحديث بنجاح")
+      setIsBulkModalOpen(false)
+      setSelectedIds([])
+      // Optimistic update
+      setLocalCategories(prev => prev.map(c => {
+        if (selectedIds.includes(c.id)) {
+          return { ...c, ...data }
+        }
+        return c
+      }))
+    } else {
+      toast.error(res.error || "حدث خطأ ما")
+    }
+  }
+
   const [filterType, setFilterType] = useState<"all" | "main" | "sub">("all")
   const [filterParent, setFilterParent] = useState<string>("all")
 
@@ -231,16 +307,54 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto max-w-[200px]"
                 >
                   <option value="all">كل المجالات</option>
-                  {localCategories.filter(c => !c.parentId).map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                  {departments.map(d => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
                 </select>
               </div>
             </div>
+            
+            {/* Bulk Actions Bar */}
+            {selectedIds.length > 0 && (
+              <div className="bg-primary/5 border-b border-border/50 p-3 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                  <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs">{selectedIds.length}</span>
+                  عنصر محدد
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="border-primary/20 text-primary hover:bg-primary/10"
+                    onClick={() => setIsBulkModalOpen(true)}
+                  >
+                    <Edit className="w-4 h-4 ml-2" />
+                    {(!localCategories.find(c => c.id === selectedIds[0])?.parentId) ? "تغيير المجال" : "تغيير القسم الرئيسي"}
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setSelectedIds([])}
+                  >
+                    إلغاء التحديد
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-right">
                 <thead className="border-b border-border/50 text-muted-foreground">
                   <tr>
+                    <th className="px-6 py-4 w-12">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-input text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                        checked={selectedIds.length > 0 && selectedIds.length === filteredCategories.length}
+                        onChange={handleSelectAll}
+                      />
+                    </th>
                     <th className="px-6 py-4 font-medium">اسم القسم</th>
                     <th className="px-6 py-4 font-medium">الرابط (Slug)</th>
                     <th className="px-6 py-4 font-medium">القسم الأب</th>
@@ -252,13 +366,26 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 <tbody className="divide-y divide-border/50">
                   {filteredCategories.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                         {searchQuery ? "لا توجد نتائج بحث مطابقة." : "لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية."}
                       </td>
                     </tr>
                   ) : (
-                    filteredCategories.map((category) => (
-                      <tr key={category.id} className="transition-colors hover:bg-muted/10">
+                    filteredCategories.map((category) => {
+                      const isParent = !category.parentId;
+                      const disabledCheck = selectedIds.length > 0 && isParent !== (!localCategories.find(c => c.id === selectedIds[0])?.parentId)
+
+                      return (
+                      <tr key={category.id} className={`transition-colors hover:bg-muted/10 ${selectedIds.includes(category.id) ? 'bg-primary/5' : ''}`}>
+                        <td className="px-6 py-4">
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-input text-primary focus:ring-primary w-4 h-4 cursor-pointer disabled:opacity-50"
+                            checked={selectedIds.includes(category.id)}
+                            onChange={() => handleSelect(category.id, isParent)}
+                            disabled={disabledCheck}
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div className={`flex items-center gap-3 ${category.parentId ? 'mr-6' : ''}`}>
                             {category.parentId && (
@@ -325,7 +452,8 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                           </div>
                         </td>
                       </tr>
-                    ))
+                      )
+                    })
                   )}
                 </tbody>
               </table>
@@ -338,13 +466,24 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   {searchQuery ? "لا توجد نتائج بحث مطابقة." : "لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية."}
                 </div>
               ) : (
-                filteredCategories.map((category) => (
-                  <div key={category.id} className={`bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4 ${category.parentId ? 'mr-4 relative' : ''}`}>
+                filteredCategories.map((category) => {
+                  const isParent = !category.parentId;
+                  const disabledCheck = selectedIds.length > 0 && isParent !== (!localCategories.find(c => c.id === selectedIds[0])?.parentId)
+
+                  return (
+                  <div key={category.id} className={`bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4 ${category.parentId ? 'mr-4 relative' : ''} ${selectedIds.includes(category.id) ? 'border-primary ring-1 ring-primary/20 bg-primary/5' : ''}`}>
                     {category.parentId && (
                       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-full border-r-2 border-muted-foreground/20 rounded-r-lg"></div>
                     )}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-input text-primary focus:ring-primary w-5 h-5 cursor-pointer shrink-0 disabled:opacity-50"
+                          checked={selectedIds.includes(category.id)}
+                          onChange={() => handleSelect(category.id, isParent)}
+                          disabled={disabledCheck}
+                        />
                         {category.imageUrl ? (
                           <img src={category.imageUrl} alt={category.name} className="h-12 w-12 rounded-lg object-cover border border-border" />
                         ) : (
@@ -579,6 +718,61 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModalOpen(false)}
       />
+
+      {/* Bulk Update Modal */}
+      {isBulkModalOpen && selectedIds.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-background rounded-xl border border-border shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="border-b border-border/50 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold tracking-tight">
+                {(!localCategories.find(c => c.id === selectedIds[0])?.parentId) ? "تغيير المجال" : "تغيير القسم الرئيسي"}
+              </h2>
+              <Button variant="ghost" size="icon" onClick={() => setIsBulkModalOpen(false)} className="h-8 w-8 text-muted-foreground">
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <form onSubmit={executeBulkUpdate} className="p-6 space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  {(!localCategories.find(c => c.id === selectedIds[0])?.parentId) ? "اختر المجال الجديد" : "اختر القسم الأب الجديد"}
+                </label>
+                {(!localCategories.find(c => c.id === selectedIds[0])?.parentId) ? (
+                  <select 
+                    name="departmentId"
+                    required
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                  >
+                    <option value="">اختر المجال...</option>
+                    {departments?.map(d => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <select 
+                    name="parentId"
+                    required
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
+                  >
+                    <option value="">اختر القسم الأب...</option>
+                    {categories.filter(c => !c.parentId && !selectedIds.includes(c.id)).map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-3 justify-end pt-4 border-t border-border/50">
+                <Button type="button" variant="outline" onClick={() => setIsBulkModalOpen(false)}>
+                  إلغاء
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="min-w-[100px]">
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "حفظ التغييرات"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

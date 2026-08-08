@@ -89,3 +89,22 @@ export async function updateCategory(id: string, formData: FormData) {
     return { success: false, error: error.message || "Failed to update category" }
   }
 }
+
+export async function bulkUpdateCategories(ids: string[], data: { departmentId?: string, parentId?: string }) {
+  try {
+    if (!ids.length) return { success: false, error: "لا توجد أقسام محددة" }
+
+    await db.category.updateMany({
+      where: { id: { in: ids } },
+      data: {
+        ...(data.departmentId !== undefined && { departmentId: data.departmentId }),
+        ...(data.parentId !== undefined && { parentId: data.parentId }),
+      }
+    })
+
+    revalidatePath("/admin/categories")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || "فشل تحديث الأقسام" }
+  }
+}
