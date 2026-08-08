@@ -60,9 +60,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <div className="flex flex-col md:flex-row gap-8 lg:gap-16 items-start">
           
           {/* Main Content (Right Side in RTL) */}
-          <div className="flex-1 w-full bg-white md:w-2/3 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10">
+          <div className="flex-1 min-w-0 w-full bg-white md:w-2/3 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10">
             <div 
-              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal prose-img:rounded-xl prose-img:max-w-full"
+              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal break-words prose-img:rounded-xl prose-img:max-w-full"
               dangerouslySetInnerHTML={{ 
                 __html: article.content.replace(
                   /<a[^>]*href="(https?:\/\/(?:www\.)?youtube\.com\/embed\/[^"]+)"[^>]*>.*?<\/a>/gi,

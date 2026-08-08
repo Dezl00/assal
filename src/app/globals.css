@@ -155,11 +155,6 @@
     text-justify: inter-word;
   }
   
-  /* Prevent word breaking in the middle of a word for Arabic text */
-  .prose, .prose * {
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-  }
 }
 
 @layer utilities {
