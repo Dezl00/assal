@@ -241,7 +241,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   })
 
   // Hierarchical sorting: Group main categories and their subs
-  if (filterType === "all" && filterDepartment === "all" && !searchQuery) {
+  if (!searchQuery) {
     const mainCategories = filteredCategories.filter(c => !c.parentId)
     const sorted: any[] = []
     
@@ -360,8 +360,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                       />
                     </th>
                     <th className="px-6 py-4 font-medium">اسم القسم</th>
-                    <th className="px-6 py-4 font-medium">الرابط (Slug)</th>
-                    <th className="px-6 py-4 font-medium">القسم الأب</th>
+                    <th className="px-6 py-4 font-medium">القسم الرئيسي</th>
                     <th className="px-6 py-4 font-medium">المنتجات</th>
                     <th className="px-6 py-4 font-medium text-center">الحالة</th>
                     <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
@@ -370,7 +369,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 <tbody className="divide-y divide-border/50">
                   {filteredCategories.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                      <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                         {searchQuery ? "لا توجد نتائج بحث مطابقة." : "لا توجد أقسام مسجلة. قم بالإضافة من القائمة الجانبية."}
                       </td>
                     </tr>
@@ -403,7 +402,6 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                             <span className={`font-medium ${category.parentId ? 'text-muted-foreground' : 'text-foreground'}`}>{category.name}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-muted-foreground">{category.slug}</td>
                         <td className="px-6 py-4">
                           {category.parent ? (
                             <span className="text-muted-foreground">{category.parent.name}</span>
@@ -497,7 +495,6 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                         )}
                         <div>
                           <h3 className={`font-semibold text-base ${category.parentId ? 'text-muted-foreground' : 'text-foreground'}`}>{category.name}</h3>
-                          <p className="text-xs text-muted-foreground mt-1" dir="ltr">{category.slug}</p>
                         </div>
                       </div>
                       <div>
@@ -516,7 +513,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                     
                     <div className="flex flex-wrap gap-2 text-sm">
                       <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
-                        <span className="text-muted-foreground text-xs">الأب:</span>
+                        <span className="text-muted-foreground text-xs">الرئيسي:</span>
                         <span className="font-medium text-xs">{category.parent ? category.parent.name : '-'}</span>
                       </div>
                       <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
