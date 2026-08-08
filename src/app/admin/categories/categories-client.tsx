@@ -222,7 +222,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   }
 
   const [filterType, setFilterType] = useState<"all" | "main" | "sub">("all")
-  const [filterParent, setFilterParent] = useState<string>("all")
+  const [filterDepartment, setFilterDepartment] = useState<string>("all")
 
   // First apply filters
   let filteredCategories = localCategories.filter(c => {
@@ -231,13 +231,17 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
 
     if (filterType === "main" && c.parentId) return false
     if (filterType === "sub" && !c.parentId) return false
-    if (filterParent !== "all" && c.parentId !== filterParent && c.id !== filterParent) return false
+    
+    if (filterDepartment !== "all") {
+      const parent = localCategories.find(p => p.id === c.parentId)
+      if (c.departmentId !== filterDepartment && parent?.departmentId !== filterDepartment) return false
+    }
 
     return true
   })
 
   // Hierarchical sorting: Group main categories and their subs
-  if (filterType === "all" && filterParent === "all" && !searchQuery) {
+  if (filterType === "all" && filterDepartment === "all" && !searchQuery) {
     const mainCategories = filteredCategories.filter(c => !c.parentId)
     const sorted: any[] = []
     
@@ -302,8 +306,8 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   <option value="sub">فرعية فقط</option>
                 </select>
                 <select 
-                  value={filterParent}
-                  onChange={(e) => setFilterParent(e.target.value)}
+                  value={filterDepartment}
+                  onChange={(e) => setFilterDepartment(e.target.value)}
                   className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto max-w-[200px]"
                 >
                   <option value="all">كل المجالات</option>
@@ -376,7 +380,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                       const disabledCheck = selectedIds.length > 0 && isParent !== (!localCategories.find(c => c.id === selectedIds[0])?.parentId)
 
                       return (
-                      <tr key={category.id} className={`transition-colors hover:bg-muted/10 ${selectedIds.includes(category.id) ? 'bg-primary/5' : ''}`}>
+                      <tr key={category.id} className={`transition-colors hover:bg-muted/50 ${selectedIds.includes(category.id) ? 'bg-primary/5' : ''} ${!category.parentId && !selectedIds.includes(category.id) ? 'bg-muted/30' : ''}`}>
                         <td className="px-6 py-4">
                           <input 
                             type="checkbox" 
