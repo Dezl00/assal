@@ -140,7 +140,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
+        <div className="flex-1 min-w-0 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
           {/* Config Forms */}
           {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
@@ -448,10 +448,10 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                     <div className="text-center py-8 text-muted-foreground border border-dashed border-border/50 rounded-lg">لا توجد نسخ احتياطية محفوظة.</div>
                   ) : (
                     backups.map(backup => (
-                      <div key={backup.id} className="flex items-center justify-between p-4 border border-border/50 rounded-lg bg-card">
+                      <div key={backup.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border/50 rounded-lg bg-card gap-4">\n                        <div className="min-w-0">
                         <div>
-                          <h4 className="font-semibold text-sm">{backup.filename}</h4>
-                          <div className="text-xs text-muted-foreground mt-1 flex gap-4">
+                          <h4 className="font-semibold text-sm truncate" title={backup.filename}>{backup.filename}</h4>
+                          <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                             <span>الحجم: {(backup.size / 1024).toFixed(2)} KB</span>
                             <span>التاريخ: {new Date(backup.createdAt).toLocaleString("ar-EG")}</span>
                           </div>

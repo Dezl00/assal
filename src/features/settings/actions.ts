@@ -5,44 +5,35 @@ import { revalidatePath } from "next/cache"
 
 export async function updateThemeConfig(formData: FormData) {
   try {
-    const storeName = formData.get("storeName") as string
-    const storeDescription = formData.get("storeDescription") as string
-    const logoUrl = formData.get("logoUrl") as string
-    const faviconUrl = formData.get("faviconUrl") as string
-    const primaryColor = formData.get("primaryColor") as string
-    const secondaryColor = formData.get("secondaryColor") as string
-    const adminColor = formData.get("adminColor") as string
-    const whatsappNumber = formData.get("whatsappNumber") as string
-    const whatsappEnabled = formData.get("whatsappEnabled") === "true"
-    const facebookUrl = formData.get("facebookUrl") as string
-    const instagramUrl = formData.get("instagramUrl") as string
-    const twitterUrl = formData.get("twitterUrl") as string
-    const tiktokUrl = formData.get("tiktokUrl") as string
-    const snapchatUrl = formData.get("snapchatUrl") as string
-    const backupFrequency = formData.get("backupFrequency") as string
+    const existing = await db.themeConfig.findUnique({ where: { id: "default" } })
+    const data: any = {}
+    
+    const stringFields = [
+      "storeName", "storeDescription", "logoUrl", "faviconUrl",
+      "primaryColor", "secondaryColor", "adminColor", "whatsappNumber",
+      "facebookUrl", "instagramUrl", "twitterUrl", "tiktokUrl", "snapchatUrl", "backupFrequency"
+    ]
 
-    const data = {
-      storeName,
-      storeDescription,
-      logoUrl,
-      faviconUrl,
-      primaryColor,
-      secondaryColor,
-      adminColor,
-      whatsappNumber,
-      whatsappEnabled,
-      facebookUrl,
-      instagramUrl,
-      twitterUrl,
-      tiktokUrl,
-      snapchatUrl,
-      ...(backupFrequency ? { backupFrequency } : {})
+    stringFields.forEach(field => {
+      if (formData.has(field)) {
+        data[field] = formData.get(field) as string
+      }
+    })
+
+    // Special case for boolean checkbox which is omitted if unchecked
+    if (formData.has("whatsappNumber") || formData.has("whatsappEnabled")) {
+      data.whatsappEnabled = formData.get("whatsappEnabled") === "true"
+    }
+
+    if (!existing) {
+      // If creating for the first time, ensure required fields have fallback
+      data.storeName = data.storeName || "متجر عسل"
     }
 
     await db.themeConfig.upsert({
       where: { id: "default" },
       update: data,
-      create: { id: "default", ...data }
+      create: { id: "default", storeName: "متجر عسل", ...data }
     })
 
     revalidatePath("/admin/settings")

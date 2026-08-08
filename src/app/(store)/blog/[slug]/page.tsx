@@ -33,9 +33,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   const relatedArticles = allArticles?.filter((a: any) => a.id !== article.id).slice(0, 3) || []
 
   return (
-    <div className="bg-slate-50 min-h-screen pb-20">
+    <div className="bg-white min-h-screen pb-20">
       {/* Header / Cover */}
-      <div className="relative w-full h-[40vh] md:h-[60vh] bg-slate-900">
+      <div className="relative w-full h-[40vh] md:h-[50vh] bg-slate-900">
         {article.imageUrl && (
           <img 
             src={article.imageUrl} 
@@ -43,13 +43,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             className="w-full h-full object-cover opacity-60"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 to-transparent flex items-end">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex items-end">
           <div className="container mx-auto px-4 pb-12">
             <Link href="/blog" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm">
               <ArrowRight className="w-4 h-4 rtl-flip" />
               العودة للمدونة
             </Link>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white max-w-4xl leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white max-w-4xl leading-tight">
               {article.title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 mt-6 text-white/80 text-sm">
@@ -62,11 +62,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         </div>
       </div>
 
-      <div className="container mx-auto px-4 -mt-8 relative z-10">
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+      <div className="container mx-auto px-4 mt-8 lg:mt-12">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
           
-          {/* Main Content */}
-          <div className="flex-1 w-full max-w-4xl mx-auto bg-white rounded-3xl p-6 md:p-12 shadow-sm border border-border">
+          {/* Main Content (Right Side in RTL) */}
+          <div className="flex-1 w-full bg-white lg:w-2/3 md:p-6 lg:p-0">
             <div 
               className="prose prose-slate prose-lg md:prose-xl max-w-none text-right rtl"
               dangerouslySetInnerHTML={{ __html: article.content }}
@@ -77,7 +77,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               <div className="flex items-center gap-2">
                 <button 
                   className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-primary hover:text-white transition-colors"
-
                   title="مشاركة"
                 >
                   <Share2 className="w-4 h-4" />
@@ -85,48 +84,45 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               </div>
             </div>
           </div>
+
+          {/* Related Articles Sidebar (Left Side in RTL) */}
+          {relatedArticles.length > 0 && (
+            <div className="w-full lg:w-1/3 shrink-0">
+              <div className="sticky top-24">
+                <h2 className="text-2xl font-bold text-foreground mb-6 pb-2 border-b border-border/50">مقالات قد تعجبك</h2>
+                <div className="flex flex-col gap-6">
+                  {relatedArticles.map((rel: any) => (
+                    <Link href={`/blog/${rel.slug}`} key={rel.id} className="group flex gap-4 items-start">
+                      <div className="w-24 h-24 shrink-0 rounded-xl bg-slate-100 overflow-hidden relative">
+                        {rel.imageUrl ? (
+                          <img 
+                            src={rel.imageUrl} 
+                            alt={rel.title} 
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground/50 text-xs text-center">
+                            لا صورة
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col flex-1">
+                        <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                          {rel.title}
+                        </h3>
+                        <span className="text-xs text-muted-foreground mt-2">
+                          {new Date(rel.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
-
-      {/* Related Articles */}
-      {relatedArticles.length > 0 && (
-        <div className="container mx-auto px-4 mt-24">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-3xl font-bold text-foreground">مقالات قد تعجبك</h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedArticles.map((rel: any) => (
-              <Link href={`/blog/${rel.slug}`} key={rel.id} className="group block h-full">
-                <div className="bg-white rounded-2xl border border-border overflow-hidden transition-all hover:shadow-xl hover:border-primary/30 h-full flex flex-col">
-                  <div className="aspect-[16/10] bg-slate-100 relative overflow-hidden shrink-0">
-                    {rel.imageUrl ? (
-                      <img 
-                        src={rel.imageUrl} 
-                        alt={rel.title} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-slate-100">
-                        لا توجد صورة
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2">
-                      {rel.title}
-                    </h3>
-                    <div className="inline-flex items-center gap-2 text-primary font-medium mt-auto">
-                      قراءة المزيد
-                      <ArrowLeft className="w-4 h-4 rtl-flip transition-transform group-hover:-translate-x-1" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
