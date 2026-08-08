@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch"
 import { RichTextEditor } from "@/components/admin/rich-text-editor"
 import { ImageUploader } from "@/components/ui/image-uploader"
 import { toast } from "sonner"
-import { Save, ArrowRight, Loader2, Trash2 } from "lucide-react"
+import { Save, ArrowRight, Loader2, Trash2, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { createArticle, updateArticle, deleteArticle } from "@/features/articles/actions"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
@@ -98,6 +98,12 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
         <div className="flex items-center gap-3">
           {isEditing && (
             <>
+              <Link href={`/blog/${initialArticle?.slug}`} target="_blank">
+                <Button variant="outline" className="gap-2 text-primary hover:text-primary border-primary hover:bg-primary/5">
+                  <ExternalLink className="w-4 h-4" />
+                  معاينة
+                </Button>
+              </Link>
               <Button variant="destructive" className="gap-2" onClick={() => setIsConfirmOpen(true)} disabled={isDeleting}>
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 حذف

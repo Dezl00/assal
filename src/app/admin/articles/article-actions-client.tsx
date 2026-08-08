@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Trash2, Loader2, Edit } from "lucide-react"
+import { Trash2, Loader2, Edit, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { Switch } from "@/components/ui/switch"
@@ -62,6 +62,12 @@ export function ArticleActionsClient({ article }: { article: any }) {
             disabled={isToggling || isDeleting}
           />
         </div>
+
+        <Link href={`/blog/${article.slug}`} target="_blank">
+          <Button variant="ghost" size="icon" className="hover:text-primary" title="معاينة المقال">
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+        </Link>
 
         <Link href={`/admin/articles/${article.id}`}>
           <Button variant="ghost" size="icon" className="hover:text-primary">
