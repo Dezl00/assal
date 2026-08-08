@@ -154,7 +154,22 @@
     text-align: justify;
     text-justify: inter-word;
   }
-  
+
+  /* Arabic text: never break a word in the middle, only wrap at word boundaries */
+  .prose p,
+  .prose li,
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6,
+  .prose span,
+  .prose strong,
+  .prose em {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
 }
 
 @layer utilities {
