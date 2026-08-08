@@ -123,8 +123,7 @@
   }
 
   /* Firefox, IE and Edge */
-  html, body {
-      overflow-y: scroll;
+  html {
       scrollbar-width: none;
       -ms-overflow-style: none;
   }
@@ -154,24 +153,14 @@
     text-align: justify;
     text-justify: inter-word;
   }
+}
 
-  /* Arabic text: never break a word in the middle */
-  .prose p,
-  .prose li,
-  .prose h1,
-  .prose h2,
-  .prose h3,
-  .prose h4,
-  .prose h5,
-  .prose h6,
-  .prose span,
-  .prose strong,
-  .prose em {
-    word-break: normal;
-    overflow-wrap: break-word;
-    -webkit-hyphens: none;
-    hyphens: none;
-  }
+/* Arabic text: NEVER break a word in the middle - placed outside @layer to override @tailwindcss/typography */
+.prose * {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  -webkit-hyphens: none !important;
+  hyphens: none !important;
 }
 
 @layer utilities {
