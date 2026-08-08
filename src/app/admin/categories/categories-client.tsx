@@ -556,7 +556,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                       </div>
                     )}
                   </div>
-                ))
+                )})
               )}
             </div>
           </div>
