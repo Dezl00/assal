@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Search, Edit, Trash2, Folder, PlusCircle, X, Loader2 } from "lucide-react"
+import { Search, Edit, Trash2, Folder, PlusCircle, X, Loader2, ChevronDown, ChevronLeft } from "lucide-react"
 import { createCategory, deleteCategory, updateCategory, bulkUpdateCategories } from "@/features/categories/actions"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
@@ -31,6 +31,17 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   
   // Local state for optimistic updates
   const [localCategories, setLocalCategories] = useState(categories)
+
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
+  const toggleExpand = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setExpandedCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   useEffect(() => {
     if (editingCategory) {
@@ -376,6 +387,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   ) : (
                     filteredCategories.map((category) => {
                       const isParent = !category.parentId;
+                      if (category.parentId && !expandedCategories.has(category.parentId) && !searchQuery) {
+                        return null;
+                      }
                       const disabledCheck = selectedIds.length > 0 && isParent !== (!localCategories.find(c => c.id === selectedIds[0])?.parentId)
 
                       return (
@@ -400,6 +414,15 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                               <Folder className={`h-5 w-5 ${category.parentId ? 'text-muted-foreground/60' : 'text-primary/60'}`} />
                             )}
                             <span className={`font-medium ${category.parentId ? 'text-muted-foreground' : 'text-foreground'}`}>{category.name}</span>
+                            {!category.parentId && localCategories.some(c => c.parentId === category.id) && (
+                              <button onClick={(e) => toggleExpand(category.id, e)} className="p-1 hover:bg-muted rounded-full transition-colors mr-1">
+                                {expandedCategories.has(category.id) ? (
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </button>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -470,6 +493,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
               ) : (
                 filteredCategories.map((category) => {
                   const isParent = !category.parentId;
+                  if (category.parentId && !expandedCategories.has(category.parentId) && !searchQuery) {
+                    return null;
+                  }
                   const disabledCheck = selectedIds.length > 0 && isParent !== (!localCategories.find(c => c.id === selectedIds[0])?.parentId)
 
                   return (
@@ -495,6 +521,21 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                         )}
                         <div>
                           <h3 className={`font-semibold text-base ${category.parentId ? 'text-muted-foreground' : 'text-foreground'}`}>{category.name}</h3>
+                          {!category.parentId && localCategories.some(c => c.parentId === category.id) && (
+                            <button onClick={(e) => toggleExpand(category.id, e)} className="flex items-center gap-1 mt-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+                              {expandedCategories.has(category.id) ? (
+                                <>
+                                  <span>إخفاء الأقسام الفرعية</span>
+                                  <ChevronDown className="h-3 w-3" />
+                                </>
+                              ) : (
+                                <>
+                                  <span>عرض الأقسام الفرعية</span>
+                                  <ChevronLeft className="h-3 w-3" />
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
                       </div>
                       <div>
