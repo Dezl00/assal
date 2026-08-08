@@ -63,7 +63,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           <div className="flex-1 w-full bg-white md:w-2/3 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10">
             <div 
               className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal break-words prose-img:rounded-xl prose-img:max-w-full"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ 
+                __html: article.content.replace(
+                  /<a[^>]*href="(https?:\/\/(?:www\.)?youtube\.com\/embed\/[^"]+)"[^>]*>.*?<\/a>/gi,
+                  '<iframe class="ql-video" frameborder="0" allowfullscreen="true" src="$1"></iframe>'
+                ) 
+              }}
             />
             
             <div className="mt-12 pt-8 border-t border-border flex justify-between items-center">
