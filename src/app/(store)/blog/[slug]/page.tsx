@@ -57,12 +57,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </div>
 
       <div className="max-w-7xl mx-auto px-6 sm:px-8 md:px-12 mt-8 lg:mt-12">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-16 items-start">
           
           {/* Main Content (Right Side in RTL) */}
-          <div className="flex-1 w-full bg-white lg:w-2/3 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10">
+          <div className="flex-1 w-full bg-white md:w-2/3 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10">
             <div 
-              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal break-normal prose-img:rounded-xl prose-img:max-w-full"
+              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal break-words prose-img:rounded-xl prose-img:max-w-full"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             
@@ -76,7 +76,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
           {/* Related Articles Sidebar (Left Side in RTL) */}
           {relatedArticles.length > 0 && (
-            <div className="w-full lg:w-1/3 shrink-0">
+            <div className="w-full md:w-1/3 shrink-0">
               <div className="sticky top-24">
                 <h2 className="text-2xl font-bold text-foreground mb-6 pb-2 border-b border-border/50">مقالات قد تعجبك</h2>
                 <div className="flex flex-col gap-6">

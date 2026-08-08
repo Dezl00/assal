@@ -139,6 +139,11 @@
     display: block;
     background-color: #000;
   }
+
+  /* Override Quill's text-justify which breaks Arabic words */
+  .prose .ql-align-justify {
+    text-align: right !important;
+  }
 }
 
 @layer utilities {
