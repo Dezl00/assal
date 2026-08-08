@@ -448,15 +448,15 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
                     <div className="text-center py-8 text-muted-foreground border border-dashed border-border/50 rounded-lg">لا توجد نسخ احتياطية محفوظة.</div>
                   ) : (
                     backups.map(backup => (
-                      <div key={backup.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border/50 rounded-lg bg-card gap-4">\n                        <div className="min-w-0">
-                        <div>
+                      <div key={backup.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border/50 rounded-lg bg-card gap-4">
+                        <div className="min-w-0">
                           <h4 className="font-semibold text-sm truncate" title={backup.filename}>{backup.filename}</h4>
                           <div className="text-xs text-muted-foreground mt-1 flex flex-wrap gap-x-4 gap-y-1">
                             <span>الحجم: {(backup.size / 1024).toFixed(2)} KB</span>
                             <span>التاريخ: {new Date(backup.createdAt).toLocaleString("ar-EG")}</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 shrink-0">
                           <span className={`px-2 py-1 rounded text-[10px] font-medium ${backup.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                             {backup.status}
                           </span>
