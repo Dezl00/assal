@@ -1,7 +1,7 @@
 import React from "react"
 import { db } from "@/lib/db"
 import { SettingsClient } from "./settings-client"
-import { auth } from "@/auth"
+import { auth } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
