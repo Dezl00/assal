@@ -62,7 +62,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           {/* Main Content (Right Side in RTL) */}
           <div className="flex-1 w-full bg-white lg:w-2/3 px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10 overflow-hidden">
             <div 
-              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal break-words overflow-hidden prose-img:rounded-xl prose-img:max-w-full"
+              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal break-normal overflow-hidden prose-img:rounded-xl prose-img:max-w-full"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
             
