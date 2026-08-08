@@ -35,6 +35,11 @@ export function ProductsClient({ products, categories, brands = [], departments 
   const [brandSearch, setBrandSearch] = useState("")
   const [isBrandDropdownOpen, setIsBrandDropdownOpen] = useState(false)
   
+  // Category selection
+  const [selectedCategoryId, setSelectedCategoryId] = useState("")
+  const [categorySearch, setCategorySearch] = useState("")
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
+  
   // Single Action States
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
@@ -59,6 +64,11 @@ export function ProductsClient({ products, categories, brands = [], departments 
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const filteredBrands = brands.filter((b: any) => b.name.toLowerCase().includes(brandSearch.toLowerCase()))
+
+  const filteredCategoriesForDropdown = useMemo(() => {
+    if (!categorySearch) return categories;
+    return categories.filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()));
+  }, [categories, categorySearch])
 
   // Memoized Filtered Products
   const filteredProducts = useMemo(() => {
@@ -91,18 +101,23 @@ export function ProductsClient({ products, categories, brands = [], departments 
         }
       }, 50)
       
+      setSelectedCategoryId(editingProduct.categoryId || "")
+      setCategorySearch(categories.find((c: any) => c.id === editingProduct.categoryId)?.name || "")
+      
       setSelectedBrandId(editingProduct.brandId || "")
       setBrandSearch(brands.find((b: any) => b.id === editingProduct.brandId)?.name || "")
       setImageUrls(editingProduct.images?.length > 0 ? editingProduct.images.map((img: any) => img.url) : [])
       setIsFormVisible(true)
     }
-  }, [editingProduct, brands])
+  }, [editingProduct, brands, categories])
 
   function resetForm() {
     setEditingProduct(null)
     setImageUrls([])
     setSelectedBrandId("")
     setBrandSearch("")
+    setSelectedCategoryId("")
+    setCategorySearch("")
     const form: any = document.getElementById("add-product-form")
     if (form) form.reset()
   }
@@ -113,6 +128,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
     setIsSubmitting(true)
     const formData = new FormData(e.currentTarget)
     formData.set("brandId", selectedBrandId)
+    formData.set("categoryId", selectedCategoryId)
     
     let res;
     if (editingProduct) {
@@ -657,21 +673,68 @@ export function ProductsClient({ products, categories, brands = [], departments 
                     <label className="text-xs font-medium">اسم المنتج <span className="text-red-500">*</span></label>
                     <input name="name" type="text" required className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring" />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 relative">
                     <label className="text-xs font-medium">القسم <span className="text-red-500">*</span></label>
-                    <select name="categoryId" required className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none">
-                      <option value="">اختيار القسم...</option>
-                      {categories.filter(c => !c.parentId).map(mainCat => (
-                        <optgroup key={mainCat.id} label={mainCat.name}>
-                          {categories.filter(c => c.parentId === mainCat.id).map(subCat => (
-                            <option key={subCat.id} value={subCat.id}>{subCat.name}</option>
-                          ))}
-                        </optgroup>
-                      ))}
-                      {categories.filter(c => !c.parentId).map(c => (
-                         <option key={c.id + "_alone"} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={categorySearch}
+                        onChange={(e) => {
+                          setCategorySearch(e.target.value)
+                          setIsCategoryDropdownOpen(true)
+                          if (e.target.value === "") setSelectedCategoryId("")
+                        }}
+                        onFocus={() => setIsCategoryDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setIsCategoryDropdownOpen(false), 200)}
+                        placeholder="ابحث أو اختر القسم..."
+                        required={!selectedCategoryId}
+                        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                      />
+                      {isCategoryDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50 py-1">
+                          {categories.filter(c => !c.parentId).map(mainCat => {
+                            const subCats = categories.filter(c => c.parentId === mainCat.id)
+                            const matchesMain = mainCat.name.toLowerCase().includes(categorySearch.toLowerCase())
+                            const matchingSubs = subCats.filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()))
+                            
+                            if (!categorySearch) {
+                              return (
+                                <div key={mainCat.id}>
+                                  <div className="px-3 py-1.5 text-sm font-semibold bg-muted/10 cursor-pointer hover:bg-muted/50" onClick={() => { setSelectedCategoryId(mainCat.id); setCategorySearch(mainCat.name); setIsCategoryDropdownOpen(false); }}>
+                                    {mainCat.name}
+                                  </div>
+                                  {subCats.map(subCat => (
+                                    <div key={subCat.id} className="px-5 py-1.5 text-sm cursor-pointer hover:bg-muted/50 text-muted-foreground flex items-center gap-2" onClick={() => { setSelectedCategoryId(subCat.id); setCategorySearch(`${mainCat.name} > ${subCat.name}`); setIsCategoryDropdownOpen(false); }}>
+                                      <span className="w-1 h-1 rounded-full bg-muted-foreground/40"></span>
+                                      {subCat.name}
+                                    </div>
+                                  ))}
+                                </div>
+                              )
+                            }
+                            
+                            if (!matchesMain && matchingSubs.length === 0) return null;
+
+                            return (
+                              <div key={mainCat.id}>
+                                {matchesMain && (
+                                  <div className="px-3 py-1.5 text-sm font-semibold bg-muted/10 cursor-pointer hover:bg-muted/50" onClick={() => { setSelectedCategoryId(mainCat.id); setCategorySearch(mainCat.name); setIsCategoryDropdownOpen(false); }}>
+                                    {mainCat.name}
+                                  </div>
+                                )}
+                                {matchingSubs.map(subCat => (
+                                  <div key={subCat.id} className="px-5 py-1.5 text-sm cursor-pointer hover:bg-muted/50 text-muted-foreground flex items-center gap-2" onClick={() => { setSelectedCategoryId(subCat.id); setCategorySearch(`${mainCat.name} > ${subCat.name}`); setIsCategoryDropdownOpen(false); }}>
+                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/40"></span>
+                                    {subCat.name}
+                                  </div>
+                                ))}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    <input type="hidden" name="categoryId" value={selectedCategoryId} />
                   </div>
 
                   <div className="space-y-1.5">
