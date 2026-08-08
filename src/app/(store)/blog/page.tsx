@@ -11,7 +11,7 @@ export default async function BlogPage() {
   const { articles } = await getActiveArticles()
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-20 min-h-screen max-w-7xl">
+    <div className="container mx-auto px-4 pt-4 pb-12 md:pt-8 md:pb-20 min-h-screen max-w-7xl">
       {/* Page Header */}
       <div className="mb-12 relative overflow-hidden rounded-3xl bg-primary p-10 sm:p-16 text-center shadow-lg shadow-primary/20">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -59,7 +59,7 @@ export default async function BlogPage() {
                     {article.title}
                   </h2>
                   <div 
-                    className="text-muted-foreground text-sm line-clamp-3 mb-6 flex-1"
+                    className="prose prose-slate prose-sm text-muted-foreground line-clamp-3 mb-6 flex-1 break-words overflow-hidden"
                     dangerouslySetInnerHTML={{ __html: article.content.replace(/<[^>]*>?/gm, '') }} 
                   />
                   <div className="inline-flex items-center gap-2 text-primary font-medium mt-auto">
