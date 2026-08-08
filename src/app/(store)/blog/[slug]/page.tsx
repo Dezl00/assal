@@ -81,7 +81,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
           {/* Related Articles Sidebar (Left Side in RTL) */}
           {relatedArticles.length > 0 && (
-            <div className="sticky top-24 self-start">
+            <div>
+              <div className="sticky top-24">
               <h2 className="text-2xl font-bold text-foreground mb-6 pb-2 border-b border-border/50">مقالات قد تعجبك</h2>
               <div className="flex flex-col gap-6">
                 {relatedArticles.map((rel: any) => (
@@ -109,6 +110,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                       </div>
                     </Link>
                   ))}
+              </div>
               </div>
             </div>
           )}

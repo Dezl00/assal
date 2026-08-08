@@ -155,7 +155,7 @@
     text-justify: inter-word;
   }
 
-  /* Arabic text: never break a word in the middle, only wrap at word boundaries */
+  /* Arabic text: never break a word in the middle */
   .prose p,
   .prose li,
   .prose h1,
@@ -167,8 +167,10 @@
   .prose span,
   .prose strong,
   .prose em {
-    word-break: keep-all;
-    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow-wrap: break-word;
+    -webkit-hyphens: none;
+    hyphens: none;
   }
 }
 
