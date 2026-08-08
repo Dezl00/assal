@@ -8,14 +8,14 @@ export default async function ArticlesAdminPage() {
   const { articles } = await getArticles()
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">المقالات</h1>
           <p className="text-muted-foreground mt-1">إدارة مقالات المدونة</p>
         </div>
-        <Link href="/admin/articles/new">
-          <Button className="gap-2">
+        <Link href="/admin/articles/new" className="w-full sm:w-auto">
+          <Button className="gap-2 w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             مقال جديد
           </Button>
@@ -23,6 +23,7 @@ export default async function ArticlesAdminPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-border overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm text-right">
           <thead className="bg-slate-50 text-slate-600 font-medium border-b border-border">
             <tr>
@@ -69,6 +70,7 @@ export default async function ArticlesAdminPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

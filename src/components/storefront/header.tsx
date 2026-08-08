@@ -169,73 +169,13 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             {/* Desktop Actions */}
             <div className="flex items-center gap-4">
               
-              {/* Search Bar */}
-              <div className="relative hidden lg:block w-72">
-                <form onSubmit={handleDesktopSearch}>
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input 
-                    type="text" 
-                    placeholder="ابحث هنا..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setIsSearchOpen(true)}
-                    className="w-full h-11 bg-background border border-border hover:border-primary/50 focus:border-primary focus:bg-background rounded-full pr-10 pl-4 text-sm outline-none transition-all shadow-sm"
-                  />
-                  {isSearching && (
-                    <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
-                  )}
-                </form>
-
-                {/* Desktop Search Dropdown */}
-                {searchQuery.trim().length > 0 && isSearchOpen && (
-                  <div className="absolute top-full mt-2 right-0 w-[350px] bg-card rounded-2xl shadow-xl border border-border overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
-                    <div className="max-h-[60vh] overflow-y-auto">
-                      {searchResults.length > 0 ? (
-                        <div className="p-2 flex flex-col gap-1">
-                          {searchResults.map(product => (
-                            <Link 
-                              key={product.id}
-                              href={`/product/${product.slug}`}
-                              onClick={() => setIsSearchOpen(false)}
-                              className="flex items-center gap-3 p-2 hover:bg-secondary rounded-xl transition-colors"
-                            >
-                              <div className="w-12 h-12 rounded-lg bg-background border border-border overflow-hidden shrink-0 flex items-center justify-center">
-                                {product.imageUrl ? (
-                                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <ShoppingBag className="w-5 h-5 text-muted-foreground/30" />
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="text-sm font-bold line-clamp-1">{product.name}</h4>
-                                <p className="text-xs text-muted-foreground">{product.categoryName}</p>
-                              </div>
-                              <div className="font-bold text-sm text-primary whitespace-nowrap">
-                                {product.discountPrice ? product.discountPrice.toFixed(2) : product.price?.toFixed(2) || "0"} ج.م
-                              </div>
-                            </Link>
-                          ))}
-                          <div className="p-2 border-t border-border mt-1">
-                            <Link 
-                              href={`/search?q=${encodeURIComponent(searchQuery)}`}
-                              onClick={() => setIsSearchOpen(false)}
-                              className="w-full py-2.5 bg-primary/10 text-primary text-sm font-bold rounded-lg hover:bg-primary/20 flex items-center justify-center transition-colors"
-                            >
-                              عرض كل النتائج
-                            </Link>
-                          </div>
-                        </div>
-                      ) : (
-                        !isSearching && (
-                          <div className="p-6 text-center text-sm text-muted-foreground">
-                            لا توجد نتائج مطابقة لـ "{searchQuery}"
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Search Button */}
+              <button 
+                className="flex items-center justify-center border border-border bg-background rounded-full w-11 h-11 shadow-sm hover:bg-accent transition-colors"
+                onClick={() => setIsSearchOpen(true)}
+              >
+                <Search className="w-5 h-5 text-muted-foreground" />
+              </button>
 
               <div className="h-8 w-px bg-border mx-1"></div>
               

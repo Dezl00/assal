@@ -144,7 +144,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
           {/* Config Forms */}
           {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
-              <div className="p-6 flex-1 space-y-8">
+              <div className="p-4 sm:p-6 flex-1 space-y-8">
                 
                 <div className={activeTab === "general" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">الإعدادات العامة</h2>
@@ -274,7 +274,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
 
           {activeTab === "profile" && (
             <div className="flex flex-col h-full">
-              <div className="p-6 flex-1 space-y-8">
+              <div className="p-4 sm:p-6 flex-1 space-y-8">
                 <div className="block space-y-6 animate-in fade-in">
                   <h2 className="text-lg font-semibold border-b border-border/50 pb-2">تعديل بيانات الحساب</h2>
                   <div className="space-y-4 max-w-xl">
@@ -300,7 +300,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
 
           {/* Branches Section */}
           {activeTab === "branches" && (
-            <div className="p-6 h-full flex flex-col animate-in fade-in">
+            <div className="p-4 sm:p-6 h-full flex flex-col animate-in fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/50 pb-4 mb-4 gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">الفروع والمواقع</h2>
@@ -372,7 +372,7 @@ export function SettingsClient({ config, branches = [], backups = [] }: { config
           )}
 
           {activeTab === "backups" && (
-            <div className="space-y-8 p-6 animate-in fade-in">
+            <div className="space-y-8 p-4 sm:p-6 animate-in fade-in">
               
               {/* Export & Auto Backup */}
               <div>
