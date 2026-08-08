@@ -145,10 +145,40 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     }
   }
 
-  const filteredCategories = localCategories.filter(c => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    c.slug.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const [filterType, setFilterType] = useState<"all" | "main" | "sub">("all")
+  const [filterParent, setFilterParent] = useState<string>("all")
+
+  // First apply filters
+  let filteredCategories = localCategories.filter(c => {
+    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.slug.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!matchesSearch) return false
+
+    if (filterType === "main" && c.parentId) return false
+    if (filterType === "sub" && !c.parentId) return false
+    if (filterParent !== "all" && c.parentId !== filterParent && c.id !== filterParent) return false
+
+    return true
+  })
+
+  // Hierarchical sorting: Group main categories and their subs
+  if (filterType === "all" && filterParent === "all" && !searchQuery) {
+    const mainCategories = filteredCategories.filter(c => !c.parentId)
+    const sorted: any[] = []
+    
+    mainCategories.forEach(main => {
+      sorted.push(main)
+      const subs = filteredCategories.filter(c => c.parentId === main.id)
+      sorted.push(...subs)
+    })
+    
+    // Add any orphans just in case
+    const handledIds = new Set(sorted.map(c => c.id))
+    filteredCategories.forEach(c => {
+      if (!handledIds.has(c.id)) sorted.push(c)
+    })
+    
+    filteredCategories = sorted
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
@@ -174,8 +204,8 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
         {/* Main Table Column (Left in RTL) */}
         <div className="flex-1 w-full">
           <div className="rounded-xl border border-border/50 bg-background shadow-sm">
-            <div className="flex items-center border-b border-border/50 p-4">
-              <div className="relative flex-1 max-w-sm">
+            <div className="flex flex-col sm:flex-row items-center gap-4 border-b border-border/50 p-4">
+              <div className="relative flex-1 w-full sm:max-w-xs">
                 <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
@@ -184,6 +214,27 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="h-10 w-full rounded-md border border-input bg-transparent pr-10 pl-3 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
+              </div>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <select 
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value as any)}
+                  className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto"
+                >
+                  <option value="all">كل الأقسام</option>
+                  <option value="main">رئيسية فقط</option>
+                  <option value="sub">فرعية فقط</option>
+                </select>
+                <select 
+                  value={filterParent}
+                  onChange={(e) => setFilterParent(e.target.value)}
+                  className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto max-w-[200px]"
+                >
+                  <option value="all">كل المجالات</option>
+                  {localCategories.filter(c => !c.parentId).map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="hidden md:block overflow-x-auto">
@@ -209,13 +260,16 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                     filteredCategories.map((category) => (
                       <tr key={category.id} className="transition-colors hover:bg-muted/10">
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
+                          <div className={`flex items-center gap-3 ${category.parentId ? 'mr-6' : ''}`}>
+                            {category.parentId && (
+                              <div className="w-4 h-4 border-b-2 border-r-2 border-muted-foreground/30 rounded-br-sm -mt-4 ml-1"></div>
+                            )}
                             {category.imageUrl ? (
                               <img src={category.imageUrl} alt={category.name} className="h-8 w-8 rounded object-cover border border-border" />
                             ) : (
-                              <Folder className="h-5 w-5 text-primary/60" />
+                              <Folder className={`h-5 w-5 ${category.parentId ? 'text-muted-foreground/60' : 'text-primary/60'}`} />
                             )}
-                            <span className="font-medium text-foreground">{category.name}</span>
+                            <span className={`font-medium ${category.parentId ? 'text-muted-foreground' : 'text-foreground'}`}>{category.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-muted-foreground">{category.slug}</td>
@@ -285,18 +339,21 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 </div>
               ) : (
                 filteredCategories.map((category) => (
-                  <div key={category.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">
+                  <div key={category.id} className={`bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4 ${category.parentId ? 'mr-4 relative' : ''}`}>
+                    {category.parentId && (
+                      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-full border-r-2 border-muted-foreground/20 rounded-r-lg"></div>
+                    )}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         {category.imageUrl ? (
                           <img src={category.imageUrl} alt={category.name} className="h-12 w-12 rounded-lg object-cover border border-border" />
                         ) : (
-                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
-                            <Folder className="h-6 w-6 text-primary/60" />
+                          <div className={`h-12 w-12 rounded-lg bg-muted flex items-center justify-center ${category.parentId ? 'opacity-70' : ''}`}>
+                            <Folder className={`h-6 w-6 ${category.parentId ? 'text-muted-foreground/60' : 'text-primary/60'}`} />
                           </div>
                         )}
                         <div>
-                          <h3 className="font-semibold text-foreground text-base">{category.name}</h3>
+                          <h3 className={`font-semibold text-base ${category.parentId ? 'text-muted-foreground' : 'text-foreground'}`}>{category.name}</h3>
                           <p className="text-xs text-muted-foreground mt-1" dir="ltr">{category.slug}</p>
                         </div>
                       </div>
@@ -368,7 +425,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
 
         {/* Sticky Form Column (Right in RTL) */}
         {(canAdd || editingCategory) && (
-          <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
+          <div className={`w-full lg:w-[400px] shrink-0 lg:sticky lg:top-24 order-first transition-all duration-300 ${!isFormVisible ? 'hidden lg:block' : 'block'}`}>
             <div className="rounded-xl border border-border/50 bg-background shadow-sm overflow-hidden">
             <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
               <div>

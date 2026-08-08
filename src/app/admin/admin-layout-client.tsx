@@ -215,7 +215,7 @@ function AdminLayoutInner({
         </header>
         {/* Spacer for fixed header */}
         <div className="h-14 md:h-16 w-full shrink-0"></div>
-        <div className="flex-1 overflow-x-hidden p-4 md:p-8 pb-20 md:pb-8">
+        <div className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
           {children}
         </div>
       </main>
