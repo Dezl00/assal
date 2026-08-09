@@ -1,5 +1,6 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { sendNotification } from "@/lib/send-notification"
@@ -7,6 +8,11 @@ import { auth } from "@/lib/auth"
 
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const order = await db.order.findUnique({ where: { id: orderId }, include: { user: true } })
     if (!order) return { success: false, error: "Order not found" }
 
@@ -77,11 +83,14 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
 export async function deleteOrder(orderId: string) {
   try {
+    const session = await auth()
+    const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "MANAGER"
+    if (!isAdmin && !session?.user?.permissions?.includes('orders.delete')) return { success: false, error: 'Unauthorized' }
+    
     await db.order.delete({
       where: { id: orderId }
     })
 
-    const session = await auth()
     if (session?.user?.id) {
       await db.activityLog.create({
         data: {

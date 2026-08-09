@@ -8,9 +8,21 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { updateOrderStatus, deleteOrder } from "@/features/orders/actions"
 import { usePermissions } from "@/hooks/use-permissions"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
-export function OrdersClient({ orders }: { orders: any[] }) {
+export function OrdersClient({ 
+  orders, 
+  currentPage = 1, 
+  totalPages = 1, 
+  initialSearch = "", 
+  initialStatus = "all" 
+}: { 
+  orders: any[],
+  currentPage?: number,
+  totalPages?: number,
+  initialSearch?: string,
+  initialStatus?: string
+}) {
   const router = useRouter()
   const { hasPermission } = usePermissions()
   const canEdit = hasPermission("orders.edit")
@@ -24,11 +36,37 @@ export function OrdersClient({ orders }: { orders: any[] }) {
     return () => clearInterval(interval)
   }, [router])
 
+  const pathname = usePathname()
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState("ALL")
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [statusFilter, setStatusFilter] = useState(initialStatus)
+
+  const applyFilters = () => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("search", searchQuery)
+    if (statusFilter && statusFilter !== "ALL" && statusFilter !== "all") params.set("status", statusFilter)
+    params.set("page", "1")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  // Debounced search
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      applyFilters()
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery, statusFilter])
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("search", searchQuery)
+    if (statusFilter && statusFilter !== "ALL" && statusFilter !== "all") params.set("status", statusFilter)
+    params.set("page", newPage.toString())
+    router.push(`${pathname}?${params.toString()}`)
+  }
   
   const statusLabels: Record<string, string> = {
     "PENDING": "قيد التنفيذ",
@@ -48,18 +86,8 @@ export function OrdersClient({ orders }: { orders: any[] }) {
     "CANCELLED": "bg-red-100 text-red-800"
   }
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (order.user?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.user?.phone || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.phone || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.customerName || "").toLowerCase().includes(searchQuery.toLowerCase())
-
-    const matchesStatus = statusFilter === "ALL" || order.status === statusFilter
-
-    return matchesSearch && matchesStatus
-  })
+  // Server already filters orders
+  const filteredOrders = orders
 
   async function handleStatusChange(orderId: string, newStatus: string) {
     const res = await updateOrderStatus(orderId, newStatus)
@@ -116,24 +144,38 @@ export function OrdersClient({ orders }: { orders: any[] }) {
         </div>
         
         {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 px-4 py-3 border-b border-border/50">
-          <Button 
-            variant={statusFilter === "ALL" ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setStatusFilter("ALL")}
-          >
-            الكل
-          </Button>
-          {Object.entries(statusLabels).map(([val, label]) => (
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-border/50">
+          <div className="flex flex-wrap gap-2">
             <Button 
-              key={val} 
-              variant={statusFilter === val ? "default" : "outline"} 
+              variant={statusFilter === "ALL" ? "default" : "outline"} 
               size="sm" 
-              onClick={() => setStatusFilter(val)}
+              onClick={() => setStatusFilter("ALL")}
             >
-              {label}
+              الكل
             </Button>
-          ))}
+            {Object.entries(statusLabels).map(([val, label]) => (
+              <Button 
+                key={val} 
+                variant={statusFilter === val ? "default" : "outline"} 
+                size="sm" 
+                onClick={() => setStatusFilter(val)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              const params = new URLSearchParams()
+              if (searchQuery) params.set("search", searchQuery)
+              if (statusFilter && statusFilter !== "ALL" && statusFilter !== "all") params.set("status", statusFilter)
+              window.location.href = `/api/admin/export/orders?${params.toString()}`
+            }}
+          >
+            تصدير للإكسل
+          </Button>
         </div>
 
         {/* Mobile View */}
@@ -291,6 +333,30 @@ export function OrdersClient({ orders }: { orders: any[] }) {
             </tbody>
           </table>
         </div>
+        
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between p-4 border-t border-border/50 bg-card rounded-b-xl">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              السابق
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              صفحة {currentPage} من {totalPages}
+            </span>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              التالي
+            </Button>
+          </div>
+        )}
       </div>
 
       <ConfirmModal 

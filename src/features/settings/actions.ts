@@ -1,11 +1,17 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 
 export async function updateThemeConfig(formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const existing = await db.themeConfig.findUnique({ where: { id: "default" } })
     const data: any = {}
     
@@ -59,6 +65,11 @@ export async function updateThemeConfig(formData: FormData) {
 
 export async function createBranch(formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const branch = await db.branch.create({
       data: {
         name: formData.get("name") as string,
@@ -89,6 +100,11 @@ export async function createBranch(formData: FormData) {
 
 export async function updateBranch(id: string, formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const branch = await db.branch.update({
       where: { id },
       data: {
@@ -121,6 +137,11 @@ export async function updateBranch(id: string, formData: FormData) {
 
 export async function deleteBranch(id: string) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const branch = await db.branch.delete({ where: { id } })
     const session = await auth()
     if (session?.user?.id) {
@@ -143,6 +164,11 @@ export async function deleteBranch(id: string) {
 
 export async function resetStoreStats() {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     // Delete order items first to satisfy foreign keys
     await db.orderItem.deleteMany({})
     // Delete orders

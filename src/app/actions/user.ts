@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
+import bcrypt from "bcryptjs"
 
 export async function updateUserAccount(formData: FormData) {
   const session = await auth()
@@ -35,10 +36,17 @@ export async function updateUserAccount(formData: FormData) {
 
     // Password update logic
     if (password && newPassword) {
-      if (user.passwordHash !== password) {
+      // Support both bcrypt and legacy plaintext
+      let currentPasswordValid = false
+      if (user.passwordHash?.startsWith("$2")) {
+        currentPasswordValid = await bcrypt.compare(password, user.passwordHash)
+      } else {
+        currentPasswordValid = password === user.passwordHash
+      }
+      if (!currentPasswordValid) {
         return { error: "كلمة المرور الحالية غير صحيحة" }
       }
-      updatedData.passwordHash = newPassword
+      updatedData.passwordHash = await bcrypt.hash(newPassword, 10)
     }
 
     await db.user.update({

@@ -31,6 +31,11 @@ export default function LoginPage() {
       } else {
         router.push("/admin")
         router.refresh()
+        
+        // Fallback to reset loading if navigation is intercepted
+        setTimeout(() => {
+          setLoading(false)
+        }, 3000)
       }
     } catch (err) {
       console.error(err)
@@ -55,15 +60,15 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">رقم الهاتف</label>
+            <label className="text-sm font-medium">رقم الهاتف / البريد الإلكتروني</label>
             <Input
-              type="tel"
+              type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
               className="text-left"
               dir="ltr"
-              placeholder="010..."
+              placeholder="010... / admin@assal.com"
             />
           </div>
 

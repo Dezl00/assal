@@ -1,6 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
+import bcrypt from "bcryptjs"
 
 export async function registerUser(formData: FormData) {
   const name = formData.get("name") as string
@@ -20,9 +21,7 @@ export async function registerUser(formData: FormData) {
       return { error: "رقم الهاتف مسجل مسبقاً" }
     }
 
-    // In a real app, hash the password
-    // const passwordHash = await bcrypt.hash(password, 10)
-    const passwordHash = password // Mocked for this build context
+    const passwordHash = await bcrypt.hash(password, 10)
 
     const user = await db.user.create({
       data: {
@@ -53,7 +52,27 @@ export async function loginUser(formData: FormData) {
       where: { phone }
     })
 
-    if (!user || !user.passwordHash || user.passwordHash !== password) {
+    if (!user || !user.passwordHash) {
+      return { error: "رقم الهاتف أو كلمة المرور غير صحيحة" }
+    }
+
+    // Check password with bcrypt, with legacy plaintext migration
+    let isValid = false
+    if (user.passwordHash.startsWith("$2")) {
+      isValid = await bcrypt.compare(password, user.passwordHash)
+    } else {
+      isValid = password === user.passwordHash
+      if (isValid) {
+        // Auto-migrate plaintext to bcrypt hash
+        const hashedPassword = await bcrypt.hash(password, 10)
+        await db.user.update({
+          where: { id: user.id },
+          data: { passwordHash: hashedPassword }
+        })
+      }
+    }
+
+    if (!isValid) {
       return { error: "رقم الهاتف أو كلمة المرور غير صحيحة" }
     }
 

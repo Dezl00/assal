@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Search, Eye, Trash2, User, Phone, MapPin, Mail, Calendar, ChevronLeft, Package, Clock, CheckCircle2, XCircle } from "lucide-react"
 import { toast } from "sonner"
@@ -8,14 +8,39 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { deleteCustomer } from "@/features/customers/actions"
 import { usePermissions } from "@/hooks/use-permissions"
 
-export function CustomersClient({ customers }: { customers: any[] }) {
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
+
+export function CustomersClient({ customers, currentPage = 1, totalPages = 1, initialSearch = "" }: { customers: any[], currentPage?: number, totalPages?: number, initialSearch?: string }) {
   const { hasPermission } = usePermissions()
   const canDelete = hasPermission("customers.delete")
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null)
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery !== initialSearch) {
+        const params = new URLSearchParams()
+        if (searchQuery) params.set("search", searchQuery)
+        params.set("page", "1")
+        router.push(`${pathname}?${params.toString()}`)
+      }
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery, initialSearch, pathname, router])
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("search", searchQuery)
+    params.set("page", newPage.toString())
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   async function confirmDelete() {
     if (!customerToDelete) return
@@ -30,11 +55,7 @@ export function CustomersClient({ customers }: { customers: any[] }) {
     setCustomerToDelete(null)
   }
 
-  const filteredCustomers = customers.filter(c => 
-    (c.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
-    (c.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (c.phone || "").includes(searchQuery)
-  )
+  const filteredCustomers = customers; // Already filtered and paginated from server
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -110,6 +131,29 @@ export function CustomersClient({ customers }: { customers: any[] }) {
               </div>
             )}
           </div>
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-border bg-card shrink-0 flex items-center justify-between gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
+              >
+                السابق
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                صفحة {currentPage} من {totalPages}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+              >
+                التالي
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Left pane: Customer Details */}

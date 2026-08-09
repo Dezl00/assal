@@ -1,10 +1,16 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
 export async function deleteCustomer(userId: string) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     await db.user.delete({
       where: { id: userId }
     })

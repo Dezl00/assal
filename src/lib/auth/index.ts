@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 
 declare module "next-auth" {
@@ -18,10 +19,8 @@ declare module "next-auth" {
   }
 }
 
-// import bcrypt from "bcrypt" // Mocked for this build context unless installed
-
 export const authConfig: NextAuthConfig = {
-  secret: process.env.AUTH_SECRET || "fallback-secret-assal-2026-very-secure",
+  secret: process.env.AUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -44,9 +43,23 @@ export const authConfig: NextAuthConfig = {
 
         if (user.isActive === false) return null
 
-        // In a real app, compare hashes:
-        // const isValid = await bcrypt.compare(credentials.password as string, user.passwordHash)
-        const isValid = credentials.password === user.passwordHash // Simplified for immediate startup
+        const password = credentials.password as string
+        let isValid = false
+
+        // Check if the stored hash is a bcrypt hash (starts with $2)
+        if (user.passwordHash.startsWith("$2")) {
+          isValid = await bcrypt.compare(password, user.passwordHash)
+        } else {
+          // Legacy plaintext comparison — auto-migrate on success
+          isValid = password === user.passwordHash
+          if (isValid) {
+            const hashedPassword = await bcrypt.hash(password, 10)
+            await db.user.update({
+              where: { id: user.id },
+              data: { passwordHash: hashedPassword }
+            })
+          }
+        }
 
         if (!isValid) return null
 
@@ -73,13 +86,6 @@ export const authConfig: NextAuthConfig = {
     },
     async session({ session, token }) {
       if (token?.id) {
-        // verify user still exists and is active
-        const dbUser = await db.user.findUnique({ where: { id: token.id as string } })
-        if (!dbUser || dbUser.isActive === false) {
-          // Returning an empty object will effectively make session.user undefined
-          return { ...session, user: null as any }
-        }
-
         session.user.role = token.role as string
         session.user.permissions = (token.permissions as string[]) || []
         session.user.id = token.id as string

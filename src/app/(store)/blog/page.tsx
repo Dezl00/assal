@@ -1,6 +1,9 @@
 import { getActiveArticles } from "@/features/articles/actions"
+import DOMPurify from "isomorphic-dompurify"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+
+export const revalidate = 3600 // Cache for 1 hour
 
 export const metadata = {
   title: "الأدلة والنصائح",
@@ -60,7 +63,7 @@ export default async function BlogPage() {
                   </h2>
                   <div 
                     className="prose prose-slate prose-sm text-muted-foreground line-clamp-3 mb-6 flex-1 overflow-hidden"
-                    dangerouslySetInnerHTML={{ __html: article.content.replace(/<[^>]*>?/gm, '') }} 
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content.replace(/<[^>]*>?/gm, '')) }} 
                   />
                   <div className="inline-flex items-center gap-2 text-primary font-medium mt-auto">
                     قراءة المزيد

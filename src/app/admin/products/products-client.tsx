@@ -9,11 +9,12 @@ import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { MultiImageUploader } from "@/components/ui/multi-image-uploader"
 import { Switch } from "@/components/ui/switch"
-import * as XLSX from "xlsx"
 import { usePermissions } from "@/hooks/use-permissions"
 import { ImportProductsModal } from "@/components/admin/import-products-modal"
 
-export function ProductsClient({ products, categories, brands = [], departments = [] }: { products: any[], categories: any[], brands?: any[], departments?: any[] }) {
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
+
+export function ProductsClient({ products, categories, brands = [], departments = [], currentPage = 1, totalPages = 1, initialSearch = "", initialDept = "", initialBrand = "", initialCats = [], initialStatus = "all" }: { products: any[], categories: any[], brands?: any[], departments?: any[], currentPage?: number, totalPages?: number, initialSearch?: string, initialDept?: string, initialBrand?: string, initialCats?: string[], initialStatus?: string }) {
   const { hasPermission } = usePermissions()
   const canAdd = hasPermission("products.add")
   const canEdit = hasPermission("products.edit")
@@ -47,14 +48,50 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
   const [showAdvanced, setShowAdvanced] = useState(false)
 
-  // Filter States
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterDept, setFilterDept] = useState("")
-  const [filterCats, setFilterCats] = useState<string[]>([])
+  // Filter States (synced with URL)
+  const [searchQuery, setSearchQuery] = useState(initialSearch)
+  const [filterDept, setFilterDept] = useState(initialDept)
+  const [filterCats, setFilterCats] = useState<string[]>(initialCats)
   const [isFilterCatDropdownOpen, setIsFilterCatDropdownOpen] = useState(false)
-  const [filterBrand, setFilterBrand] = useState("")
-  const [filterStatus, setFilterStatus] = useState("all")
+  const [filterBrand, setFilterBrand] = useState(initialBrand)
+  const [filterStatus, setFilterStatus] = useState(initialStatus)
   const [showFilters, setShowFilters] = useState(false)
+
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Apply filters to URL
+  const applyFilters = () => {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("search", searchQuery)
+    if (filterDept) params.set("departmentId", filterDept)
+    if (filterBrand) params.set("brandId", filterBrand)
+    if (filterCats.length > 0) params.set("categoryIds", filterCats.join(","))
+    if (filterStatus !== "all") params.set("status", filterStatus)
+    params.set("page", "1")
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  // Debounced search & filter sync
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only apply if they differ from initial to avoid loops, or just apply them and rely on Next.js to not loop.
+      applyFilters()
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery, filterDept, filterBrand, filterCats, filterStatus])
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("search", searchQuery)
+    if (filterDept) params.set("departmentId", filterDept)
+    if (filterBrand) params.set("brandId", filterBrand)
+    if (filterCats.length > 0) params.set("categoryIds", filterCats.join(","))
+    if (filterStatus !== "all") params.set("status", filterStatus)
+    params.set("page", newPage.toString())
+    router.push(`${pathname}?${params.toString()}`)
+  }
 
   // Bulk Selection States
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -75,36 +112,8 @@ export function ProductsClient({ products, categories, brands = [], departments 
     return categories.filter(c => c.name.toLowerCase().includes(categorySearch.toLowerCase()));
   }, [categories, categorySearch])
 
-  // Memoized Filtered Products
-  const filteredProducts = useMemo(() => {
-    const getProductDepartmentId = (p: any) => {
-      const cat = categories.find(c => c.id === p.categoryId)
-      if (!cat) return null
-      if (cat.departmentId) return cat.departmentId
-      if (cat.parentId) {
-        const parent = categories.find(c => c.id === cat.parentId)
-        return parent?.departmentId || null
-      }
-      return null
-    }
-
-    return localProducts.filter(p => {
-      const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchDept = filterDept ? getProductDepartmentId(p) === filterDept : true
-      
-      const catMatches = () => {
-        if (filterCats.length === 0) return true;
-        const prodCat = categories.find(c => c.id === p.categoryId);
-        if (!prodCat) return false;
-        return filterCats.includes(prodCat.id) || (prodCat.parentId && filterCats.includes(prodCat.parentId));
-      }
-      const matchCat = catMatches()
-      
-      const matchBrand = filterBrand ? p.brandId === filterBrand : true
-      const matchStatus = filterStatus === "all" ? true : filterStatus === "active" ? p.isActive : !p.isActive
-      return matchSearch && matchDept && matchCat && matchBrand && matchStatus
-    })
-  }, [localProducts, searchQuery, filterDept, filterCats, filterBrand, filterStatus, categories])
+  // Products are already filtered by the server
+  const filteredProducts = localProducts
 
   // Form Effects
   useEffect(() => {
@@ -280,28 +289,15 @@ export function ProductsClient({ products, categories, brands = [], departments 
   }
 
   // Excel Handlers
-  function handleExportExcel() {
-    const dataToExport = filteredProducts.map(p => {
-      const cat = categories.find(c => c.id === p.categoryId);
-      const parentCat = cat?.parentId ? categories.find(c => c.id === cat.parentId) : cat;
-      const subCat = cat?.parentId ? cat : null;
-
-      return {
-        "اسم المنتج": p.name,
-        "الرمز (SKU)": p.sku || "",
-        "السعر": p.price,
-        "المخزون": p.stock,
-        "القسم": parentCat?.name || "",
-        "التصنيف": subCat?.name || "",
-        "الماركة": brands.find(b => b.id === p.brandId)?.name || "",
-        "الوصف": p.description || ""
-      };
-    })
-
-    const ws = XLSX.utils.json_to_sheet(dataToExport)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, "المنتجات")
-    XLSX.writeFile(wb, "Assal_Products.xlsx")
+  async function handleExportExcel() {
+    const params = new URLSearchParams()
+    if (searchQuery) params.set("search", searchQuery)
+    if (filterDept) params.set("departmentId", filterDept)
+    if (filterBrand) params.set("brandId", filterBrand)
+    if (filterCats.length > 0) params.set("categoryIds", filterCats.join(","))
+    if (filterStatus !== "all") params.set("status", filterStatus)
+    
+    window.location.href = `/api/admin/export/products?${params.toString()}`
   }
 
   const [isImportModalOpen, setIsImportModalOpen] = useState(false)
@@ -841,6 +837,29 @@ export function ProductsClient({ products, categories, brands = [], departments 
         categories={categories} 
         brands={brands} 
       />
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between p-4 bg-card border-t border-border/50 rounded-b-xl">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+          >
+            السابق
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            صفحة {currentPage} من {totalPages}
+          </span>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+          >
+            التالي
+          </Button>
+        </div>
+      )}
 
       {/* Bulk Edit Modal */}
       {bulkEditOpen && typeof document !== 'undefined' && createPortal(

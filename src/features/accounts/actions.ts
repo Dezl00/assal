@@ -1,5 +1,6 @@
 'use server'
 import { db as prisma } from '@/lib/db'
+import bcrypt from 'bcryptjs'
 import { auth } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 
@@ -15,7 +16,8 @@ export async function createAccount(data: FormData) {
       permissions = JSON.parse(data.get('permissions') as string || '[]')
     } catch (e) {}
 
-    const passwordHash = data.get('password') as string
+    const rawPassword = data.get('password') as string
+    const passwordHash = rawPassword ? await bcrypt.hash(rawPassword, 10) : null
 
     await prisma.user.create({
       data: {
@@ -46,6 +48,7 @@ export async function updateAccount(id: string, data: FormData) {
     } catch (e) {}
 
     const password = data.get('password') as string
+    let hashedPassword: string | undefined
     
     const updateData: any = {
       name: data.get('name') as string,
@@ -55,7 +58,7 @@ export async function updateAccount(id: string, data: FormData) {
     }
 
     if (password) {
-      updateData.passwordHash = password
+      updateData.passwordHash = await bcrypt.hash(password, 10)
     }
 
     await prisma.user.update({
@@ -113,7 +116,7 @@ export async function updateProfile(data: FormData) {
     }
 
     if (password) {
-      updateData.passwordHash = password
+      updateData.passwordHash = await bcrypt.hash(password, 10)
     }
 
     await prisma.user.update({

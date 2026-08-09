@@ -1,11 +1,17 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
 
 export async function createCategory(formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const name = formData.get("name") as string
     const slug = formData.get("slug") as string
     const description = formData.get("description") as string
@@ -38,6 +44,24 @@ export async function createCategory(formData: FormData) {
 
 export async function deleteCategory(id: string) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
+
+    // Safety: check for products in this category
+    const productCount = await db.product.count({ where: { categoryId: id } })
+    if (productCount > 0) {
+      return { success: false, error: `لا يمكن حذف هذا القسم لأنه يحتوي على ${productCount} منتج. قم بنقل المنتجات أولاً.` }
+    }
+
+    // Safety: check for child categories
+    const childCount = await db.category.count({ where: { parentId: id } })
+    if (childCount > 0) {
+      return { success: false, error: `لا يمكن حذف هذا القسم لأنه يحتوي على ${childCount} أقسام فرعية. قم بحذفها أولاً.` }
+    }
+
     await db.category.delete({
       where: { id }
     })
@@ -50,6 +74,11 @@ export async function deleteCategory(id: string) {
 
 export async function updateCategory(id: string, formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const isActiveStr = formData.get("isActive");
     if (isActiveStr !== null) {
       await db.category.update({
@@ -93,6 +122,11 @@ export async function updateCategory(id: string, formData: FormData) {
 
 export async function bulkUpdateCategories(ids: string[], data: { departmentId?: string, parentId?: string }) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     if (!ids.length) return { success: false, error: "لا توجد أقسام محددة" }
 
     await db.category.updateMany({

@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -127,6 +128,9 @@ model Category {
   products     Product[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([parentId])
+  @@index([departmentId])
 }
 
 model Brand {
@@ -181,6 +185,11 @@ model Product {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   productViews   ProductView[]
+
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([departmentId])
+  @@index([isActive])
 }
 
 model ProductImage {
@@ -190,6 +199,8 @@ model ProductImage {
   url        String
   isPrimary  Boolean  @default(false)
   sortOrder  Int      @default(0)
+
+  @@index([productId])
 }
 
 model Order {
@@ -210,6 +221,10 @@ model Order {
   items         OrderItem[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -220,6 +235,9 @@ model OrderItem {
   product    Product  @relation(fields: [productId], references: [id])
   quantity   Int
   price      Float
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Menu {
@@ -310,6 +328,9 @@ model ActivityLog {
   ipAddress   String?
   browser     String?
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model Branch {
@@ -332,6 +353,8 @@ model PageVisit {
   country     String?
   city        String?
   createdAt   DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model ProductView {
@@ -343,6 +366,9 @@ model ProductView {
   country     String?
   city        String?
   createdAt   DateTime @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
 }
 
 model Backup {

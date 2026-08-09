@@ -2,6 +2,8 @@ import React from "react"
 import { db } from "@/lib/db"
 import { AdminLayoutClient } from "./admin-layout-client"
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminLayout({
   children,
 }: {

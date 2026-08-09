@@ -3,6 +3,9 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ArrowRight, Share2, Calendar } from "lucide-react"
 import { ShareArticleButton } from "./share-button"
+import DOMPurify from 'isomorphic-dompurify'
+
+export const revalidate = 3600 // Cache for 1 hour
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -64,10 +67,10 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             <div 
               className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal prose-img:rounded-xl prose-img:max-w-full"
               dangerouslySetInnerHTML={{ 
-                __html: article.content.replace(
+                __html: DOMPurify.sanitize(article.content.replace(
                   /<a[^>]*href="(https?:\/\/(?:www\.)?youtube\.com\/embed\/[^"]+)"[^>]*>.*?<\/a>/gi,
                   '<iframe class="ql-video" frameborder="0" allowfullscreen="true" src="$1"></iframe>'
-                ).replace(/&nbsp;/g, ' ') 
+                ).replace(/&nbsp;/g, ' '), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allowfullscreen', 'frameborder', 'target'] }) 
               }}
             />
             

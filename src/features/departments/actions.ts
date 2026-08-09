@@ -1,10 +1,16 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
 export async function createDepartment(formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const name = formData.get("name") as string
     const slug = formData.get("slug") as string
     const description = formData.get("description") as string
@@ -32,6 +38,18 @@ export async function createDepartment(formData: FormData) {
 
 export async function deleteDepartment(id: string) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
+
+    // Safety: check for categories in this department
+    const categoryCount = await db.category.count({ where: { departmentId: id } })
+    if (categoryCount > 0) {
+      return { success: false, error: `لا يمكن حذف هذا المجال لأنه يحتوي على ${categoryCount} أقسام. قم بنقلها أولاً.` }
+    }
+
     await db.department.delete({
       where: { id }
     })
@@ -44,6 +62,11 @@ export async function deleteDepartment(id: string) {
 
 export async function updateDepartment(id: string, formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const isActiveStr = formData.get("isActive");
     if (isActiveStr !== null) {
       await db.department.update({

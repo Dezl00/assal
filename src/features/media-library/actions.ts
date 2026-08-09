@@ -1,11 +1,17 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { uploadImage, deleteImage as deleteCloudinaryImage } from "@/lib/cloudinary"
 import { revalidatePath } from "next/cache"
 
 export async function uploadMediaAction(formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const file = formData.get("file") as File
     const folder = formData.get("folder") as string || "assal/general"
 
@@ -50,6 +56,11 @@ export async function uploadMediaAction(formData: FormData) {
 
 export async function deleteMediaAction(id: string) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const asset = await db.mediaAsset.findUnique({ where: { id } })
     if (!asset) return { success: false, error: "Asset not found" }
 

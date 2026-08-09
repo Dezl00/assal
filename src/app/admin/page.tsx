@@ -3,6 +3,8 @@ import Link from "next/link"
 import { Activity, Users, ShoppingBag, DollarSign } from "lucide-react"
 import { db } from "@/lib/db"
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboardPage() {
   const [totalSalesResult, newOrders, customers, activeProducts, topProductsData, latestOrders, theme] = await Promise.all([
     db.order.aggregate({
@@ -30,13 +32,19 @@ export default async function AdminDashboardPage() {
     db.themeConfig.findUnique({ where: { id: "default" } })
   ])
 
-  // Get product details for topProducts
-  const topProducts = await Promise.all(
-    topProductsData.map(async (tp) => {
-      const product = await db.product.findUnique({ where: { id: tp.productId }, select: { name: true, images: true } })
-      return { ...tp, product: product || { name: 'منتج محذوف', images: [] } }
-    })
-  )
+  // Get product details for topProducts — single batch query instead of N+1
+  const topProductIds = topProductsData.map(tp => tp.productId)
+  const topProductDetails = topProductIds.length > 0
+    ? await db.product.findMany({
+        where: { id: { in: topProductIds } },
+        select: { id: true, name: true, images: { where: { isPrimary: true }, take: 1 } }
+      })
+    : []
+  const productMap = new Map(topProductDetails.map(p => [p.id, p]))
+  const topProducts = topProductsData.map(tp => ({
+    ...tp,
+    product: productMap.get(tp.productId) || { name: 'منتج محذوف', images: [] }
+  }))
 
   const totalSales = totalSalesResult._sum.totalAmount || 0
   const adminColor = theme?.adminColor || "#2453E3"

@@ -1,28 +1,34 @@
 "use server"
 
+import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
 export async function createProduct(formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const name = formData.get("name") as string
     let slug = formData.get("slug") as string
     let sku: string | null = formData.get("sku") as string || null
     
     if (!slug) {
-      // Find the next available sequential number
-      const products = await db.product.findMany({ select: { slug: true } });
-      const numericSlugs = products
-        .map(p => {
-          const match = p.slug.match(/^(?:P-)?(\d+)$/i);
-          return match ? parseInt(match[1], 10) : NaN;
-        })
-        .filter(n => !isNaN(n) && n > 0);
-      
+      // Find the next available sequential number efficiently
+      const lastProduct = await db.product.findFirst({
+        where: { slug: { startsWith: 'P-' } },
+        orderBy: { slug: 'desc' },
+        select: { slug: true }
+      });
       let nextId = 10001;
-      if (numericSlugs.length > 0) {
-        const maxId = Math.max(...numericSlugs);
-        nextId = maxId >= 10001 ? maxId + 1 : 10001;
+      if (lastProduct) {
+        const match = lastProduct.slug.match(/^P-(\d+)$/i);
+        if (match) {
+          const lastNum = parseInt(match[1], 10);
+          nextId = lastNum >= 10001 ? lastNum + 1 : 10001;
+        }
       }
       slug = `P-${nextId}`;
     }
@@ -72,6 +78,7 @@ export async function createProduct(formData: FormData) {
     })
 
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create product" }
@@ -104,6 +111,7 @@ export async function deleteProduct(id: string) {
     })
 
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete product" }
@@ -125,6 +133,7 @@ export async function bulkDeleteProducts(ids: string[]) {
       where: { id: { in: ids } }
     })
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete products" }
@@ -133,6 +142,11 @@ export async function bulkDeleteProducts(ids: string[]) {
 
 export async function updateProduct(id: string, formData: FormData) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const name = formData.get("name") as string
     let slug = formData.get("slug") as string
     let sku: string | null = formData.get("sku") as string || null
@@ -186,6 +200,7 @@ export async function updateProduct(id: string, formData: FormData) {
     })
 
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update product" }
@@ -194,11 +209,17 @@ export async function updateProduct(id: string, formData: FormData) {
 
 export async function toggleProductStatus(id: string, isActive: boolean) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     await db.product.update({
       where: { id },
       data: { isActive }
     })
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update product status" }
@@ -207,11 +228,17 @@ export async function toggleProductStatus(id: string, isActive: boolean) {
 
 export async function bulkToggleProductsStatus(ids: string[], isActive: boolean) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     await db.product.updateMany({
       where: { id: { in: ids } },
       data: { isActive }
     })
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update products status" }
@@ -220,6 +247,11 @@ export async function bulkToggleProductsStatus(ids: string[], isActive: boolean)
 
 export async function bulkUpdateProducts(productsData: any[]) {
   try {
+    try {
+      await requireAdmin()
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     // We update sequentially or use transaction
     await db.$transaction(
       productsData.map(p => 
@@ -237,6 +269,7 @@ export async function bulkUpdateProducts(productsData: any[]) {
       )
     )
     revalidatePath("/admin/products")
+    revalidatePath("/")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update products" }
