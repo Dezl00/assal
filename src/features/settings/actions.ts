@@ -90,3 +90,22 @@ export async function deleteBranch(id: string) {
     return { success: false, error: "Failed to delete branch" }
   }
 }
+
+export async function resetStoreStats() {
+  try {
+    // Delete order items first to satisfy foreign keys
+    await db.orderItem.deleteMany({})
+    // Delete orders
+    await db.order.deleteMany({})
+    // Delete analytics data
+    await db.pageVisit.deleteMany({})
+    await db.productView.deleteMany({})
+    
+    revalidatePath("/admin/analytics")
+    revalidatePath("/admin/orders")
+    revalidatePath("/admin/settings")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "فشل في تصفير بيانات المتجر" }
+  }
+}

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download } from "lucide-react"
-import { updateThemeConfig, createBranch, updateBranch, deleteBranch } from "@/features/settings/actions"
+import { updateThemeConfig, createBranch, updateBranch, deleteBranch, resetStoreStats } from "@/features/settings/actions"
 import { updateProfile } from "@/features/accounts/actions"
 import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"
@@ -13,6 +13,12 @@ import { User as UserIcon } from "lucide-react"
 
 export function SettingsClient({ config, branches = [], backups = [], initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], initialIsAdmin?: boolean, initialPermissions?: string[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [backupPage, setBackupPage] = useState(1)
+  const backupsPerPage = 5
+  
+  const totalBackupPages = Math.ceil((backups?.length || 0) / backupsPerPage)
+  const paginatedBackups = (backups || []).slice((backupPage - 1) * backupsPerPage, backupPage * backupsPerPage)
 
   // Branch states
   const [isBranchFormOpen, setIsBranchFormOpen] = useState(false)
@@ -123,7 +129,7 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
       <div className="flex flex-col md:flex-row gap-6 w-full min-w-0">
         {/* Tabs Sidebar */}
-        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide max-w-full">
+        <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide max-w-full md:sticky md:top-4 h-fit">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -154,6 +160,32 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                         <label className="text-sm font-medium">وصف المتجر</label>
                         <textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-1 focus:ring-primary" />
                       </div>
+                    </div>
+                    
+                    <div className="mt-12 pt-6 border-t border-border/50">
+                      <h3 className="text-lg font-semibold text-red-600 mb-2">منطقة الخطر</h3>
+                      <p className="text-sm text-muted-foreground mb-4">تصفير المتجر سيقوم بحذف كافة الطلبات والإحصائيات الخاصة بالزيارات والمشاهدات نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        disabled={isResetting}
+                        onClick={async () => {
+                          if (confirm('هل أنت متأكد من رغبتك في تصفير المتجر؟ هذا الإجراء سيحذف جميع الطلبات والإحصائيات بشكل نهائي ولا يمكن التراجع عنه.')) {
+                            setIsResetting(true);
+                            const res = await resetStoreStats();
+                            setIsResetting(false);
+                            if (res.success) {
+                              toast.success('تم تصفير المتجر بنجاح');
+                              window.location.reload();
+                            } else {
+                              toast.error(res.error || 'حدث خطأ أثناء التصفير');
+                            }
+                          }
+                        }}
+                      >
+                        {isResetting ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Trash2 className="w-4 h-4 ml-2" />}
+                        تصفير بيانات المتجر
+                      </Button>
                     </div>
                 </div>
 
@@ -415,10 +447,10 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
                 <div className="grid gap-3 mt-4">
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">النسخ السابقة (التلقائية واليدوية)</h3>
-                  {backups.length === 0 ? (
+                  {paginatedBackups.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground border border-dashed border-border/50 rounded-lg">لا توجد نسخ احتياطية محفوظة.</div>
                   ) : (
-                    backups.map(backup => (
+                    paginatedBackups.map(backup => (
                       <div key={backup.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-border/50 rounded-lg bg-card gap-4">
                         <div className="min-w-0">
                           <h4 className="font-semibold text-sm truncate" title={backup.filename}>{backup.filename}</h4>
@@ -429,7 +461,7 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           <span className={`px-2 py-1 rounded text-[10px] font-medium ${backup.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                            {backup.status}
+                            {backup.status === 'COMPLETED' ? 'مكتمل' : backup.status}
                           </span>
                           {backup.status === 'COMPLETED' && (
                             <Button size="sm" variant="outline" className="h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => {
@@ -443,6 +475,13 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                         </div>
                       </div>
                     ))
+                  )}
+                  {totalBackupPages > 1 && (
+                    <div className="flex items-center justify-between mt-4 border-t border-border/50 pt-4">
+                      <Button type="button" variant="outline" size="sm" onClick={() => setBackupPage(p => Math.max(1, p - 1))} disabled={backupPage === 1}>السابق</Button>
+                      <span className="text-xs font-medium text-muted-foreground">{backupPage} من {totalBackupPages}</span>
+                      <Button type="button" variant="outline" size="sm" onClick={() => setBackupPage(p => Math.min(totalBackupPages, p + 1))} disabled={backupPage === totalBackupPages}>التالي</Button>
+                    </div>
                   )}
                 </div>
               </div>
