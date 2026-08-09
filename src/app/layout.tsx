@@ -97,7 +97,7 @@ export default async function RootLayout({
           :root {
             ${theme?.primaryColor ? `--color-primary: ${theme.primaryColor}; --color-ring: ${theme.primaryColor};` : ''}
             ${theme?.secondaryColor ? `--color-secondary: ${theme.secondaryColor};` : ''}
-            ${theme?.adminColor ? `--color-admin-bg: ${theme.adminColor};` : '--color-admin-bg: #0f172a;'}
+            --color-admin-bg: hsl(var(--primary));
           }
         `}} />
       </head>

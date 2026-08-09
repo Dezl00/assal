@@ -24,7 +24,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
   const [faviconUrl, setFaviconUrl] = useState(config.faviconUrl || "")
   const [primaryColor, setPrimaryColor] = useState(config.primaryColor || "#D97706")
   const [secondaryColor, setSecondaryColor] = useState(config.secondaryColor || "#FBBF24")
-  const [adminColor, setAdminColor] = useState(config.adminColor || "#0f172a")
 
   const [whatsappEnabled, setWhatsappEnabled] = useState(config.whatsappEnabled !== false) // default true
 
@@ -36,7 +35,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
     formData.set("faviconUrl", faviconUrl)
     formData.set("primaryColor", primaryColor)
     formData.set("secondaryColor", secondaryColor)
-    formData.set("adminColor", adminColor)
     formData.set("whatsappEnabled", whatsappEnabled.toString())
 
     const res = await updateThemeConfig(formData)
@@ -174,7 +172,7 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">اللون الرئيسي</label>
                         <div className="flex items-center gap-3">
@@ -187,13 +185,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                         <div className="flex items-center gap-3">
                           <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
                           <input type="text" value={secondaryColor.toUpperCase()} onChange={e => setSecondaryColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">لون لوحة التحكم</label>
-                        <div className="flex items-center gap-3">
-                          <input type="color" value={adminColor} onChange={e => setAdminColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
-                          <input type="text" value={adminColor.toUpperCase()} onChange={e => setAdminColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
                         </div>
                       </div>
                     </div>

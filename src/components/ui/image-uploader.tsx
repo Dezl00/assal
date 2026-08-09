@@ -88,8 +88,8 @@ export function ImageUploader({ value, onChange, className, label = "اختر ص
         />
         
         {value ? (
-          <div className="relative w-full aspect-video rounded-lg overflow-hidden border border-border/50 bg-muted">
-            <img src={value} alt="Uploaded" className="w-full h-full object-cover" />
+          <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border/50 bg-muted/20">
+            <img src={value} alt="Uploaded" className="w-full h-full object-contain p-2" />
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-sm">
               <button 
                 type="button"
@@ -117,7 +117,7 @@ export function ImageUploader({ value, onChange, className, label = "اختر ص
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={isUploading}
-            className="w-full aspect-video rounded-lg border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-colors bg-muted/20 flex flex-col items-center justify-center text-muted-foreground disabled:opacity-50"
+            className="w-full h-32 rounded-lg border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-colors bg-muted/20 flex flex-col items-center justify-center text-muted-foreground disabled:opacity-50"
           >
             {isUploading ? (
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />

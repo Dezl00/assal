@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, X, Loader2, ChevronDown, ChevronUp, Users, Search, 
 import { deleteAccount, createAccount, updateAccount, updateAccountStatus } from "@/features/accounts/actions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
 import { usePermissions } from "@/hooks/use-permissions"
@@ -234,15 +235,12 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      {/* Header Section */}
-      <div className="flex items-center gap-4 bg-transparent mb-6">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-          <Users className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">الحسابات والصلاحيات</h1>
-          <p className="text-sm text-muted-foreground mt-1">إدارة حسابات المستخدمين وصلاحيات الوصول</p>
-        </div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">الحسابات والصلاحيات</span>
+        </nav>
       </div>
 
       <div className="flex flex-col lg:flex-row-reverse gap-6 relative items-start">
@@ -322,9 +320,23 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-40 p-1 border-border/40 shadow-sm rounded-xl" align="end">
+                                <Button 
+                                  variant="ghost" 
+                                  className={`w-full justify-start text-sm ${acc.isActive !== false ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50' : 'text-green-600 hover:text-green-700 hover:bg-green-50'}`}
+                                  onClick={() => handleUpdateStatus(acc.id, acc.isActive === false)}
+                                  disabled={!canEdit}
+                                >
+                                  {acc.isActive !== false ? 'إلغاء التنشيط' : 'إعادة التنشيط'}
+                                </Button>
+                              </PopoverContent>
+                            </Popover>
                             {canEdit && (
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md bg-blue-50/50 hover:bg-blue-100 text-blue-600" onClick={() => { 
                                 setEditingItem(acc); 
@@ -506,26 +518,25 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                           {/* Section Header */}
                           <div className={`flex items-center justify-between p-3.5 cursor-pointer select-none transition-colors hover:bg-muted/30 ${isOpen ? 'bg-muted/30' : ''}`} onClick={() => toggleSection(section.id)}>
                             <div className="flex items-center gap-3">
-                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground pointer-events-none p-0 shrink-0">
-                                {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                              </Button>
-                              
+                              <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center shrink-0">
+                                <Checkbox 
+                                  id={`section-${section.id}`} 
+                                  checked={isAllSelected}
+                                  className="w-5 h-5 border-border/60 rounded-[4px] data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-white"
+                                  onCheckedChange={(checked) => handleSectionSelect(section.id, checked as boolean)}
+                                />
+                              </div>
+                              <label htmlFor={`section-${section.id}`} className="text-sm font-semibold cursor-pointer" onClick={(e) => e.stopPropagation()}>{section.label}</label>
+                            </div>
+                            <div className="flex items-center gap-3">
                               {selectedInSection > 0 && (
                                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                                   {selectedInSection}/{sectionKeys.length}
                                 </span>
                               )}
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <label htmlFor={`section-${section.id}`} className="text-sm font-semibold cursor-pointer" onClick={(e) => e.stopPropagation()}>{section.label}</label>
-                              <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center bg-primary text-primary-foreground rounded-md w-5 h-5 shrink-0">
-                                <Checkbox 
-                                  id={`section-${section.id}`} 
-                                  checked={isAllSelected}
-                                  className="border-none w-full h-full data-[state=checked]:bg-primary data-[state=checked]:text-white rounded-[4px]"
-                                  onCheckedChange={(checked) => handleSectionSelect(section.id, checked as boolean)}
-                                />
-                              </div>
+                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground pointer-events-none p-0 shrink-0">
+                                {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </Button>
                             </div>
                           </div>
 
@@ -535,14 +546,14 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                               {section.subPermissions.map(sub => {
                                 const permKey = `${section.id}.${sub.id}`
                                 return (
-                                  <div key={sub.id} className="flex items-center justify-between">
-                                    <label htmlFor={`perm-${permKey}`} className="text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors">{sub.label}</label>
+                                  <div key={sub.id} className="flex items-center gap-2">
                                     <Checkbox 
                                       id={`perm-${permKey}`} 
                                       checked={selectedPermissions.includes(permKey)}
                                       onCheckedChange={(checked) => handleSubPermissionSelect(permKey, checked as boolean)}
                                       className="rounded-[4px] border-border/60 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                     />
+                                    <label htmlFor={`perm-${permKey}`} className="text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors">{sub.label}</label>
                                   </div>
                                 )
                               })}
