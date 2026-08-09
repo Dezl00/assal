@@ -18,7 +18,7 @@ export async function updateOrderStatus(orderId: string, status: string) {
     if (order.userId) {
       const user = await db.user.findUnique({ where: { id: order.userId } })
       if (user?.orderUpdatesEnabled) {
-        let statusAr = status === "PAID" ? "تم تأكيد ودفع الطلب" : status === "SHIPPED" ? "جاري الشحن" : status === "CANCELLED" ? "تم الإلغاء" : status
+        let statusAr = status === "CONFIRMED" ? "تم تأكيد الطلب" : status === "SHIPPED" ? "جاري الشحن" : status === "OUT_FOR_DELIVERY" ? "خرج للتوصيل" : status === "DELIVERED" ? "تم التوصيل" : status === "CANCELLED" ? "تم الإلغاء" : status
         
         // Find product image if available
         let imageUrl: string | undefined = undefined;

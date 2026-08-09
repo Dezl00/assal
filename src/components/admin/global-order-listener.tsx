@@ -64,7 +64,7 @@ export function GlobalOrderListener() {
   if (!newOrder) return null
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-300">
       <div className="bg-background w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl border border-border/50 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
           <BellRing className="w-10 h-10 text-primary" />
@@ -73,13 +73,13 @@ export function GlobalOrderListener() {
         <p className="text-muted-foreground text-lg mb-6">لقد تلقيت للتو طلباً جديداً من <span className="font-bold text-foreground">{newOrder.customerName}</span></p>
         
         <div className="bg-muted/30 w-full p-4 rounded-xl flex items-center justify-between mb-8 border border-border/50">
-          <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">رقم الطلب: <span className="font-bold text-foreground" dir="ltr">#{newOrder.id.slice(0,6).toUpperCase()}</span></span>
-          <span className="text-lg font-bold text-primary">{newOrder.totalAmount} ر.س</span>
+          <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">رقم الطلب: <span className="font-bold text-foreground" dir="ltr">#{newOrder.id.slice(-6).toUpperCase()}</span></span>
+          <span className="text-lg font-bold text-primary">{newOrder.totalAmount} ج.م</span>
         </div>
 
-        <div className="flex flex-col w-full gap-3 sm:flex-row">
+        <div className="flex w-full gap-3 flex-row">
           <Button 
-            className="flex-1 h-12 text-base font-bold shadow-md" 
+            className="flex-[2] h-12 text-base font-bold shadow-md" 
             onClick={handleConfirm}
             disabled={isUpdating}
           >
@@ -92,7 +92,7 @@ export function GlobalOrderListener() {
           </Button>
           <Button 
             variant="outline" 
-            className="flex-1 h-12 text-base font-medium" 
+            className="flex-1 h-12 text-base font-medium shrink-0" 
             onClick={handleLater}
             disabled={isUpdating}
           >

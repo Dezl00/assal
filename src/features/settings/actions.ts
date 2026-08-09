@@ -100,10 +100,14 @@ export async function resetStoreStats() {
     // Delete analytics data
     await db.pageVisit.deleteMany({})
     await db.productView.deleteMany({})
+    // Delete notifications and activity logs
+    await db.notification.deleteMany({})
+    await db.activityLog.deleteMany({})
     
     revalidatePath("/admin/analytics")
     revalidatePath("/admin/orders")
     revalidatePath("/admin/settings")
+    revalidatePath("/admin/security")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "فشل في تصفير بيانات المتجر" }

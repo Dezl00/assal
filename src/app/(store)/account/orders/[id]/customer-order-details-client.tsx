@@ -13,8 +13,9 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
 
   const statusLabels: Record<string, string> = {
     "PENDING": "قيد المراجعة",
-    "PAID": "تم الدفع",
+    "CONFIRMED": "تم التأكيد",
     "SHIPPED": "جاري الشحن",
+    "OUT_FOR_DELIVERY": "خرج للتوصيل",
     "DELIVERED": "تم التوصيل",
     "CANCELLED": "ملغي"
   }
@@ -39,9 +40,10 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
   const getStatusStep = (status: string) => {
     switch(status) {
       case 'PENDING': return 1;
-      case 'PAID': return 2;
+      case 'CONFIRMED': return 2;
       case 'SHIPPED': return 3;
-      case 'DELIVERED': return 4;
+      case 'OUT_FOR_DELIVERY': return 4;
+      case 'DELIVERED': return 5;
       default: return 0;
     }
   }
@@ -82,20 +84,21 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
         {order.status !== 'CANCELLED' ? (
           <div className="relative pt-6 pb-12 mb-8 border-b border-border/50 px-4">
             <div className="absolute top-10 left-8 right-8 h-1.5 bg-muted rounded-full overflow-hidden">
-               <div className="h-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${(getStatusStep(order.status) / 4) * 100}%` }}></div>
+               <div className="h-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${((getStatusStep(order.status) - 1) / 4) * 100}%` }}></div>
             </div>
             <div className="relative flex justify-between">
                {[
                  { step: 1, label: 'قيد المراجعة', icon: Clock },
-                 { step: 2, label: 'تم الدفع/التأكيد', icon: CheckCircle2 },
+                 { step: 2, label: 'تم التأكيد', icon: CheckCircle2 },
                  { step: 3, label: 'جاري الشحن', icon: Truck },
-                 { step: 4, label: 'تم التوصيل', icon: CheckCircle2 }
+                 { step: 4, label: 'خرج للتوصيل', icon: Truck },
+                 { step: 5, label: 'تم التوصيل', icon: CheckCircle2 }
                ].map((s) => (
                  <div key={s.step} className="flex flex-col items-center gap-3">
-                   <div className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-colors shadow-sm ${getStatusStep(order.status) >= s.step ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-muted-foreground'}`}>
-                     <s.icon className="w-5 h-5" />
+                   <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center relative z-10 transition-colors shadow-sm ${getStatusStep(order.status) >= s.step ? 'bg-primary text-primary-foreground' : 'bg-muted border border-border text-muted-foreground'}`}>
+                     <s.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                    </div>
-                   <span className={`text-xs font-bold ${getStatusStep(order.status) >= s.step ? 'text-primary' : 'text-muted-foreground'}`}>{s.label}</span>
+                   <span className={`text-[10px] sm:text-xs font-bold text-center w-16 sm:w-auto ${getStatusStep(order.status) >= s.step ? 'text-primary' : 'text-muted-foreground'}`}>{s.label}</span>
                  </div>
                ))}
             </div>

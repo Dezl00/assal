@@ -30,18 +30,21 @@ export function OrdersClient({ orders }: { orders: any[] }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("ALL")
   
-  // Status dictionary for arabic translation
   const statusLabels: Record<string, string> = {
     "PENDING": "قيد التنفيذ",
-    "PAID": "تم الدفع",
+    "CONFIRMED": "مؤكد",
     "SHIPPED": "تم الشحن",
+    "OUT_FOR_DELIVERY": "خرج للتوصيل",
+    "DELIVERED": "تم التوصيل",
     "CANCELLED": "ملغي"
   }
   
   const statusColors: Record<string, string> = {
     "PENDING": "bg-yellow-100 text-yellow-800",
-    "PAID": "bg-blue-100 text-blue-800",
-    "SHIPPED": "bg-green-100 text-green-800",
+    "CONFIRMED": "bg-blue-100 text-blue-800",
+    "SHIPPED": "bg-indigo-100 text-indigo-800",
+    "OUT_FOR_DELIVERY": "bg-orange-100 text-orange-800",
+    "DELIVERED": "bg-green-100 text-green-800",
     "CANCELLED": "bg-red-100 text-red-800"
   }
 
@@ -251,9 +254,12 @@ export function OrdersClient({ orders }: { orders: any[] }) {
                         disabled={!canEdit}
                         className={`text-xs font-semibold px-2.5 py-1 rounded-full appearance-none cursor-pointer outline-none ${statusColors[order.status] || "bg-gray-100 text-gray-800"}`}
                       >
-                        {Object.entries(statusLabels).map(([val, label]) => (
-                          <option key={val} value={val}>{label}</option>
-                        ))}
+                        <option value="PENDING">قيد التنفيذ</option>
+                        <option value="CONFIRMED">مؤكد</option>
+                        <option value="SHIPPED">تم الشحن</option>
+                        <option value="OUT_FOR_DELIVERY">خرج للتوصيل</option>
+                        <option value="DELIVERED">تم التوصيل</option>
+                        <option value="CANCELLED">ملغي</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 text-center">

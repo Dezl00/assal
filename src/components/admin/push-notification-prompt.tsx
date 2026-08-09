@@ -62,29 +62,29 @@ export function PushNotificationPrompt({
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[100] w-full max-w-sm bg-card border border-border/50 rounded-2xl shadow-2xl p-6 animate-in slide-in-from-bottom-5">
-      <button 
-        onClick={handleDismiss}
-        className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <X className="w-5 h-5" />
-      </button>
-      
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
-          <Bell className="w-6 h-6 text-primary" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 animate-in fade-in duration-300">
+      <div className="relative w-full max-w-sm bg-card border border-border/50 rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-300 flex flex-col items-center text-center">
+        <button 
+          onClick={handleDismiss}
+          className="absolute top-4 left-4 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <Bell className="w-8 h-8 text-primary animate-bounce" />
         </div>
-        <div>
-          <h3 className="font-bold text-lg mb-1 text-foreground">{title}</h3>
-          <p className="text-sm text-muted-foreground mb-4">{description}</p>
-          <div className="flex gap-2">
-            <Button onClick={handleEnable} className="flex-1 rounded-xl">
-              تفعيل الآن
-            </Button>
-            <Button variant="outline" onClick={handleDismiss} className="flex-1 rounded-xl">
-              لاحقاً
-            </Button>
-          </div>
+        
+        <h3 className="font-bold text-xl mb-2 text-foreground">{title}</h3>
+        <p className="text-sm text-muted-foreground mb-6">{description}</p>
+        
+        <div className="flex w-full gap-3 flex-row">
+          <Button onClick={handleEnable} className="flex-[2] rounded-xl h-12 font-bold">
+            تفعيل الآن
+          </Button>
+          <Button variant="outline" onClick={handleDismiss} className="flex-1 rounded-xl h-12 font-medium">
+            لاحقاً
+          </Button>
         </div>
       </div>
     </div>

@@ -97,7 +97,23 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
     // Fallback: show modified fields if any
     if (typeof details === 'object') {
       const keys = Object.keys(details).filter(k => k !== 'message' && k !== 'id' && k !== 'type');
-      if (keys.length > 0) return `تم تعديل: ${keys.join(', ')}`;
+      if (keys.length > 0) {
+        // If status was changed, try to translate the values
+        if (details.status) {
+          const statusMap: Record<string, string> = {
+            'CONFIRMED': 'مؤكد',
+            'PENDING': 'قيد التنفيذ',
+            'SHIPPED': 'تم الشحن',
+            'OUT_FOR_DELIVERY': 'خرج للتوصيل',
+            'DELIVERED': 'تم التوصيل',
+            'CANCELLED': 'ملغي'
+          };
+          if (typeof details.status === 'string' && statusMap[details.status]) {
+            details.status = statusMap[details.status];
+          }
+        }
+        return `تم تعديل: ${keys.join(', ')}`;
+      }
     }
     
     return 'تم الإجراء بنجاح';
