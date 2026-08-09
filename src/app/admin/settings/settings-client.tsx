@@ -9,29 +9,34 @@ import { updateProfile } from "@/features/accounts/actions"
 import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { User as UserIcon } from "lucide-react"
 
-export function SettingsClient({ config, branches = [], backups = [], initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], initialIsAdmin?: boolean, initialPermissions?: string[] }) {
+export function SettingsClient({ config, branches: initialBranches = [], backups = [], initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], initialIsAdmin?: boolean, initialPermissions?: string[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
+  const [branches, setBranches] = useState(initialBranches)
   const [backupPage, setBackupPage] = useState(1)
   const backupsPerPage = 5
   
   const totalBackupPages = Math.ceil((backups?.length || 0) / backupsPerPage)
   const paginatedBackups = (backups || []).slice((backupPage - 1) * backupsPerPage, backupPage * backupsPerPage)
 
-  // Branch states
   const [isBranchFormOpen, setIsBranchFormOpen] = useState(false)
   const [editingBranch, setEditingBranch] = useState<any>(null)
   const [isBranchSubmitting, setIsBranchSubmitting] = useState(false)
 
-  // Theme Config States
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, action: null | (() => Promise<void>), title: string, desc: string, isDestructive: boolean, isLoading: boolean}>({
+    isOpen: false, action: null, title: "", desc: "", isDestructive: true, isLoading: false
+  });
+
   const [logoUrl, setLogoUrl] = useState(config.logoUrl || "")
   const [faviconUrl, setFaviconUrl] = useState(config.faviconUrl || "")
   const [primaryColor, setPrimaryColor] = useState(config.primaryColor || "#D97706")
   const [secondaryColor, setSecondaryColor] = useState(config.secondaryColor || "#FBBF24")
 
-  const [whatsappEnabled, setWhatsappEnabled] = useState(config.whatsappEnabled !== false) // default true
+  const [whatsappEnabled, setWhatsappEnabled] = useState(config.whatsappEnabled !== false)
 
   async function handleConfigSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -48,7 +53,7 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
     if (res.success) {
       toast.success("تم حفظ الإعدادات بنجاح")
-      window.location.reload() // reload to apply admin color
+      window.location.reload()
     } else {
       toast.error(res.error || "حدث خطأ أثناء الحفظ")
     }
@@ -71,16 +76,35 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
       toast.success("تم الحفظ بنجاح")
       setEditingBranch(null)
       setIsBranchFormOpen(false)
+      window.location.reload()
     } else {
       toast.error(res.error || "فشل الحفظ")
     }
   }
 
-  async function handleDeleteBranch(id: string) {
-    if (!confirm("هل أنت متأكد من حذف هذا الفرع؟")) return
-    const res = await deleteBranch(id)
-    if (res.success) toast.success("تم الحذف بنجاح")
-    else toast.error("فشل الحذف")
+  const handleDeleteBranch = async (id: string) => {
+    setConfirmState({
+      isOpen: true,
+      title: "حذف الفرع",
+      desc: "هل أنت متأكد من حذف هذا الفرع؟",
+      isDestructive: true,
+      isLoading: false,
+      action: async () => {
+        setConfirmState(p => ({ ...p, isLoading: true }));
+        try {
+          const res = await deleteBranch(id)
+          if (res.success) {
+            toast.success("تم حذف الفرع")
+            setBranches(branches.filter(b => b.id !== id))
+          } else {
+            toast.error("فشل الحذف")
+          }
+        } catch (e) {
+          toast.error("حدث خطأ")
+        }
+        setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
+      }
+    });
   }
 
   const { data: session, status, update: updateSession } = useSession()
@@ -103,21 +127,18 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
   }
 
   const hasPerm = (perm: string) => isAdmin || permissions.includes(perm)
-
   const allTabs = [
     { id: "general", label: "عام", icon: <Store className="w-4 h-4" />, perm: 'settings.general' },
     { id: "appearance", label: "المظهر والهوية", icon: <Palette className="w-4 h-4" />, perm: 'settings.appearance' },
     { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" />, perm: 'settings.social' },
     { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" />, perm: 'settings.branches' },
     { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" />, perm: 'settings.backups' },
-    { id: "profile", label: "إعدادات حسابي", icon: <UserIcon className="w-4 h-4" />, perm: 'settings.general' }, // Available to anyone who can access settings
+    { id: "profile", label: "إعدادات حسابي", icon: <UserIcon className="w-4 h-4" />, perm: 'settings.general' },
   ]
 
   const tabs = allTabs.filter(t => hasPerm(t.perm))
-
   const [activeTab, setActiveTab] = useState(tabs[0]?.id || "general")
 
-  // Ensure activeTab is valid if permissions change
   useEffect(() => {
     if (tabs.length > 0 && !tabs.find(t => t.id === activeTab)) {
       setActiveTab(tabs[0].id)
@@ -126,9 +147,7 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full min-w-0">
-
       <div className="flex flex-col md:flex-row gap-6 w-full min-w-0">
-        {/* Tabs Sidebar */}
         <div className="w-full md:w-64 shrink-0 flex overflow-x-auto md:flex-col gap-2 md:gap-1 pb-2 md:pb-0 scrollbar-hide max-w-full md:sticky md:top-4 h-fit">
           {tabs.map(tab => (
             <button
@@ -142,23 +161,20 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
           ))}
         </div>
 
-        {/* Content Area */}
         <div className="flex-1 min-w-0 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
-          {/* Config Forms */}
           {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
               <div className="p-4 sm:p-6 flex-1 space-y-8">
-                
                 <div className={activeTab === "general" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">الإعدادات العامة</h2>
                     <div className="space-y-4 max-w-xl">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">اسم المتجر</label>
-                        <input name="storeName" type="text" defaultValue={config.storeName} required className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary" />
+                        <Input name="storeName" type="text" defaultValue={config.storeName} required />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">وصف المتجر</label>
-                        <textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:ring-1 focus:ring-primary" />
+                        <Textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} />
                       </div>
                     </div>
                     
@@ -168,31 +184,34 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                       <Button 
                         type="button" 
                         variant="destructive" 
-                        disabled={isResetting}
-                        onClick={async () => {
-                          if (confirm('هل أنت متأكد من رغبتك في تصفير المتجر؟ هذا الإجراء سيحذف جميع الطلبات والإحصائيات بشكل نهائي ولا يمكن التراجع عنه.')) {
-                            setIsResetting(true);
-                            const res = await resetStoreStats();
-                            setIsResetting(false);
-                            if (res.success) {
-                              toast.success('تم تصفير المتجر بنجاح');
-                              window.location.reload();
-                            } else {
-                              toast.error(res.error || 'حدث خطأ أثناء التصفير');
+                        onClick={() => {
+                          setConfirmState({
+                            isOpen: true,
+                            title: "تصفير المتجر",
+                            desc: "هل أنت متأكد من رغبتك في تصفير المتجر؟ هذا الإجراء سيحذف جميع الطلبات والإحصائيات بشكل نهائي ولا يمكن التراجع عنه.",
+                            isDestructive: true,
+                            isLoading: false,
+                            action: async () => {
+                              setConfirmState(p => ({ ...p, isLoading: true }));
+                              const res = await resetStoreStats();
+                              if (res.success) {
+                                toast.success('تم تصفير المتجر بنجاح');
+                                window.location.reload();
+                              } else {
+                                toast.error(res.error || 'حدث خطأ أثناء التصفير');
+                              }
+                              setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
                             }
-                          }
+                          });
                         }}
                       >
-                        {isResetting ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <Trash2 className="w-4 h-4 ml-2" />}
                         تصفير بيانات المتجر
                       </Button>
                     </div>
                 </div>
 
-
                 <div className={activeTab === "appearance" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">المظهر والهوية</h2>
-                    
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">شعار المتجر (Logo)</label>
@@ -203,20 +222,19 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                         <ImageUploader value={faviconUrl} onChange={setFaviconUrl} />
                       </div>
                     </div>
-
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">اللون الرئيسي</label>
                         <div className="flex items-center gap-3">
                           <input type="color" value={primaryColor} onChange={e => setPrimaryColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
-                          <input type="text" value={primaryColor.toUpperCase()} onChange={e => setPrimaryColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
+                          <Input type="text" value={primaryColor.toUpperCase()} onChange={e => setPrimaryColor(e.target.value)} dir="ltr" />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">اللون الثانوي</label>
                         <div className="flex items-center gap-3">
                           <input type="color" value={secondaryColor} onChange={e => setSecondaryColor(e.target.value)} className="h-10 w-14 cursor-pointer rounded border-0 bg-transparent p-0" />
-                          <input type="text" value={secondaryColor.toUpperCase()} onChange={e => setSecondaryColor(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" dir="ltr" />
+                          <Input type="text" value={secondaryColor.toUpperCase()} onChange={e => setSecondaryColor(e.target.value)} dir="ltr" />
                         </div>
                       </div>
                     </div>
@@ -224,7 +242,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
                 <div className={activeTab === "social" ? "block space-y-6 animate-in fade-in" : "hidden"}>
                     <h2 className="text-lg font-semibold border-b border-border/50 pb-2">التواصل الاجتماعي وواتساب</h2>
-                    
                     <div className="max-w-xl space-y-5">
                       <div className="flex items-center justify-between p-4 border border-green-200 bg-green-50/50 rounded-lg">
                         <div>
@@ -233,35 +250,29 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                         </div>
                         <Switch checked={whatsappEnabled} onCheckedChange={setWhatsappEnabled} />
                       </div>
-
                       <div className="space-y-2">
                         <label className="text-sm font-medium">رقم الواتساب (مع رمز الدولة)</label>
-                        <input name="whatsappNumber" type="text" defaultValue={config.whatsappNumber || ""} placeholder="مثال: 201012345678" dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                        <Input name="whatsappNumber" type="text" defaultValue={config.whatsappNumber || ""} placeholder="مثال: 201012345678" dir="ltr" />
                       </div>
-
                       <div className="space-y-2">
                         <label className="text-sm font-medium">رابط فيسبوك</label>
-                        <input name="facebookUrl" type="url" defaultValue={config.facebookUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                        <Input name="facebookUrl" type="url" defaultValue={config.facebookUrl || ""} dir="ltr" />
                       </div>
-
                       <div className="space-y-2">
                         <label className="text-sm font-medium">رابط انستجرام</label>
-                        <input name="instagramUrl" type="url" defaultValue={config.instagramUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                        <Input name="instagramUrl" type="url" defaultValue={config.instagramUrl || ""} dir="ltr" />
                       </div>
-
                       <div className="space-y-2">
                         <label className="text-sm font-medium">رابط تويتر / X</label>
-                        <input name="twitterUrl" type="url" defaultValue={config.twitterUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                        <Input name="twitterUrl" type="url" defaultValue={config.twitterUrl || ""} dir="ltr" />
                       </div>
-                      
                       <div className="space-y-2">
                         <label className="text-sm font-medium">رابط تيك توك</label>
-                        <input name="tiktokUrl" type="url" defaultValue={config.tiktokUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                        <Input name="tiktokUrl" type="url" defaultValue={config.tiktokUrl || ""} dir="ltr" />
                       </div>
-
                       <div className="space-y-2">
                         <label className="text-sm font-medium">رابط سناب شات</label>
-                        <input name="snapchatUrl" type="url" defaultValue={config.snapchatUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:ring-1 focus:ring-primary text-left" />
+                        <Input name="snapchatUrl" type="url" defaultValue={config.snapchatUrl || ""} dir="ltr" />
                       </div>
                     </div>
                   </div>
@@ -285,11 +296,11 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                     <form onSubmit={handleProfileSubmit} className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">الاسم</label>
-                        <input name="name" type="text" required defaultValue={currentUser?.name || ''} className="w-full h-10 px-3 border rounded-md" />
+                        <Input name="name" type="text" required defaultValue={currentUser?.name || ''} />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">كلمة المرور الجديدة <span className="text-muted-foreground text-xs">(اختياري)</span></label>
-                        <input name="password" type="password" className="w-full h-10 px-3 border rounded-md" />
+                        <Input name="password" type="password" />
                       </div>
                       <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ التعديلات الشخصية'}
@@ -301,7 +312,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
             </div>
           )}
 
-          {/* Branches Section */}
           {activeTab === "branches" && (
             <div className="p-4 sm:p-6 h-full flex flex-col animate-in fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/50 pb-4 mb-4 gap-4">
@@ -320,19 +330,19 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                   <form onSubmit={handleBranchSubmit} className="space-y-4 max-w-xl">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">اسم الفرع <span className="text-red-500">*</span></label>
-                      <input name="name" type="text" required defaultValue={editingBranch?.name || ""} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" />
+                      <Input name="name" type="text" required defaultValue={editingBranch?.name || ""} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">العنوان التفصيلي</label>
-                      <input name="address" type="text" defaultValue={editingBranch?.address || ""} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" />
+                      <Input name="address" type="text" defaultValue={editingBranch?.address || ""} />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">رقم الهاتف للفرع</label>
-                      <input name="phone" type="text" defaultValue={editingBranch?.phone || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-left" />
+                      <Input name="phone" type="text" defaultValue={editingBranch?.phone || ""} dir="ltr" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">رابط خرائط جوجل (Google Maps URL)</label>
-                      <input name="mapUrl" type="url" defaultValue={editingBranch?.mapUrl || ""} dir="ltr" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-left" />
+                      <Input name="mapUrl" type="url" defaultValue={editingBranch?.mapUrl || ""} dir="ltr" />
                     </div>
                     {editingBranch && (
                       <div className="flex items-center gap-2 pt-2">
@@ -376,8 +386,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
           {activeTab === "backups" && (
             <div className="space-y-8 p-4 sm:p-6 animate-in fade-in">
-              
-              {/* Export & Auto Backup */}
               <div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/50 pb-4 mb-4 gap-4">
                   <div>
@@ -398,9 +406,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                       <option value="weekly">أسبوعياً</option>
                       <option value="monthly">شهرياً</option>
                     </select>
-                    <p className="text-xs text-muted-foreground mt-1">
-
-                    </p>
                   </div>
                   <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ إعدادات النسخ"}
@@ -408,7 +413,6 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                 </form>
               </div>
 
-              {/* Import Backups */}
               <div className="pt-6 border-t border-border/50">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                   <div>
@@ -419,24 +423,32 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                      <input type="file" id="importFile" accept=".zip,.json" className="hidden" onChange={async (e) => {
                        const file = e.target.files?.[0];
                        if (!file) return;
-                       if (!confirm("هل أنت متأكد من استعادة هذه النسخة؟ سيتم مسح كافة بيانات المتجر الحالية!")) return;
                        
-                       const formData = new FormData();
-                       formData.append('file', file);
-                       
-                       const toastId = toast.loading("جاري استعادة النسخة الاحتياطية، يرجى الانتظار...");
-                       try {
-                         const res = await fetch('/api/backups/import', { method: 'POST', body: formData });
-                         if (res.ok) {
-                           toast.success("تمت استعادة النسخة الاحتياطية بنجاح!", { id: toastId });
-                           setTimeout(() => window.location.reload(), 2000);
-                         } else {
-                           const data = await res.json();
-                           toast.error(data.error || "فشل استعادة النسخة الاحتياطية", { id: toastId });
-                         }
-                       } catch (error) {
-                         toast.error("فشل في رفع الملف", { id: toastId });
-                       }
+                       setConfirmState({
+                        isOpen: true,
+                        title: "استعادة النسخة",
+                        desc: "هل أنت متأكد من استعادة هذه النسخة؟ سيتم مسح كافة بيانات المتجر الحالية!",
+                        isDestructive: true,
+                        isLoading: false,
+                        action: async () => {
+                          setConfirmState(p => ({ ...p, isLoading: true }));
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          try {
+                            const res = await fetch('/api/backups/import', { method: 'POST', body: formData });
+                            if (res.ok) {
+                              toast.success("تمت استعادة النسخة الاحتياطية بنجاح!");
+                              setTimeout(() => window.location.reload(), 2000);
+                            } else {
+                              const data = await res.json();
+                              toast.error(data.error || "فشل استعادة النسخة الاحتياطية");
+                            }
+                          } catch (error) {
+                            toast.error("فشل في رفع الملف");
+                          }
+                          setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
+                        }
+                       });
                        e.target.value = '';
                      }} />
                      <Button variant="outline" className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => document.getElementById('importFile')?.click()}>
@@ -465,9 +477,18 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                           </span>
                           {backup.status === 'COMPLETED' && (
                             <Button size="sm" variant="outline" className="h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => {
-                              if(confirm("استعادة هذه النسخة ستحذف البيانات الحالية. هل توافق؟")) {
-                                toast.info("ميزة استعادة النسخ المحفوظة قيد التطوير. يرجى تنزيلها ورفعها يدوياً حالياً.");
-                              }
+                              setConfirmState({
+                                isOpen: true,
+                                title: "استعادة النسخة",
+                                desc: "استعادة هذه النسخة ستحذف البيانات الحالية. هل توافق؟",
+                                isDestructive: true,
+                                isLoading: false,
+                                action: async () => {
+                                  setConfirmState(p => ({ ...p, isLoading: true }));
+                                  toast.info("ميزة استعادة النسخ المحفوظة قيد التطوير.");
+                                  setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
+                                }
+                              });
                             }}>
                               استعادة
                             </Button>
@@ -491,6 +512,15 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
 
         </div>
       </div>
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.desc}
+        isDestructive={confirmState.isDestructive}
+        isLoading={confirmState.isLoading}
+        onConfirm={() => confirmState.action && confirmState.action()}
+        onCancel={() => setConfirmState(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   )
 }

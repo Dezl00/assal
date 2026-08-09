@@ -4,6 +4,8 @@ import React, { useState, useEffect, useTransition } from "react"
 import { uploadMediaAction, getMediaAssets, deleteMediaAction } from "../actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { Loader2, Trash2, Image as ImageIcon, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +24,9 @@ export function MediaManager({ onSelect }: { onSelect?: (asset: MediaAsset) => v
   const [assets, setAssets] = useState<MediaAsset[]>([])
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, action: null | (() => Promise<void>), title: string, desc: string, isDestructive: boolean, isLoading: boolean}>({
+    isOpen: false, action: null, title: "", desc: "", isDestructive: true, isLoading: false
+  });
   const [error, setError] = useState<string | null>(null)
 
   const fetchAssets = () => {
@@ -59,18 +64,26 @@ export function MediaManager({ onSelect }: { onSelect?: (asset: MediaAsset) => v
     setIsUploading(false)
   }
 
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation() // Prevent selection
-    if (!confirm("Are you sure you want to delete this image?")) return
-    
-    startTransition(async () => {
-      const res = await deleteMediaAction(id)
-      if (res.success) {
-        fetchAssets()
-      } else {
-        setError(res.error || "Delete failed")
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    setConfirmState({
+      isOpen: true,
+      title: "Delete Image",
+      desc: "Are you sure you want to delete this image?",
+      isDestructive: true,
+      isLoading: false,
+      action: async () => {
+        setConfirmState(p => ({ ...p, isLoading: true }));
+        const res = await deleteMediaAction(id)
+        if (res.success) {
+          toast.success("Image deleted")
+          fetchAssets()
+        } else {
+          toast.error(res.error || "Delete failed")
+        }
+        setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
       }
-    })
+    });
   }
 
   return (
@@ -115,7 +128,7 @@ export function MediaManager({ onSelect }: { onSelect?: (asset: MediaAsset) => v
               />
               <button
                 type="button"
-                onClick={(e) => handleDelete(asset.id, e)}
+                onClick={(e) => handleDelete(e, asset.id)}
                 className="absolute end-2 top-2 rounded-md bg-red-500 p-1.5 text-white opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
               >
                 <Trash2 className="h-4 w-4" />
@@ -124,6 +137,15 @@ export function MediaManager({ onSelect }: { onSelect?: (asset: MediaAsset) => v
           ))
         )}
       </div>
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.desc}
+        isDestructive={confirmState.isDestructive}
+        isLoading={confirmState.isLoading}
+        onConfirm={() => confirmState.action && confirmState.action()}
+        onCancel={() => setConfirmState(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   )
 }

@@ -1,9 +1,10 @@
 "use client"
 
 import React, { useState, useRef, useMemo, useEffect } from "react"
-import { X, Upload, Download, Check, AlertTriangle, AlertCircle, FileSpreadsheet, Play, Settings2, Search } from "lucide-react"
+import { X, Upload, Download, Check, AlertTriangle, AlertCircle, FileSpreadsheet, Settings2, Search } from "lucide-react"
 import * as XLSX from "xlsx"
 import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { bulkImportProducts } from "@/features/products/actions"
 import { bulkCreateCategories } from "@/features/categories/actions"
 
@@ -64,6 +65,11 @@ export function ImportProductsModal({ isOpen, onClose, onSuccess, categories, br
   const [progress, setProgress] = useState(0);
   const [currentBatch, setCurrentBatch] = useState(0);
   const [totalBatches, setTotalBatches] = useState(0);
+  
+  // Confirmation Modal
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, action: null | (() => Promise<void>), title: string, desc: string, isDestructive: boolean, isLoading: boolean}>({
+    isOpen: false, action: null, title: "", desc: "", isDestructive: true, isLoading: false
+  });
   
   // Result State
   const [importResult, setImportResult] = useState<{ imported: number, updated: number, skipped: number, failed: number, rejected: number } | null>(null);
@@ -310,110 +316,116 @@ export function ImportProductsModal({ isOpen, onClose, onSuccess, categories, br
     const validItems = parsedItems.filter(i => !i.exclude && (i.status === 'valid' || i.status === 'warning'));
     if (validItems.length === 0) return;
 
-    if (validItems.length > 3000) {
-      if (!confirm(`أنت على وشك استيراد ${validItems.length.toLocaleString()} منتج. هل ترغب في المتابعة؟`)) {
-        return;
-      }
-    }
+    setConfirmState({
+      isOpen: true,
+      title: "استيراد المنتجات",
+      desc: `أنت على وشك استيراد ${validItems.length.toLocaleString()} منتج. هل ترغب في المتابعة؟`,
+      isDestructive: false,
+      isLoading: false,
+      action: async () => {
+        setConfirmState(p => ({ ...p, isLoading: true }));
+        setStep(3);
+        setProgress(5);
 
-    setStep(3);
-    setProgress(5);
+        try {
+          // 1. Bulk create categories if needed
+          if (autoCreateCategories) {
+            const uniqueCatPairs = new Map<string, string>(); // sub -> main
+            validItems.forEach(item => {
+              if (item.categoryName) {
+                uniqueCatPairs.set(item.categoryName, ""); // Main cat
+                if (item.subCategoryName) {
+                  // Store combination to create later
+                  uniqueCatPairs.set(`${item.categoryName}|||${item.subCategoryName}`, item.categoryName);
+                }
+              }
+            });
 
-    try {
-      // 1. Bulk create categories if needed
-      if (autoCreateCategories) {
-        const uniqueCatPairs = new Map<string, string>(); // sub -> main
-        validItems.forEach(item => {
-          if (item.categoryName) {
-            uniqueCatPairs.set(item.categoryName, ""); // Main cat
-            if (item.subCategoryName) {
-              // Store combination to create later
-              uniqueCatPairs.set(`${item.categoryName}|||${item.subCategoryName}`, item.categoryName);
+            const missingCategoriesToCreate: { main: string, sub?: string }[] = [];
+            
+            uniqueCatPairs.forEach((mainRef, key) => {
+              if (mainRef === "") {
+                // It's a main category
+                const exists = categories.find(c => !c.parentId && c.name.toLowerCase().trim() === key.toLowerCase().trim());
+                if (!exists) missingCategoriesToCreate.push({ main: key });
+              } else {
+                // It's a sub category
+                const subName = key.split("|||")[1];
+                missingCategoriesToCreate.push({ main: mainRef, sub: subName });
+              }
+            });
+
+            if (missingCategoriesToCreate.length > 0) {
+              const res = await bulkCreateCategories(missingCategoriesToCreate);
+              if (!res.success) {
+                toast.error(res.error || "فشل إنشاء الأقسام الجديدة");
+                setStep(2);
+                return;
+              }
             }
           }
-        });
+          setProgress(15);
 
-        const missingCategoriesToCreate: { main: string, sub?: string }[] = [];
-        
-        uniqueCatPairs.forEach((mainRef, key) => {
-          if (mainRef === "") {
-            // It's a main category
-            const exists = categories.find(c => !c.parentId && c.name.toLowerCase().trim() === key.toLowerCase().trim());
-            if (!exists) missingCategoriesToCreate.push({ main: key });
-          } else {
-            // It's a sub category
-            const subName = key.split("|||")[1];
-            missingCategoriesToCreate.push({ main: mainRef, sub: subName });
-          }
-        });
+          // 2. Batch Import
+          const totalBatchCount = Math.ceil(validItems.length / BATCH_SIZE);
+          setTotalBatches(totalBatchCount);
+          
+          let totalCreated = 0;
+          let totalUpdated = 0;
+          let totalSkipped = 0; 
+          let totalFailed = 0;
+          
+          for (let i = 0; i < totalBatchCount; i++) {
+            setCurrentBatch(i + 1);
+            const chunk = validItems.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+            
+            // Prepare payload
+            const payload = chunk.map(item => ({
+              name: item.name,
+              sku: item.sku,
+              price: item.price,
+              stock: item.stock,
+              categoryName: item.categoryName,
+              subCategoryName: item.subCategoryName,
+              brandName: item.brandName,
+              description: item.description,
+              isActive: true
+            }));
 
-        if (missingCategoriesToCreate.length > 0) {
-          const res = await bulkCreateCategories(missingCategoriesToCreate);
-          if (!res.success) {
-            toast.error(res.error || "فشل إنشاء الأقسام الجديدة");
-            setStep(2);
-            return;
+            // Pass duplicateHandling: 'skip' | 'update' | 'create', here we use skip or update
+            const res = await bulkImportProducts(payload, duplicateHandling as any);
+            
+            if (res.success) {
+              totalCreated += res.createdCount || 0;
+              totalUpdated += res.updatedCount || 0;
+              totalSkipped += (chunk.length - (res.createdCount || 0) - (res.updatedCount || 0));
+            } else {
+              totalFailed += chunk.length;
+              toast.error(`فشلت الدفعة ${i+1}: ${res.error}`);
+            }
+            
+            const currentProgress = 15 + Math.floor(((i + 1) / totalBatchCount) * 85);
+            setProgress(currentProgress > 100 ? 100 : currentProgress);
           }
+
+          setImportResult({
+            imported: totalCreated,
+            updated: totalUpdated,
+            skipped: totalSkipped,
+            failed: totalFailed,
+            rejected: parsedItems.filter(i => i.status === 'error' && !i.exclude).length
+          });
+          
+          setStep(4);
+          onSuccess();
+        } catch (err) {
+          toast.error("حدث خطأ في الاتصال بالخادم أثناء الاستيراد.");
+          setStep(2);
+        } finally {
+          setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
         }
       }
-      setProgress(15);
-
-      // 2. Batch Import
-      const totalBatchCount = Math.ceil(validItems.length / BATCH_SIZE);
-      setTotalBatches(totalBatchCount);
-      
-      let totalCreated = 0;
-      let totalUpdated = 0;
-      let totalSkipped = 0; 
-      let totalFailed = 0;
-      
-      for (let i = 0; i < totalBatchCount; i++) {
-        setCurrentBatch(i + 1);
-        const chunk = validItems.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
-        
-        // Prepare payload
-        const payload = chunk.map(item => ({
-          name: item.name,
-          sku: item.sku,
-          price: item.price,
-          stock: item.stock,
-          categoryName: item.categoryName,
-          subCategoryName: item.subCategoryName,
-          brandName: item.brandName,
-          description: item.description,
-          isActive: true
-        }));
-
-        // Pass duplicateHandling: 'skip' | 'update' | 'create', here we use skip or update
-        const res = await bulkImportProducts(payload, duplicateHandling as any);
-        
-        if (res.success) {
-          totalCreated += res.createdCount || 0;
-          totalUpdated += res.updatedCount || 0;
-          totalSkipped += (chunk.length - (res.createdCount || 0) - (res.updatedCount || 0));
-        } else {
-          totalFailed += chunk.length;
-          toast.error(`فشلت الدفعة ${i+1}: ${res.error}`);
-        }
-        
-        const currentProgress = 15 + Math.floor(((i + 1) / totalBatchCount) * 85);
-        setProgress(currentProgress > 100 ? 100 : currentProgress);
-      }
-
-      setImportResult({
-        imported: totalCreated,
-        updated: totalUpdated,
-        skipped: totalSkipped,
-        failed: totalFailed,
-        rejected: parsedItems.filter(i => i.status === 'error' && !i.exclude).length
-      });
-      
-      setStep(4);
-      onSuccess();
-    } catch (err) {
-      toast.error("حدث خطأ في الاتصال بالخادم أثناء الاستيراد.");
-      setStep(2);
-    }
+    });
   };
 
 
@@ -796,6 +808,15 @@ export function ImportProductsModal({ isOpen, onClose, onSuccess, categories, br
         )}
 
       </div>
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.desc}
+        isDestructive={confirmState.isDestructive}
+        isLoading={confirmState.isLoading}
+        onConfirm={() => confirmState.action && confirmState.action()}
+        onCancel={() => setConfirmState(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   );
 }

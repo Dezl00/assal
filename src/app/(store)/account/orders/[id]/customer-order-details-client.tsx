@@ -6,10 +6,13 @@ import { ArrowRight, Package, Clock, CheckCircle2, Truck, XCircle } from "lucide
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import Link from "next/link"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 
 export function CustomerOrderDetailsClient({ order }: { order: any }) {
   const router = useRouter()
-  const [isCancelling, setIsCancelling] = useState(false)
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, action: null | (() => Promise<void>), title: string, desc: string, isDestructive: boolean, isLoading: boolean}>({
+    isOpen: false, action: null, title: "", desc: "", isDestructive: true, isLoading: false
+  });
 
   const statusLabels: Record<string, string> = {
     "PENDING": "قيد المراجعة",
@@ -21,20 +24,28 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
   }
 
   const cancelOrder = async () => {
-    if (!confirm("هل أنت متأكد من إلغاء هذا الطلب؟")) return;
-    setIsCancelling(true)
-    try {
-      const res = await fetch(`/api/orders/${order.id}/cancel`, { method: "POST" })
-      if (res.ok) {
-        toast.success("تم إلغاء الطلب بنجاح")
-        router.refresh()
-      } else {
-        toast.error("حدث خطأ أو أن الطلب لا يمكن إلغاؤه")
+    setConfirmState({
+      isOpen: true,
+      title: "إلغاء الطلب",
+      desc: "هل أنت متأكد من إلغاء هذا الطلب؟",
+      isDestructive: true,
+      isLoading: false,
+      action: async () => {
+        setConfirmState(p => ({ ...p, isLoading: true }));
+        try {
+          const res = await fetch(`/api/orders/${order.id}/cancel`, { method: "POST" })
+          if (res.ok) {
+            toast.success("تم إلغاء الطلب بنجاح")
+            router.refresh()
+          } else {
+            toast.error("حدث خطأ أو أن الطلب لا يمكن إلغاؤه")
+          }
+        } catch (e) {
+          toast.error("حدث خطأ")
+        }
+        setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
       }
-    } catch (e) {
-      toast.error("حدث خطأ")
-    }
-    setIsCancelling(false)
+    });
   }
 
   const getStatusStep = (status: string) => {
@@ -173,19 +184,27 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
           </div>
         </div>
 
-        {(order.status === 'PENDING' || order.status === 'PAID') && (
-          <div className="mt-8 pt-6 border-t border-border/50 flex justify-end">
+        {order.status === 'PENDING' && (
+          <div className="flex justify-end border-t border-border/50 pt-6 mt-6">
             <Button 
               variant="destructive" 
-              onClick={cancelOrder} 
-              disabled={isCancelling}
-              className="w-full md:w-auto"
+              onClick={cancelOrder}
             >
+              <XCircle className="w-4 h-4 ml-2" />
               إلغاء الطلب
             </Button>
           </div>
         )}
       </div>
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.desc}
+        isDestructive={confirmState.isDestructive}
+        isLoading={confirmState.isLoading}
+        onConfirm={() => confirmState.action && confirmState.action()}
+        onCancel={() => setConfirmState(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   )
 }

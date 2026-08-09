@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from "react"
-import { Package, User, MapPin, LogOut, Phone, Shield, ChevronLeft, ArrowRight, Settings } from "lucide-react"
+import { Package, User, MapPin, LogOut, Phone, Shield, ChevronLeft, ArrowRight, Settings, Trash2 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { toast } from "sonner"
 import { updateUserAccount } from "@/app/actions/user"
@@ -11,6 +11,7 @@ import Link from "next/link"
 import { registerServiceWorkerAndSubscribe, unsubscribeFromPush } from "@/lib/push-client"
 import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 
 type Tab = "main" | "orders" | "addresses" | "settings" | "security" | "notifications"
 
@@ -19,6 +20,9 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [pushEnabled, setPushEnabled] = useState(user.orderUpdatesEnabled || false)
   const [isUpdatingPush, setIsUpdatingPush] = useState(false)
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, action: null | (() => Promise<void>), title: string, desc: string, isDestructive: boolean, isLoading: boolean}>({
+    isOpen: false, action: null, title: "", desc: "", isDestructive: true, isLoading: false
+  });
   
   const [selectedGovId, setSelectedGovId] = useState("")
   const selectedGov = useMemo(() => governorates.find((g: any) => g.id === selectedGovId), [governorates, selectedGovId])
@@ -82,18 +86,39 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
   }
 
   const cancelOrder = async (orderId: string) => {
-    if (!confirm("هل أنت متأكد من إلغاء هذا الطلب؟")) return;
-    try {
-      const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "POST" })
-      if (res.ok) {
-        toast.success("تم إلغاء الطلب بنجاح")
-        window.location.reload()
-      } else {
-        toast.error("حدث خطأ أو أن الطلب لا يمكن إلغاؤه")
+    setConfirmState({
+      isOpen: true,
+      title: "إلغاء الطلب",
+      desc: "هل أنت متأكد من إلغاء هذا الطلب؟",
+      isDestructive: true,
+      isLoading: false,
+      action: async () => {
+        setConfirmState(p => ({ ...p, isLoading: true }));
+        try {
+          const res = await fetch(`/api/orders/${orderId}/cancel`, { method: "POST" })
+          if (res.ok) {
+            toast.success("تم إلغاء الطلب بنجاح")
+            window.location.reload()
+          } else {
+            toast.error("حدث خطأ أو أن الطلب لا يمكن إلغاؤه")
+          }
+        } catch (e) {
+          toast.error("حدث خطأ")
+        }
+        setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
       }
-    } catch (e) {
-      toast.error("حدث خطأ")
-    }
+    });
+  }
+
+  const handleDeleteAddress = async (addressId: string) => {
+      const { deleteAddress } = await import('@/app/actions/address')
+      try {
+        await deleteAddress(addressId)
+        toast.success("تم حذف العنوان بنجاح")
+        window.location.reload()
+      } catch(e) {
+        toast.error("حدث خطأ أثناء الحذف")
+      }
   }
 
   const getStatusStep = (status: string) => {
@@ -573,6 +598,15 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
           )}
         </AnimatePresence>
       </div>
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.desc}
+        isDestructive={confirmState.isDestructive}
+        isLoading={confirmState.isLoading}
+        onConfirm={() => confirmState.action && confirmState.action()}
+        onCancel={() => setConfirmState(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   )
 }

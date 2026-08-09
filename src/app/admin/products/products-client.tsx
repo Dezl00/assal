@@ -58,6 +58,9 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
   // Bulk Selection States
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [confirmState, setConfirmState] = useState<{isOpen: boolean, action: null | (() => Promise<void>), title: string, desc: string, isDestructive: boolean, isLoading: boolean}>({
+    isOpen: false, action: null, title: "", desc: "", isDestructive: true, isLoading: false
+  });
   
   // Bulk Edit Modal
   const [bulkEditOpen, setBulkEditOpen] = useState(false)
@@ -214,16 +217,28 @@ export function ProductsClient({ products, categories, brands = [], departments 
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])
   }
 
-  async function handleBulkDelete() {
-    if (!confirm(`هل أنت متأكد من حذف ${selectedIds.length} منتج؟`)) return
-    const res = await bulkDeleteProducts(selectedIds)
-    if (res.success) {
-      toast.success(`تم حذف ${selectedIds.length} منتج بنجاح`)
-      setLocalProducts(prev => prev.filter(p => !selectedIds.includes(p.id)))
-      setSelectedIds([])
-    } else {
-      toast.error("فشل في الحذف الجماعي")
-    }
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+
+    setConfirmState({
+      isOpen: true,
+      title: "حذف المنتجات",
+      desc: `هل أنت متأكد من حذف ${selectedIds.length} منتج؟`,
+      isDestructive: true,
+      isLoading: false,
+      action: async () => {
+        setConfirmState(p => ({ ...p, isLoading: true }));
+        const res = await bulkDeleteProducts(selectedIds)
+        if (res.success) {
+          toast.success(`تم حذف ${selectedIds.length} منتج بنجاح`)
+          setLocalProducts(prev => prev.filter(p => !selectedIds.includes(p.id)))
+          setSelectedIds([])
+        } else {
+          toast.error("فشل في الحذف الجماعي")
+        }
+        setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
+      }
+    });
   }
 
   async function handleBulkToggleStatus(isActive: boolean) {
@@ -927,6 +942,15 @@ export function ProductsClient({ products, categories, brands = [], departments 
         </div>, document.body
       )}
 
+      <ConfirmModal 
+        isOpen={confirmState.isOpen}
+        title={confirmState.title}
+        description={confirmState.desc}
+        isDestructive={confirmState.isDestructive}
+        isLoading={confirmState.isLoading}
+        onConfirm={() => confirmState.action && confirmState.action()}
+        onCancel={() => setConfirmState(p => ({ ...p, isOpen: false }))}
+      />
     </div>
   )
 }
