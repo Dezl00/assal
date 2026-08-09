@@ -99,7 +99,7 @@ export async function deleteProduct(id: string) {
         entityType: "Product",
         entityId: product.id,
         details: { message: `تم حذف المنتج: ${product.name}` },
-        userId: session.user.id || null
+        userId: session?.user?.id || null
       }
     })
 
