@@ -28,7 +28,7 @@ export default async function AnalyticsPage() {
       createdAt: { gte: thirtyDaysAgo },
       // Optional: if product views had country, we'd filter here too, but they don't
     },
-    include: { product: { select: { id: true, name: true } } }
+    include: { product: { select: { id: true, name: true, images: { take: 1, select: { url: true } } } } }
   })
 
   // Group by day for charts
@@ -61,7 +61,7 @@ export default async function AnalyticsPage() {
   // Top Products
   const productViewCounts = productViews.reduce((acc: any, v) => {
     const id = v.productId
-    if (!acc[id]) acc[id] = { count: 0, name: v.product?.name || 'منتج محذوف' }
+    if (!acc[id]) acc[id] = { count: 0, name: v.product?.name || 'منتج محذوف', image: v.product?.images?.[0]?.url || null }
     acc[id].count += 1
     return acc
   }, {})

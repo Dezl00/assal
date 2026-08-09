@@ -15,6 +15,30 @@ export function AnalyticsClient({
 
   const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num || 0)
 
+  // SVG Path Generator for smooth curves
+  const generateSmoothPath = (data: any[], key: string, max: number, width: number, height: number) => {
+    if (data.length === 0) return '';
+    const widthPerPoint = width / Math.max(data.length - 1, 1);
+    
+    const points = data.map((d, i) => {
+      const x = i * widthPerPoint;
+      const y = height - ((d[key] / max) * (height * 0.9)); // 90% height to leave padding at top
+      return { x, y };
+    });
+    
+    let path = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const curr = points[i];
+      const next = points[i + 1];
+      const cpX = curr.x + (next.x - curr.x) / 2;
+      path += ` C ${cpX},${curr.y} ${cpX},${next.y} ${next.x},${next.y}`;
+    }
+    return path;
+  };
+
+  const chartWidth = Math.max(800, chartData.length * 60);
+  const chartHeight = 240;
+
   return (
     <div className="space-y-6 animate-in fade-in">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
@@ -95,29 +119,82 @@ export function AnalyticsClient({
           {chartData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-muted-foreground">لا توجد بيانات متاحة</div>
           ) : (
-            <div className="h-64 flex items-end gap-2 overflow-x-auto pb-4 custom-scrollbar">
-              {chartData.map((day: any, i: number) => (
-                <div key={i} className="flex flex-col items-center gap-1 min-w-[40px] group relative">
-                  <div className="absolute -top-16 bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap pointer-events-none">
-                    <p dir="ltr" className="text-center">{day.date}</p>
-                    <p>الزيارات: {formatNumber(day.visits)}</p>
-                    <p>المشاهدات: {formatNumber(day.views)}</p>
-                  </div>
-                  <div className="w-full flex justify-center gap-1 items-end h-48">
-                    <div 
-                      className="w-3 bg-primary rounded-t-sm transition-all duration-500 hover:brightness-110" 
-                      style={{ height: `${(day.visits / maxVal) * 100}%` }}
-                    />
-                    <div 
-                      className="w-3 bg-blue-500 rounded-t-sm transition-all duration-500 hover:brightness-110" 
-                      style={{ height: `${(day.views / maxVal) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground rotate-45 origin-left mt-2">
-                    {day.date.split('-').slice(1).join('/')}
-                  </span>
+            <div className="relative h-[300px] overflow-x-auto overflow-y-hidden custom-scrollbar pb-6" dir="ltr">
+              <div style={{ width: `${chartWidth}px`, height: `${chartHeight}px` }} className="relative mt-4">
+                
+                {/* SVG Curves */}
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Visits Path Fill */}
+                  <path 
+                    d={`${generateSmoothPath(chartData, 'visits', maxVal, chartWidth, chartHeight)} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`}
+                    fill="url(#colorVisits)"
+                  />
+                  {/* Views Path Fill */}
+                  <path 
+                    d={`${generateSmoothPath(chartData, 'views', maxVal, chartWidth, chartHeight)} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`}
+                    fill="url(#colorViews)"
+                  />
+                  
+                  {/* Visits Line */}
+                  <path 
+                    d={generateSmoothPath(chartData, 'visits', maxVal, chartWidth, chartHeight)}
+                    fill="none" stroke="#4f46e5" strokeWidth="3" strokeLinecap="round"
+                    className="drop-shadow-sm"
+                  />
+                  {/* Views Line */}
+                  <path 
+                    d={generateSmoothPath(chartData, 'views', maxVal, chartWidth, chartHeight)}
+                    fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round"
+                    className="drop-shadow-sm"
+                  />
+                </svg>
+
+                {/* Interactive Points & Tooltips */}
+                <div className="absolute inset-0 flex justify-between">
+                  {chartData.map((day: any, i: number) => {
+                    const widthPerPoint = chartWidth / Math.max(chartData.length - 1, 1);
+                    const left = i * widthPerPoint;
+                    
+                    return (
+                      <div key={i} className="group absolute h-full w-[40px] -ml-[20px] flex flex-col items-center justify-end z-10 cursor-pointer" style={{ left: `${left}px` }}>
+                        
+                        {/* Tooltip */}
+                        <div className="absolute bottom-[calc(100%+10px)] bg-black/90 text-white text-xs p-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl border border-white/10">
+                          <p dir="ltr" className="text-center font-bold mb-1">{day.date}</p>
+                          <div className="flex items-center gap-2 text-indigo-300">
+                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                            <span>زيارات المتجر: {formatNumber(day.visits)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-blue-300 mt-1">
+                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                            <span>مشاهدات المنتجات: {formatNumber(day.views)}</span>
+                          </div>
+                        </div>
+
+                        {/* Hover vertical line */}
+                        <div className="absolute top-0 bottom-0 w-px bg-border opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                        {/* X-axis label */}
+                        <span className="absolute -bottom-6 text-[10px] text-muted-foreground font-medium whitespace-nowrap">
+                          {day.date.split('-').slice(1).join('/')}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+
+              </div>
             </div>
           )}
           <div className="flex justify-center gap-4 sm:gap-6 mt-6">
@@ -139,8 +216,17 @@ export function AnalyticsClient({
               {topProducts.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد بيانات</p> : null}
               {topProducts.map((p: any, i: number) => (
                 <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
-                  <span className="truncate max-w-[200px] font-medium">{p.name}</span>
-                  <span className="font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} مشاهدة</span>
+                  <div className="flex items-center gap-3">
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} className="w-9 h-9 rounded-md object-cover border border-border/50 shadow-sm" />
+                    ) : (
+                      <div className="w-9 h-9 rounded-md bg-muted flex items-center justify-center border border-border/50 shadow-sm">
+                        <ShoppingBag className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <span className="truncate max-w-[150px] font-medium">{p.name}</span>
+                  </div>
+                  <span className="font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs shrink-0">{formatNumber(p.count)} مشاهدة</span>
                 </div>
               ))}
             </div>
