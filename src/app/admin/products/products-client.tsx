@@ -131,13 +131,15 @@ export function ProductsClient({ products, categories, brands = [], departments 
     }
   }, [editingProduct, brands, categories])
 
-  function resetForm() {
+  function resetForm(keepSelections: boolean = false) {
     setEditingProduct(null)
     setImageUrls([])
-    setSelectedBrandId("")
-    setBrandSearch("")
-    setSelectedCategoryId("")
-    setCategorySearch("")
+    if (!keepSelections) {
+      setSelectedBrandId("")
+      setBrandSearch("")
+      setSelectedCategoryId("")
+      setCategorySearch("")
+    }
     const form: any = document.getElementById("add-product-form")
     if (form) form.reset()
   }
@@ -159,7 +161,12 @@ export function ProductsClient({ products, categories, brands = [], departments 
     setIsSubmitting(false)
     if (res.success) {
       toast.success(editingProduct ? "تم تعديل المنتج بنجاح" : "تمت إضافة المنتج بنجاح")
-      resetForm()
+      resetForm(!editingProduct) // Keep selections if it's a new product
+      if (!editingProduct && res.product) {
+        setLocalProducts(prev => [res.product, ...prev])
+      } else if (editingProduct && res.product) {
+        setLocalProducts(prev => prev.map(p => p.id === editingProduct.id ? res.product : p))
+      }
     } else {
       toast.error(res.error || "حدث خطأ ما")
     }

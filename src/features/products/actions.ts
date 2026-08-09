@@ -72,7 +72,7 @@ export async function createProduct(formData: FormData) {
     })
 
     revalidatePath("/admin/products")
-    return { success: true }
+    return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create product" }
   }
@@ -186,7 +186,7 @@ export async function updateProduct(id: string, formData: FormData) {
     })
 
     revalidatePath("/admin/products")
-    return { success: true }
+    return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update product" }
   }
