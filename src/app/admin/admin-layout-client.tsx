@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X, Bell, Tag, Truck, BookOpen } from "lucide-react"
@@ -18,6 +18,13 @@ export function AdminLayoutClient({
   storeName: string
   logoUrl: string | null
 }) {
+  useEffect(() => {
+    document.body.classList.add('admin-theme', 'bg-background');
+    return () => {
+      document.body.classList.remove('admin-theme', 'bg-background');
+    }
+  }, []);
+
   return (
     <SessionProvider>
       <AdminLayoutInner storeName={storeName} logoUrl={logoUrl}>{children}</AdminLayoutInner>
