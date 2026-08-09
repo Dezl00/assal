@@ -32,6 +32,10 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   // Local state for optimistic updates
   const [localCategories, setLocalCategories] = useState(categories)
 
+  const [parentSearch, setParentSearch] = useState("")
+  const [isParentDropdownOpen, setIsParentDropdownOpen] = useState(false)
+  const [selectedParentId, setSelectedParentId] = useState("")
+
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set())
   const toggleExpand = (id: string, e: React.MouseEvent) => {
     e.stopPropagation()
@@ -57,11 +61,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
           const isSub = !!editingCategory.parentId
           if (form.categoryType) form.categoryType.value = isSub ? "sub" : "main"
           
-          const select = document.getElementById('parentId-select') as HTMLSelectElement
-          if (select) {
-            select.disabled = !isSub
-            select.value = editingCategory.parentId || ""
-          }
+          const pId = editingCategory.parentId || ""
+          setSelectedParentId(pId)
+          setParentSearch(categories.find((c: any) => c.id === pId)?.name || "")
 
           const deptSelect = document.getElementById('departmentId-select') as HTMLSelectElement
           if (deptSelect) {
@@ -81,11 +83,8 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     if (form) {
       form.reset()
       form.categoryType.value = "main"
-      const select = document.getElementById('parentId-select') as HTMLSelectElement
-      if (select) {
-        select.disabled = true
-        select.value = ""
-      }
+      setSelectedParentId("")
+      setParentSearch("")
       const deptSelect = document.getElementById('departmentId-select') as HTMLSelectElement
       if (deptSelect) {
         deptSelect.value = ""
@@ -232,20 +231,30 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
     }
   }
 
-  const [filterType, setFilterType] = useState<"all" | "main" | "sub">("all")
   const [filterDepartment, setFilterDepartment] = useState<string>("all")
+  const [filterCategory, setFilterCategory] = useState<string>("all")
+
+  const getProductCount = (category: any) => {
+    let count = category._count?.products || 0;
+    if (!category.parentId) {
+      const subs = localCategories.filter(c => c.parentId === category.id);
+      subs.forEach(sub => { count += (sub._count?.products || 0); });
+    }
+    return count;
+  };
 
   // First apply filters
   let filteredCategories = localCategories.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.slug.toLowerCase().includes(searchQuery.toLowerCase())
     if (!matchesSearch) return false
 
-    if (filterType === "main" && c.parentId) return false
-    if (filterType === "sub" && !c.parentId) return false
-    
     if (filterDepartment !== "all") {
       const parent = localCategories.find(p => p.id === c.parentId)
       if (c.departmentId !== filterDepartment && parent?.departmentId !== filterDepartment) return false
+    }
+
+    if (filterCategory !== "all") {
+      if (c.id !== filterCategory && c.parentId !== filterCategory) return false
     }
 
     return true
@@ -308,17 +317,8 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <select 
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value as any)}
-                  className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto"
-                >
-                  <option value="all">كل الأقسام</option>
-                  <option value="main">رئيسية فقط</option>
-                  <option value="sub">فرعية فقط</option>
-                </select>
-                <select 
                   value={filterDepartment}
-                  onChange={(e) => setFilterDepartment(e.target.value)}
+                  onChange={(e) => { setFilterDepartment(e.target.value); setFilterCategory("all"); }}
                   className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto max-w-[200px]"
                 >
                   <option value="all">كل المجالات</option>
@@ -326,6 +326,18 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                     <option key={d.id} value={d.id}>{d.name}</option>
                   ))}
                 </select>
+                {filterDepartment !== "all" && (
+                  <select 
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="h-10 rounded-md border border-input bg-transparent px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring w-full sm:w-auto max-w-[200px]"
+                  >
+                    <option value="all">كل الأقسام للمجال</option>
+                    {localCategories.filter(c => !c.parentId && c.departmentId === filterDepartment).map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
             
@@ -434,7 +446,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                         </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                            {category._count?.products || 0}
+                            {getProductCount(category)}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-center flex justify-center items-center">
@@ -559,7 +571,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                       </div>
                       <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
                         <span className="text-muted-foreground text-xs">المنتجات:</span>
-                        <span className="font-medium text-xs text-primary">{category._count?.products || 0}</span>
+                        <span className="font-medium text-xs text-primary">{getProductCount(category)}</span>
                       </div>
                     </div>
 
@@ -691,19 +703,40 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                 </div>
 
                 {categoryType === "sub" && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">اختر القسم الأب <span className="text-red-500">*</span></label>
-                    <select 
-                      id="parentId-select"
-                      name="parentId"
-                      required
-                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring appearance-none"
-                    >
-                      <option value="">اختر...</option>
-                      {categories.filter(c => !c.parentId && c.id !== editingCategory?.id).map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
+                  <div className="space-y-2 relative">
+                    <label className="text-sm font-medium">اختر القسم الرئيسي</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={parentSearch}
+                        onChange={(e) => {
+                          setParentSearch(e.target.value)
+                          setIsParentDropdownOpen(true)
+                          if (e.target.value === "") setSelectedParentId("")
+                        }}
+                        onFocus={() => setIsParentDropdownOpen(true)}
+                        onBlur={() => setTimeout(() => setIsParentDropdownOpen(false), 200)}
+                        placeholder="ابحث أو اختر القسم..."
+                        required={!selectedParentId}
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                      />
+                      {isParentDropdownOpen && (
+                        <div className="absolute top-full left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50 py-1">
+                          {categories
+                            .filter((c: any) => !c.parentId && c.id !== editingCategory?.id && c.name.toLowerCase().includes(parentSearch.toLowerCase()))
+                            .map((cat: any) => (
+                              <div key={cat.id} className="px-3 py-2 text-sm cursor-pointer hover:bg-muted/50" onClick={() => { setSelectedParentId(cat.id); setParentSearch(cat.name); setIsParentDropdownOpen(false); }}>
+                                {cat.name}
+                              </div>
+                            ))
+                          }
+                          {categories.filter((c: any) => !c.parentId && c.id !== editingCategory?.id && c.name.toLowerCase().includes(parentSearch.toLowerCase())).length === 0 && (
+                            <div className="px-3 py-2 text-sm text-muted-foreground">لا يوجد قسم مطابق</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <input type="hidden" name="parentId" value={selectedParentId} />
                   </div>
                 )}
 
