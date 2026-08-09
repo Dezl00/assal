@@ -72,7 +72,14 @@ export const authConfig: NextAuthConfig = {
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token?.id) {
+        // verify user still exists and is active
+        const dbUser = await db.user.findUnique({ where: { id: token.id as string } })
+        if (!dbUser || dbUser.isActive === false) {
+          // Returning an empty object will effectively make session.user undefined
+          return { ...session, user: null as any }
+        }
+
         session.user.role = token.role as string
         session.user.permissions = (token.permissions as string[]) || []
         session.user.id = token.id as string

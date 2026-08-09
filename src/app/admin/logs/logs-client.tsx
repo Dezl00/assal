@@ -40,17 +40,22 @@ export function LogsClient({ logs, currentUser }: { logs: any[], currentUser: an
   })
 
   const getActionBadge = (action: string) => {
-    const isDelete = action === 'Delete' || action === 'حذف';
-    const isCreate = action === 'Create' || action === 'إنشاء';
+    const actionUpper = action.toUpperCase();
+    
+    const isDelete = actionUpper.includes('DELETE') || action === 'حذف';
+    const isCreate = actionUpper.includes('CREATE') || action === 'إنشاء' || action === 'إضافة';
+    const isSort = actionUpper === 'UPDATEORDER' || action === 'ترتيب';
+    const isUpdate = (actionUpper.includes('UPDATE') && !isSort) || action === 'تعديل';
+    const isLogin = actionUpper.includes('LOGIN') || action === 'تسجيل دخول';
     
     let label = action;
-    if (action === 'Create') label = 'إنشاء';
-    else if (action === 'Update') label = 'تعديل';
-    else if (action === 'Delete') label = 'حذف';
-    else if (action === 'Login') label = 'تسجيل دخول';
-    else if (action === 'UpdateOrder') label = 'ترتيب';
+    if (isDelete) label = 'حذف';
+    else if (isCreate) label = 'إضافة';
+    else if (isSort) label = 'ترتيب';
+    else if (isUpdate) label = 'تعديل';
+    else if (isLogin) label = 'تسجيل دخول';
 
-    const colorClass = isDelete ? 'bg-red-100 text-red-700' : isCreate ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+    const colorClass = isDelete ? 'bg-red-100 text-red-700' : isCreate ? 'bg-green-100 text-green-700' : isSort ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700';
 
     return (
       <span className={`h-9 min-w-[100px] px-3 py-2 inline-flex items-center justify-center rounded-md text-sm font-medium ${colorClass}`}>

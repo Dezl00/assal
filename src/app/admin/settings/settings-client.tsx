@@ -10,7 +10,6 @@ import { toast } from "sonner"
 import { ImageUploader } from "@/components/ui/image-uploader"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { User as UserIcon } from "lucide-react"
 
@@ -174,7 +173,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">وصف المتجر</label>
-                        <Textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} />
+                        <textarea name="storeDescription" defaultValue={config.storeDescription || ""} rows={4} className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
                       </div>
                     </div>
                     
