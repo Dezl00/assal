@@ -14,9 +14,12 @@ export default async function OffersPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">العروض والخصومات</h1>
-        <p className="text-muted-foreground mt-2">إدارة أكواد الخصم والنافذة المنبثقة الترحيبية وإعدادات الشحن المجاني.</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">العروض والخصومات</span>
+        </nav>
       </div>
       <OffersClient 
         initialCoupons={coupons} 

@@ -14,9 +14,12 @@ export default async function ShippingPaymentPage() {
 
   return (
     <div className="p-4 md:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">الدفع والشحن</h1>
-        <p className="text-muted-foreground mt-2">إدارة طرق الدفع ومناطق الشحن وتكاليفها لكل مدينة.</p>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>الرئيسية</span>
+          <span>/</span>
+          <span className="text-foreground">الدفع والشحن</span>
+        </nav>
       </div>
       <ShippingPaymentClient 
         initialGovernorates={governorates} 
