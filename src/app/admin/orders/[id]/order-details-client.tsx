@@ -172,6 +172,7 @@ export function OrderDetailsClient({ order, logoUrl, storeName, branches = [] }:
                 إلغاء الطلب
               </Button>
             </div>
+            </div>
             
             <div className="bg-card border border-border shadow-sm rounded-xl p-6">
               <h3 className="font-bold mb-4 flex items-center gap-2"><MapPin className="w-4 h-4" /> بيانات الطلب</h3>
