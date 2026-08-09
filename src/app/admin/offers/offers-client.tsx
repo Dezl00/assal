@@ -18,7 +18,6 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
   const [deleteModalOpen, setDeleteModalOpen] = useState<string | null>(null)
 
   // Form states
-  const [isFormVisible, setIsFormVisible] = useState(false)
   const [editingCoupon, setEditingCoupon] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -74,7 +73,6 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
 
   const openEdit = (coupon: any) => {
     setEditingCoupon(coupon)
-    setIsFormVisible(true)
     setTimeout(() => {
       const formEl = document.getElementById("coupon-form") as HTMLFormElement
       if (formEl) {
@@ -109,7 +107,6 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
         toast.success("تمت الإضافة بنجاح")
       }
       resetForm()
-      setIsFormVisible(false) // Close form on success
     } catch (err: any) {
       toast.error(err.message || "حدث خطأ")
     }
@@ -144,7 +141,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
           
           {/* Coupons Tab */}
           {activeTab === 'coupons' && (
-            <div className={`flex flex-col lg:flex-row gap-6 items-start ${isFormVisible ? 'flex-col-reverse lg:flex-row' : ''}`}>
+            <div className="flex flex-col lg:flex-row gap-6 items-start">
               
               {/* Main List Column */}
               <div className="flex-1 w-full bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden">
@@ -153,12 +150,6 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                     <h2 className="text-lg font-semibold">أكواد الخصم</h2>
                     <p className="text-sm text-muted-foreground">أضف كوبونات وأكواد خصم لعملائك.</p>
                   </div>
-                  {canAdd && (
-                    <Button onClick={() => { resetForm(); setIsFormVisible(!isFormVisible); }} className="gap-2" variant={isFormVisible && !editingCoupon ? "secondary" : "default"}>
-                      {isFormVisible && !editingCoupon ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                      {isFormVisible && !editingCoupon ? "إلغاء" : "كوبون جديد"}
-                    </Button>
-                  )}
                 </div>
                 
                 <div className="hidden md:block overflow-x-auto">
@@ -266,12 +257,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                                 className="flex-1 text-muted-foreground hover:text-slate-800"
                                 onClick={() => {
                                   openEdit(coupon);
-                                  if (window.innerWidth < 1024) {
-                                    setIsFormVisible(true);
-                                    setTimeout(() => {
-                                      document.getElementById('coupon-form')?.scrollIntoView({ behavior: 'smooth' });
-                                    }, 100);
-                                  }
+                                  document.getElementById('coupon-form')?.scrollIntoView({ behavior: 'smooth' });
                                 }}
                               >
                                 <Edit2 className="h-4 w-4 ml-2" />
@@ -298,8 +284,8 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
               </div>
 
               {/* Sticky Form Column */}
-              {(canAdd || editingCoupon) && (
-                <div className={`w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 ${!isFormVisible ? 'hidden lg:block lg:opacity-50 lg:pointer-events-none' : 'block opacity-100'}`}>
+              {canAdd && (
+                <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300 block opacity-100">
                   <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col">
                   <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between">
                     <div>
@@ -307,7 +293,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                       <p className="text-xs text-muted-foreground mt-1">أدخل تفاصيل كود الخصم الجديد.</p>
                     </div>
                     {editingCoupon && (
-                      <Button variant="ghost" size="icon" onClick={() => { resetForm(); setIsFormVisible(false); }} className="h-8 w-8 text-muted-foreground">
+                      <Button variant="ghost" size="icon" onClick={() => { resetForm(); }} className="h-8 w-8 text-muted-foreground">
                         <X className="w-4 h-4" />
                       </Button>
                     )}
