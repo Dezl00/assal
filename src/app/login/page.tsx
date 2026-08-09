@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+
 
 export default function LoginPage() {
   const router = useRouter()
@@ -66,7 +66,15 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+          {searchParams?.get("locked") === "true" ? (
+            <div className="bg-destructive/15 text-destructive border-l-4 border-destructive p-4 rounded-xl flex items-start gap-3 shadow-sm mb-6 animate-in fade-in slide-in-from-top-2">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold mb-1">جلسة مغلقة</h4>
+              <p className="text-sm">تم تعطيل حسابك من قبل الإدارة. يرجى التواصل مع المسؤول للحصول على صلاحيات الدخول.</p>
+            </div>
+          </div>
+          ) : error && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-600 border border-red-200">
               {error}
             </div>
