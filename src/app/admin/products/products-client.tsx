@@ -49,7 +49,8 @@ export function ProductsClient({ products, categories, brands = [], departments 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("")
   const [filterDept, setFilterDept] = useState("")
-  const [filterCat, setFilterCat] = useState("")
+  const [filterCats, setFilterCats] = useState<string[]>([])
+  const [isFilterCatDropdownOpen, setIsFilterCatDropdownOpen] = useState(false)
   const [filterBrand, setFilterBrand] = useState("")
   const [filterStatus, setFilterStatus] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
@@ -72,15 +73,34 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
   // Memoized Filtered Products
   const filteredProducts = useMemo(() => {
+    const getProductDepartmentId = (p: any) => {
+      const cat = categories.find(c => c.id === p.categoryId)
+      if (!cat) return null
+      if (cat.departmentId) return cat.departmentId
+      if (cat.parentId) {
+        const parent = categories.find(c => c.id === cat.parentId)
+        return parent?.departmentId || null
+      }
+      return null
+    }
+
     return localProducts.filter(p => {
       const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.sku?.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchDept = filterDept ? p.departmentId === filterDept : true
-      const matchCat = filterCat ? p.categoryId === filterCat : true
+      const matchDept = filterDept ? getProductDepartmentId(p) === filterDept : true
+      
+      const catMatches = () => {
+        if (filterCats.length === 0) return true;
+        const prodCat = categories.find(c => c.id === p.categoryId);
+        if (!prodCat) return false;
+        return filterCats.includes(prodCat.id) || (prodCat.parentId && filterCats.includes(prodCat.parentId));
+      }
+      const matchCat = catMatches()
+      
       const matchBrand = filterBrand ? p.brandId === filterBrand : true
       const matchStatus = filterStatus === "all" ? true : filterStatus === "active" ? p.isActive : !p.isActive
       return matchSearch && matchDept && matchCat && matchBrand && matchStatus
     })
-  }, [localProducts, searchQuery, filterDept, filterCat, filterBrand, filterStatus])
+  }, [localProducts, searchQuery, filterDept, filterCats, filterBrand, filterStatus, categories])
 
   // Form Effects
   useEffect(() => {
@@ -399,21 +419,55 @@ export function ProductsClient({ products, categories, brands = [], departments 
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-border/50 animate-in slide-in-from-top-2">
+          <div className={`grid grid-cols-1 md:grid-cols-${filterDept ? '4' : '3'} gap-4 mt-4 pt-4 border-t border-border/50 animate-in slide-in-from-top-2`}>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground">المجال</label>
-              <select value={filterDept} onChange={e => { setFilterDept(e.target.value); setFilterCat(""); }} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+              <select value={filterDept} onChange={e => { setFilterDept(e.target.value); setFilterCats([]); }} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
                 <option value="">الكل</option>
                 {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">القسم</label>
-              <select value={filterCat} onChange={e => setFilterCat(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
-                <option value="">الكل</option>
-                {categories.filter(c => filterDept ? c.departmentId === filterDept : true).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
+            {filterDept && (
+              <div className="space-y-1.5 relative">
+                <label className="text-xs font-semibold text-muted-foreground">الأقسام</label>
+                <div 
+                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm flex items-center justify-between cursor-pointer"
+                  onClick={() => setIsFilterCatDropdownOpen(!isFilterCatDropdownOpen)}
+                >
+                  <span className="truncate">
+                    {filterCats.length > 0 ? `تم تحديد ${filterCats.length}` : "الكل"}
+                  </span>
+                  <span className="text-muted-foreground text-xs">▼</span>
+                </div>
+                {isFilterCatDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-card border border-border/50 rounded-md shadow-lg z-50 p-2 space-y-1">
+                    <label className="flex items-center gap-2 p-1.5 hover:bg-muted/50 rounded cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={filterCats.length === 0}
+                        onChange={() => { setFilterCats([]); setIsFilterCatDropdownOpen(false); }}
+                        className="rounded border-input text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                      />
+                      <span className="text-sm">الكل</span>
+                    </label>
+                    {categories.filter(c => c.departmentId === filterDept || (c.parentId && categories.find(p => p.id === c.parentId)?.departmentId === filterDept)).map(c => (
+                      <label key={c.id} className={`flex items-center gap-2 p-1.5 hover:bg-muted/50 rounded cursor-pointer ${c.parentId ? 'mr-4' : ''}`}>
+                        <input 
+                          type="checkbox" 
+                          checked={filterCats.includes(c.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) setFilterCats([...filterCats, c.id]);
+                            else setFilterCats(filterCats.filter(id => id !== c.id));
+                          }}
+                          className="rounded border-input text-primary focus:ring-primary w-4 h-4 cursor-pointer"
+                        />
+                        <span className="text-sm">{c.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-muted-foreground">الماركة</label>
               <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
