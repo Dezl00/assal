@@ -159,11 +159,16 @@ export function ProductsClient({ products, categories, brands = [], departments 
   }
 
   async function toggleStatus(id: string, currentStatus: boolean) {
-    const res = await toggleProductStatus(id, !currentStatus)
+    const newStatus = !currentStatus;
+    // Optimistic UI update
+    setLocalProducts(prev => prev.map(p => p.id === id ? { ...p, isActive: newStatus } : p));
+    
+    const res = await toggleProductStatus(id, newStatus)
     if (res.success) {
-      setLocalProducts(prev => prev.map(p => p.id === id ? { ...p, isActive: !currentStatus } : p))
       toast.success(currentStatus ? "تم إخفاء المنتج" : "تم تفعيل المنتج")
     } else {
+      // Revert on failure
+      setLocalProducts(prev => prev.map(p => p.id === id ? { ...p, isActive: currentStatus } : p));
       toast.error("حدث خطأ أثناء التحديث")
     }
   }
@@ -194,11 +199,15 @@ export function ProductsClient({ products, categories, brands = [], departments 
   }
 
   async function handleBulkToggleStatus(isActive: boolean) {
-    const res = await bulkToggleProductsStatus(selectedIds, isActive)
+    const idsToUpdate = [...selectedIds];
+    
+    // Optimistic UI update
+    setLocalProducts(prev => prev.map(p => idsToUpdate.includes(p.id) ? { ...p, isActive } : p))
+    setSelectedIds([])
+    
+    const res = await bulkToggleProductsStatus(idsToUpdate, isActive)
     if (res.success) {
       toast.success(`تم ${isActive ? 'تفعيل' : 'إخفاء'} المنتجات المحددة`)
-      setLocalProducts(prev => prev.map(p => selectedIds.includes(p.id) ? { ...p, isActive } : p))
-      setSelectedIds([])
     } else {
       toast.error("فشل التحديث الجماعي")
     }
@@ -425,26 +434,26 @@ export function ProductsClient({ products, categories, brands = [], departments 
       </div>
 
       {selectedIds.length > 0 && (
-        <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-4 animate-in fade-in mb-4">
-          <div className="text-sm font-medium text-slate-700">تم تحديد {selectedIds.length} منتج</div>
+        <div className="bg-muted/30 rounded-xl p-3 flex flex-wrap items-center justify-between gap-4 animate-in fade-in mb-4">
+          <div className="text-sm font-medium text-foreground">تم تحديد {selectedIds.length} منتج</div>
           <div className="flex items-center gap-2">
             {canEdit && (
-              <Button variant="outline" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
+              <Button variant="secondary" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 border-none shadow-none text-foreground bg-white hover:bg-white/80">
                 <Edit className="h-3.5 w-3.5" /> تعديل جماعي
               </Button>
             )}
             {canEdit && (
-              <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
+              <Button variant="secondary" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 border-none shadow-none text-foreground bg-white hover:bg-white/80">
                 <Eye className="h-3.5 w-3.5 text-green-600" /> تفعيل
               </Button>
             )}
             {canEdit && (
-              <Button variant="outline" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 bg-white text-slate-800 hover:bg-slate-50 border-slate-300">
+              <Button variant="secondary" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 border-none shadow-none text-foreground bg-white hover:bg-white/80">
                 <EyeOff className="h-3.5 w-3.5 text-yellow-600" /> إخفاء
               </Button>
             )}
             {canDelete && (
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 border-none">
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 border-none shadow-none">
                 <Trash2 className="h-3.5 w-3.5" /> حذف
               </Button>
             )}
