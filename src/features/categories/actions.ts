@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
+import { auth } from "@/lib/auth"
 
 export async function createCategory(formData: FormData) {
   try {
@@ -106,5 +107,66 @@ export async function bulkUpdateCategories(ids: string[], data: { departmentId?:
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "فشل تحديث الأقسام" }
+  }
+}
+
+export async function bulkCreateCategories(categoriesToCreate: { main: string, sub?: string }[]) {
+  try {
+    const session = await auth()
+    const isAdmin = session?.user?.role === "ADMIN"
+    const hasPerm = session?.user?.permissions?.includes("categories.create")
+    if (!isAdmin && !hasPerm) {
+      return { success: false, error: "Not authorized to create categories" }
+    }
+
+    if (!categoriesToCreate || categoriesToCreate.length === 0) return { success: true, categories: [] }
+
+    // 1. Process Main Categories first
+    const uniqueMains = [...new Set(categoriesToCreate.map(c => c.main.trim()))].filter(Boolean)
+    
+    for (const mainName of uniqueMains) {
+      let mainCat = await db.category.findFirst({
+        where: { name: mainName, parentId: null }
+      })
+      if (!mainCat) {
+        let slug = mainName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+        if (!slug || slug.trim() === '') slug = `cat-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+        
+        // Ensure slug is unique
+        const existingSlug = await db.category.findUnique({ where: { slug } })
+        if (existingSlug) slug = `${slug}-${Date.now()}`
+
+        mainCat = await db.category.create({
+          data: { name: mainName, slug }
+        })
+      }
+
+      // 2. Process Sub Categories for this main category
+      const subsForMain = categoriesToCreate.filter(c => c.main === mainName && c.sub).map(c => c.sub!.trim());
+      const uniqueSubs = [...new Set(subsForMain)].filter(Boolean);
+
+      for (const subName of uniqueSubs) {
+        const subCat = await db.category.findFirst({
+          where: { name: subName, parentId: mainCat.id }
+        })
+        if (!subCat) {
+          let subSlug = subName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+          if (!subSlug || subSlug.trim() === '') subSlug = `sub-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+          
+          const existingSubSlug = await db.category.findUnique({ where: { slug: subSlug } })
+          if (existingSubSlug) subSlug = `${subSlug}-${Date.now()}`
+
+          await db.category.create({
+            data: { name: subName, slug: subSlug, parentId: mainCat.id }
+          })
+        }
+      }
+    }
+
+    revalidatePath("/admin/categories")
+    return { success: true }
+  } catch (error: any) {
+    console.error("bulkCreateCategories error:", error)
+    return { success: false, error: "حدث خطأ أثناء إنشاء الأقسام" }
   }
 }

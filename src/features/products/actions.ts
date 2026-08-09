@@ -47,7 +47,7 @@ export async function createProduct(formData: FormData) {
     }
 
     // 2. Create the Product and the ProductImages
-    await db.product.create({
+    const product = await db.product.create({
       data: {
         name,
         slug,
@@ -160,7 +160,7 @@ export async function updateProduct(id: string, formData: FormData) {
       where: { productId: id }
     })
 
-    await db.product.update({
+    const product = await db.product.update({
       where: { id },
       data: {
         name,
@@ -240,5 +240,149 @@ export async function bulkUpdateProducts(productsData: any[]) {
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update products" }
+  }
+}
+
+export async function bulkImportProducts(products: any[], duplicateHandling: 'skip' | 'update') {
+  try {
+    const session = await auth()
+    const isAdmin = session?.user?.role === "ADMIN"
+    const hasPerm = session?.user?.permissions?.includes("products.create")
+    if (!isAdmin && !hasPerm) {
+      return { success: false, error: "Not authorized to import products" }
+    }
+
+    let createdCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
+    
+    // Pre-fetch references
+    const [existingProducts, categories, brands] = await Promise.all([
+      db.product.findMany({ select: { id: true, sku: true, name: true } }),
+      db.category.findMany({ select: { id: true, name: true, parentId: true } }),
+      db.brand.findMany({ select: { id: true, name: true } })
+    ]);
+    
+    const existingByName = new Map(existingProducts.map(p => [p.name.toLowerCase().trim(), p]));
+    const existingBySku = new Map(existingProducts.filter(p => p.sku).map(p => [p.sku!.toLowerCase().trim(), p]));
+    
+    const categoriesByName = new Map();
+    categories.forEach(c => {
+      if (!c.parentId) categoriesByName.set(c.name.toLowerCase().trim(), c);
+    });
+
+    const subCategoriesMap = new Map(); // parentId -> name -> Category
+    categories.forEach(c => {
+      if (c.parentId) {
+        if (!subCategoriesMap.has(c.parentId)) subCategoriesMap.set(c.parentId, new Map());
+        subCategoriesMap.get(c.parentId).set(c.name.toLowerCase().trim(), c);
+      }
+    });
+
+    const brandsByName = new Map(brands.map(b => [b.name.toLowerCase().trim(), b]));
+
+    const toCreate = [];
+    const toUpdate = [];
+      
+    for (const item of products) {
+      // Resolve Category ID
+      let finalCategoryId = null;
+      if (item.categoryName) {
+        const mainCat = categoriesByName.get(item.categoryName.toLowerCase().trim());
+        if (mainCat) {
+          finalCategoryId = mainCat.id;
+          if (item.subCategoryName) {
+            const subCatMap = subCategoriesMap.get(mainCat.id);
+            if (subCatMap && subCatMap.has(item.subCategoryName.toLowerCase().trim())) {
+              finalCategoryId = subCatMap.get(item.subCategoryName.toLowerCase().trim()).id;
+            } else {
+              // Subcategory missing, skipping row for safety to avoid assigning to wrong category
+              skippedCount++;
+              continue; 
+            }
+          }
+        } else {
+          // Category missing
+          skippedCount++;
+          continue;
+        }
+      } else {
+        // Missing required category
+        skippedCount++;
+        continue;
+      }
+
+      // Resolve Brand ID
+      let finalBrandId = null;
+      if (item.brandName) {
+        const b = brandsByName.get(item.brandName.toLowerCase().trim());
+        if (b) finalBrandId = b.id;
+      }
+
+      let existing = null;
+      if (item.sku && existingBySku.has(item.sku.toLowerCase().trim())) {
+        existing = existingBySku.get(item.sku.toLowerCase().trim());
+      } else if (!item.sku && item.name && existingByName.has(item.name.toLowerCase().trim())) {
+        existing = existingByName.get(item.name.toLowerCase().trim());
+      }
+
+      if (existing) {
+        if (duplicateHandling === 'skip') {
+          skippedCount++;
+          continue;
+        } else if (duplicateHandling === 'update') {
+          toUpdate.push(
+            db.product.update({
+              where: { id: existing.id },
+              data: {
+                price: item.price,
+                stock: item.stock,
+                categoryId: finalCategoryId,
+                brandId: finalBrandId,
+                description: item.description || null,
+                isActive: item.isActive,
+              }
+            })
+          );
+          continue;
+        }
+      }
+
+      let slug = item.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\u0600-\u06FF-]/g, '');
+      if (!slug) slug = `product-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      // Ensure unique slug
+      slug = `${slug}-${Math.floor(Math.random() * 1000)}`;
+
+      toCreate.push({
+        name: item.name,
+        slug: slug,
+        sku: item.sku || null,
+        price: item.price,
+        stock: item.stock || 0,
+        categoryId: finalCategoryId,
+        brandId: finalBrandId,
+        description: item.description || null,
+        isActive: item.isActive !== undefined ? item.isActive : true,
+      });
+    }
+
+    if (toCreate.length > 0) {
+      await db.product.createMany({
+        data: toCreate,
+        skipDuplicates: true,
+      });
+      createdCount += toCreate.length;
+    }
+
+    if (toUpdate.length > 0) {
+      await db.$transaction(toUpdate);
+      updatedCount += toUpdate.length;
+    }
+
+    revalidatePath("/admin/products")
+    return { success: true, createdCount, updatedCount, skippedCount }
+  } catch (error: any) {
+    console.error("Bulk Import Error:", error);
+    return { success: false, error: "حدث خطأ أثناء الاستيراد الجماعي" }
   }
 }

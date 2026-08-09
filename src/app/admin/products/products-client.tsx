@@ -11,6 +11,7 @@ import { MultiImageUploader } from "@/components/ui/multi-image-uploader"
 import { Switch } from "@/components/ui/switch"
 import * as XLSX from "xlsx"
 import { usePermissions } from "@/hooks/use-permissions"
+import { ImportProductsModal } from "@/components/admin/import-products-modal"
 
 export function ProductsClient({ products, categories, brands = [], departments = [] }: { products: any[], categories: any[], brands?: any[], departments?: any[] }) {
   const { hasPermission } = usePermissions()
@@ -282,98 +283,9 @@ export function ProductsClient({ products, categories, brands = [], departments 
     XLSX.writeFile(wb, "Assal_Products.xlsx")
   }
 
-  const [importConflicts, setImportConflicts] = useState<{parsed: any[], duplicates: any[], ready: any[]} | null>(null)
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
 
-  function handleImportExcel(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
 
-    const reader = new FileReader()
-    reader.onload = async (evt) => {
-      try {
-        const bstr = evt.target?.result
-        const wb = XLSX.read(bstr, { type: "binary" })
-        const wsname = wb.SheetNames[0]
-        const ws = wb.Sheets[wsname]
-        const data = XLSX.utils.sheet_to_json(ws)
-        
-        if (data.length > 0) {
-          const parsedData = data.map((row: any) => ({
-            name: row["الاسم"] || row["اسم المنتج"] || "",
-            price: row["السعر"] ? parseFloat(row["السعر"]) : 0,
-            costPrice: row["سعر التكلفة"] ? parseFloat(row["سعر التكلفة"]) : undefined,
-            stock: row["المخزون"] ? parseInt(row["المخزون"]) : 0,
-            categoryId: categories.find(c => c.name === (row["القسم"] || row["التصنيف"]))?.id || categories[0]?.id || "", 
-            brandId: brands.find(b => b.name === row["الماركة"])?.id || undefined,
-            description: row["الوصف"] || "",
-            isActive: row["مفعل؟"] === "نعم"
-          })).filter(p => p.name.trim() !== "");
-
-          const duplicates: any[] = [];
-          const ready: any[] = [];
-
-          parsedData.forEach(item => {
-            const existing = localProducts.find(p => p.name.toLowerCase() === item.name.toLowerCase());
-            if (existing) {
-              duplicates.push({ ...item, existingId: existing.id });
-            } else {
-              ready.push(item);
-            }
-          });
-
-          if (parsedData.length > 0) {
-            setImportConflicts({ parsed: parsedData, duplicates, ready });
-          } else {
-            toast.info("لا توجد منتجات لاستيرادها.");
-          }
-        }
-      } catch (err) {
-        toast.error("ملف Excel غير صالح")
-      }
-    }
-    reader.readAsBinaryString(file)
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
-
-  async function submitImport(newItems: any[], updateItems: any[]) {
-    const toastId = toast.loading("جاري استيراد المنتجات...");
-    try {
-      // Create new
-      let createdCount = 0;
-      let updatedCount = 0;
-      
-      for (const item of newItems) {
-        const formData = new FormData();
-        formData.append("name", item.name);
-        formData.append("price", item.price.toString());
-        if (item.costPrice) formData.append("costPrice", item.costPrice.toString());
-        formData.append("stock", item.stock.toString());
-        if (item.categoryId) formData.append("categoryId", item.categoryId);
-        formData.append("description", item.description);
-        formData.append("isActive", item.isActive.toString());
-        const res = await createProduct(formData);
-        if (res.success) createdCount++;
-      }
-
-      // Update existing (bulk update)
-      if (updateItems.length > 0) {
-        const res = await bulkUpdateProducts(updateItems.map(item => ({
-          id: item.existingId,
-          name: item.name,
-          price: item.price,
-          stock: item.stock,
-          isActive: item.isActive
-        })));
-        if (res.success) updatedCount = updateItems.length;
-      }
-
-      toast.success(`تم بنجاح! إضافة ${createdCount} وتحديث ${updatedCount} منتج.`, { id: toastId });
-      setTimeout(() => window.location.reload(), 1500);
-      setImportConflicts(null);
-    } catch (error) {
-      toast.error("حدث خطأ أثناء الاستيراد", { id: toastId });
-    }
-  }
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
@@ -387,10 +299,9 @@ export function ProductsClient({ products, categories, brands = [], departments 
           <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
             <Download className="h-4 w-4" /> <span className="hidden sm:inline">تصدير</span>
           </Button>
-          <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="outline" className="gap-2" onClick={() => setIsImportModalOpen(true)}>
             <Upload className="h-4 w-4" /> <span className="hidden sm:inline">استيراد</span>
           </Button>
-          <input type="file" accept=".xlsx, .xls, .csv" className="hidden" ref={fileInputRef} onChange={handleImportExcel} />
           
           {canEdit && (
             <Button onClick={() => {
@@ -725,7 +636,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
                 <p className="text-xs text-muted-foreground mt-1">{editingProduct ? "تعديل بيانات المنتج المحدد" : "إضافة منتج سريعاً للمتجر."}</p>
               </div>
               {editingProduct && (
-                <Button variant="ghost" size="icon" onClick={resetForm} className="h-8 w-8 shrink-0 text-muted-foreground">
+                <Button variant="ghost" size="icon" onClick={() => resetForm(false)} className="h-8 w-8 shrink-0 text-muted-foreground">
                   <X className="w-4 h-4" />
                 </Button>
               )}
@@ -899,84 +810,16 @@ export function ProductsClient({ products, categories, brands = [], departments 
         onCancel={() => setDeleteModalOpen(false)}
       />
 
-      {/* Import Conflicts Modal */}
-      {importConflicts && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 animate-in fade-in">
-          <div className="bg-background rounded-xl border border-border/50 shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-border/50 flex items-center justify-between">
-              <h2 className="text-xl font-bold">معاينة المنتجات المستوردة</h2>
-              <Button variant="ghost" size="icon" onClick={() => setImportConflicts(null)}><X className="w-5 h-5" /></Button>
-            </div>
-            <div className="p-6 overflow-y-auto flex-1">
-              <p className="mb-4 text-muted-foreground">
-                إجمالي المنتجات: <strong className="text-foreground">{importConflicts.parsed.length}</strong> 
-                {importConflicts.duplicates.length > 0 && (
-                  <span className="text-red-500 mr-2">
-                    (منها {importConflicts.duplicates.length} مكرر)
-                  </span>
-                )}
-              </p>
-              <div className="space-y-3 max-h-80 overflow-y-auto pr-2 border rounded-md p-2">
-                {importConflicts.parsed.map((item, i) => {
-                  const isDuplicate = importConflicts.duplicates.some(d => d.name === item.name);
-                  return (
-                    <div key={i} className={`flex justify-between items-center text-sm p-2 rounded ${isDuplicate ? 'bg-red-500/10 border border-red-500/20' : 'bg-muted/30 border border-transparent'}`}>
-                      <div className="flex flex-col">
-                        <span className="font-medium truncate max-w-[300px]">{item.name}</span>
-                        {isDuplicate && <span className="text-red-500 text-xs mt-1">موجود مسبقاً (مكرر)</span>}
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-muted-foreground hover:text-red-500 hover:bg-red-50"
-                        onClick={() => {
-                          const newParsed = [...importConflicts.parsed];
-                          newParsed.splice(i, 1);
-                          const duplicates: any[] = [];
-                          const ready: any[] = [];
-                          newParsed.forEach(newItem => {
-                            const existing = localProducts.find(p => p.name.toLowerCase() === newItem.name.toLowerCase());
-                            if (existing) {
-                              duplicates.push({ ...newItem, existingId: existing.id });
-                            } else {
-                              ready.push(newItem);
-                            }
-                          });
-                          setImportConflicts({ parsed: newParsed, duplicates, ready });
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  );
-                })}
-                {importConflicts.parsed.length === 0 && (
-                  <div className="p-4 text-center text-muted-foreground">لا يوجد منتجات</div>
-                )}
-              </div>
-            </div>
-            <div className="p-6 border-t border-border/50 flex flex-col sm:flex-row items-center gap-3 bg-muted/10">
-              <Button 
-                onClick={() => submitImport(importConflicts.ready, importConflicts.duplicates)} 
-                className="flex-1 bg-primary text-primary-foreground"
-                disabled={importConflicts.parsed.length === 0}
-              >
-                استيراد الكل ({importConflicts.parsed.length})
-              </Button>
-              {importConflicts.duplicates.length > 0 && (
-                <Button 
-                  onClick={() => submitImport(importConflicts.ready, [])} 
-                  variant="outline" 
-                  className="flex-1"
-                  disabled={importConflicts.ready.length === 0}
-                >
-                  استيراد الجديد فقط ({importConflicts.ready.length})
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>, document.body
-      )}
+      <ImportProductsModal 
+        isOpen={isImportModalOpen} 
+        onClose={() => setIsImportModalOpen(false)} 
+        onSuccess={() => {
+          setIsImportModalOpen(false);
+          window.location.reload();
+        }} 
+        categories={categories} 
+        brands={brands} 
+      />
 
       {/* Bulk Edit Modal */}
       {bulkEditOpen && typeof document !== 'undefined' && createPortal(
