@@ -74,7 +74,7 @@ export function GlobalOrderListener() {
         
         <div className="bg-muted/30 w-full p-4 rounded-xl flex items-center justify-between mb-8 border border-border/50">
           <span className="text-sm font-medium text-muted-foreground flex items-center gap-1">رقم الطلب: <span className="font-bold text-foreground" dir="ltr">#{newOrder.id.slice(0,6).toUpperCase()}</span></span>
-          <span className="text-lg font-bold text-primary">{newOrder.total} ر.س</span>
+          <span className="text-lg font-bold text-primary">{newOrder.totalAmount} ر.س</span>
         </div>
 
         <div className="flex flex-col w-full gap-3 sm:flex-row">

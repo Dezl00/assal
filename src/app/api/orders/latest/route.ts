@@ -9,7 +9,7 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
-        total: true,
+        totalAmount: true,
         status: true,
         createdAt: true,
         customerName: true
