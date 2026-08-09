@@ -91,6 +91,15 @@
     background-color: #ffffff;
     color: hsl(var(--foreground));
   }
+
+  .admin-theme {
+    --primary: 225.2 78.4% 51.6%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 225.2 78.4% 51.6%;
+    --color-primary: #2453E3 !important;
+    --color-ring: #2453E3 !important;
+    --color-primary-foreground: #ffffff !important;
+  }
 }
 
 @layer utilities {

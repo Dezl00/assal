@@ -71,7 +71,7 @@ function AdminLayoutInner({
   ]
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background admin-theme">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-72 border-l border-border bg-white text-[#2453E3] transition-all flex-col fixed inset-y-0 right-0 z-50">
         <div className="flex h-16 items-center px-6 border-b border-border shrink-0">
