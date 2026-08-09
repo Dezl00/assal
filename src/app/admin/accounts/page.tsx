@@ -7,7 +7,12 @@ export const dynamic = 'force-dynamic'
 
 export default async function AccountsPage() {
   const session = await auth()
-  if (session?.user?.role !== 'ADMIN') redirect('/admin')
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const hasPerm = session?.user?.permissions?.includes('accounts.view')
+  
+  if (!isAdmin && !hasPerm) {
+    redirect('/admin')
+  }
 
   const accounts = await prisma.user.findMany({
     where: { role: { in: ['ADMIN', 'MANAGER'] } },
