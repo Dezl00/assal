@@ -135,7 +135,7 @@ export default async function AdminDashboardPage() {
                 </div>
                 <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-2 sm:gap-1 text-sm">
                   <span className="font-bold text-foreground">{order.totalAmount} ج.م</span>
-                  <Link href={`/admin/orders`} className="text-xs bg-[#2453E3] text-white px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:bg-slate-800 transition-colors font-medium">
+                  <Link href={`/admin/orders`} className="text-xs bg-[#2453E3] text-white px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:opacity-90 transition-colors font-medium">
                     تفاصيل الطلب
                   </Link>
                 </div>

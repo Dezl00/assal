@@ -374,7 +374,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
             </Button>
           )}
           {canAdd && (
-            <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2 bg-[#2453E3] hover:bg-slate-800 text-white border-none">
+            <Button onClick={() => setIsFormVisible(!isFormVisible)} className="gap-2 bg-[#2453E3] hover:opacity-90 text-white border-none">
               {isFormVisible ? <><X className="w-4 h-4" /> إلغاء</> : <><PlusCircle className="w-4 h-4" /> إضافة منتج</>}
             </Button>
           )}
