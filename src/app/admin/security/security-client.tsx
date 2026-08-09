@@ -1,9 +1,5 @@
 "use client"
 import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { updateProfile } from '@/features/accounts/actions'
-import { toast } from 'sonner'
-import { Loader2, User as UserIcon, Shield } from 'lucide-react'
 
 export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser: any }) {
   const permissions = currentUser?.permissions || []
@@ -18,7 +14,6 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
   const [filterType, setFilterType] = useState('all')
   const [customFrom, setCustomFrom] = useState('')
   const [customTo, setCustomTo] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const filteredLogs = logs.filter(log => {
     if (filterType === 'all') return true
@@ -44,25 +39,63 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
     return true
   })
 
+  const getActionBadge = (action: string) => {
+    const isDelete = action === 'Delete' || action === 'حذف';
+    const isCreate = action === 'Create' || action === 'إنشاء';
+    const label = action === 'Create' ? 'إنشاء' : action === 'Update' ? 'تعديل' : action === 'Delete' ? 'حذف' : action === 'Login' ? 'تسجيل دخول' : action;
+    const colorClass = isDelete ? 'bg-red-100 text-red-700' : isCreate ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+
+    return (
+      <span className={`h-9 px-4 py-2 inline-flex items-center justify-center rounded-md text-sm font-semibold ${colorClass}`}>
+        {label}
+      </span>
+    );
+  }
+
+  const getEntityName = (type: string) => {
+    const map: Record<string, string> = {
+      'Product': 'منتج',
+      'Category': 'قسم',
+      'Brand': 'ماركة',
+      'Order': 'طلب',
+      'Widget': 'مكون واجهة',
+      'User': 'مستخدم',
+      'Backup': 'نسخة احتياطية',
+      'ThemeConfig': 'إعدادات المتجر'
+    };
+    return map[type] || type;
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('ar-EG', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+
+  const formatDetails = (details: any) => {
+    if (!details) return 'بدون تفاصيل';
+    if (details.message) return details.message;
+    return 'تم الإجراء بنجاح';
+  }
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>الرئيسية</span>
           <span>/</span>
-          <span className="text-foreground">الأمان والحساب</span>
+          <span className="text-foreground font-semibold">سجل النشاطات</span>
         </nav>
       </div>
 
-
-
       {activeTab === 'logs' && hasPerm('security.logs') && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-card p-4 rounded-xl border border-border/50 shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-card p-4 rounded-xl border border-border/50">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium whitespace-nowrap">تصفية بالتاريخ:</span>
               <select 
-                className="text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:ring-1 focus:ring-primary outline-none"
+                className="text-sm border border-input rounded-md px-3 py-1.5 bg-background focus:ring-1 focus:ring-primary outline-none font-semibold text-muted-foreground"
                 value={filterType}
                 onChange={e => setFilterType(e.target.value)}
               >
@@ -77,58 +110,46 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
               <div className="flex flex-wrap items-center gap-4 animate-in fade-in">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">من:</span>
-                  <input type="date" className="text-sm border border-input rounded-md px-2 py-1.5 bg-background focus:ring-1 focus:ring-primary outline-none" value={customFrom} onChange={e => setCustomFrom(e.target.value)} />
+                  <input type="date" className="text-sm border border-input rounded-md px-2 py-1.5 bg-background focus:ring-1 focus:ring-primary outline-none font-semibold text-muted-foreground" value={customFrom} onChange={e => setCustomFrom(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">إلى:</span>
-                  <input type="date" className="text-sm border border-input rounded-md px-2 py-1.5 bg-background focus:ring-1 focus:ring-primary outline-none" value={customTo} onChange={e => setCustomTo(e.target.value)} />
+                  <input type="date" className="text-sm border border-input rounded-md px-2 py-1.5 bg-background focus:ring-1 focus:ring-primary outline-none font-semibold text-muted-foreground" value={customTo} onChange={e => setCustomTo(e.target.value)} />
                 </div>
               </div>
             )}
           </div>
 
-          <div className="border border-border/50 rounded-xl bg-card overflow-hidden shadow-sm">
+          <div className="border border-border/50 rounded-xl bg-card overflow-hidden">
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-right">
-                <thead className="bg-muted/50 border-b">
+                <thead className="bg-muted/30 border-b border-border/50">
                   <tr>
-                    <th className="p-4 font-medium">التاريخ</th>
-                    <th className="p-4 font-medium">المستخدم</th>
-                    <th className="p-4 font-medium">الإجراء</th>
-                    <th className="p-4 font-medium">العنصر</th>
-                    <th className="p-4 font-medium">التفاصيل</th>
+                    <th className="p-4 font-semibold text-muted-foreground">التاريخ</th>
+                    <th className="p-4 font-semibold text-muted-foreground">المستخدم</th>
+                    <th className="p-4 font-semibold text-muted-foreground">نوع الإجراء</th>
+                    <th className="p-4 font-semibold text-muted-foreground">العنصر</th>
+                    <th className="p-4 font-semibold text-muted-foreground">التفاصيل</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredLogs.map(log => (
-                    <tr key={log.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20">
-                      <td className="p-4 text-xs font-mono" dir="ltr">{new Date(log.createdAt).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="p-4 font-medium">{log.user?.name || log.userId || 'نظام'}</td>
+                    <tr key={log.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
+                      <td className="p-4 font-medium text-muted-foreground" dir="rtl">{formatDate(log.createdAt)}</td>
+                      <td className="p-4 font-bold">{log.user?.name || 'النظام'}</td>
                       <td className="p-4">
-                        <span className={`px-2 py-1 rounded text-xs ${log.action === 'Delete' || log.action === 'حذف' ? 'bg-red-100 text-red-700' : log.action === 'Create' || log.action === 'إنشاء' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                          {log.action === 'Create' ? 'إنشاء' : log.action === 'Update' ? 'تعديل' : log.action === 'Delete' ? 'حذف' : log.action === 'Login' ? 'تسجيل دخول' : log.action}
-                        </span>
+                        {getActionBadge(log.action)}
                       </td>
-                      <td className="p-4 font-mono text-xs text-right" dir="rtl">
-                        {
-                          log.entityType === 'Product' ? 'منتج' :
-                          log.entityType === 'Category' ? 'قسم' :
-                          log.entityType === 'Brand' ? 'ماركة' :
-                          log.entityType === 'Order' ? 'طلب' :
-                          log.entityType === 'Widget' ? 'مكون واجهة' :
-                          log.entityType === 'User' ? 'مستخدم' :
-                          log.entityType === 'Backup' ? 'نسخة احتياطية' :
-                          log.entityType === 'ThemeConfig' ? 'إعدادات المتجر' :
-                          log.entityType
-                        } <span className="text-muted-foreground mr-1">({log.entityId || '-'})</span>
+                      <td className="p-4 font-bold">
+                        {getEntityName(log.entityType)}
                       </td>
-                      <td className="p-4 text-xs text-muted-foreground max-w-[200px] truncate">
-                        {log.details ? JSON.stringify(log.details) : '-'}
+                      <td className="p-4 text-muted-foreground max-w-[250px] truncate font-medium">
+                        {formatDetails(log.details)}
                       </td>
                     </tr>
                   ))}
                   {filteredLogs.length === 0 && (
-                    <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">لا توجد أنشطة مسجلة</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-muted-foreground font-semibold">لا توجد أنشطة مسجلة</td></tr>
                   )}
                 </tbody>
               </table>
@@ -137,51 +158,36 @@ export function SecurityClient({ logs, currentUser }: { logs: any[], currentUser
             {/* Mobile View */}
             <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
               {filteredLogs.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50 font-semibold">
                   لا توجد أنشطة مسجلة
                 </div>
               ) : (
                 filteredLogs.map(log => (
-                  <div key={log.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="font-medium text-foreground text-sm">
-                        {log.user?.name || log.userId || 'نظام'}
+                  <div key={log.id} className="bg-card border border-border/50 rounded-lg p-4 flex flex-col gap-4">
+                    <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
+                      <div className="font-bold text-foreground text-base">
+                        {log.user?.name || 'النظام'}
                       </div>
-                      <span className={`px-2 py-1 rounded text-[10px] font-medium shrink-0 ${log.action === 'Delete' || log.action === 'حذف' ? 'bg-red-100 text-red-700' : log.action === 'Create' || log.action === 'إنشاء' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                        {log.action === 'Create' ? 'إنشاء' : log.action === 'Update' ? 'تعديل' : log.action === 'Delete' ? 'حذف' : log.action === 'Login' ? 'تسجيل دخول' : log.action}
-                      </span>
+                      {getActionBadge(log.action)}
                     </div>
                     
-                    <div className="text-xs text-muted-foreground font-mono" dir="ltr">
-                      {new Date(log.createdAt).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                    </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">العنصر:</span>
+                        <span className="text-sm font-bold">{getEntityName(log.entityType)}</span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-muted-foreground">التاريخ:</span>
+                        <span className="text-sm font-medium" dir="rtl">{formatDate(log.createdAt)}</span>
+                      </div>
 
-                    <div className="flex flex-col gap-1.5 mt-1 border-t border-border/50 pt-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground w-12">العنصر:</span>
-                        <span className="text-xs font-mono" dir="rtl">
-                          {
-                            log.entityType === 'Product' ? 'منتج' :
-                            log.entityType === 'Category' ? 'قسم' :
-                            log.entityType === 'Brand' ? 'ماركة' :
-                            log.entityType === 'Order' ? 'طلب' :
-                            log.entityType === 'Widget' ? 'مكون واجهة' :
-                            log.entityType === 'User' ? 'مستخدم' :
-                            log.entityType === 'Backup' ? 'نسخة احتياطية' :
-                            log.entityType === 'ThemeConfig' ? 'إعدادات المتجر' :
-                            log.entityType
-                          } 
-                          {log.entityId && <span className="text-muted-foreground mr-1">({log.entityId})</span>}
+                      <div className="mt-1 pt-3 border-t border-border/50 flex flex-col gap-2">
+                        <span className="text-sm font-semibold text-muted-foreground">التفاصيل:</span>
+                        <span className="text-sm font-medium text-foreground bg-muted/30 p-2.5 rounded-md break-words">
+                          {formatDetails(log.details)}
                         </span>
                       </div>
-                      {log.details && (
-                        <div className="flex items-start gap-2 mt-1">
-                          <span className="text-xs text-muted-foreground w-12 shrink-0">التفاصيل:</span>
-                          <span className="text-xs text-muted-foreground bg-muted/30 p-1.5 rounded-md break-all w-full">
-                            {JSON.stringify(log.details)}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))
