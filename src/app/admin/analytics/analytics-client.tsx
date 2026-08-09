@@ -2,42 +2,37 @@
 import React from 'react'
 import { ArrowUpRight, ArrowDownRight, Users, Eye, MapPin, Globe, FileText, ShoppingBag, DollarSign, Activity } from 'lucide-react'
 
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-background border border-border/50 p-3 rounded-lg flex flex-col gap-1.5 min-w-[150px]">
+        <p dir="ltr" className="text-center font-bold mb-1 text-xs text-foreground">{label}</p>
+        <div className="flex items-center gap-2 text-primary">
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          <span className="text-xs font-semibold">زيارات المتجر: {new Intl.NumberFormat('en-US').format(payload[0].value)}</span>
+        </div>
+        <div className="flex items-center gap-2 text-blue-500">
+          <div className="w-2 h-2 rounded-full bg-blue-500" />
+          <span className="text-xs font-semibold">مشاهدات المنتجات: {new Intl.NumberFormat('en-US').format(payload[1].value)}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function AnalyticsClient({ 
   chartData, totalVisits, totalViews,
   todayVisits, yesterdayVisits, todayViews, yesterdayViews,
   topProducts, topCountries, topCities, topPages
 }: any) {
   
-  const maxVal = Math.max(...chartData.map((d: any) => Math.max(d.visits, d.views)), 1)
-
   const visitsDiff = todayVisits - yesterdayVisits
   const viewsDiff = todayViews - yesterdayViews
 
   const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num || 0)
-
-  // SVG Path Generator for smooth curves
-  const generateSmoothPath = (data: any[], key: string, max: number, width: number, height: number) => {
-    if (data.length === 0) return '';
-    const widthPerPoint = width / Math.max(data.length - 1, 1);
-    
-    const points = data.map((d, i) => {
-      const x = i * widthPerPoint;
-      const y = height - ((d[key] / max) * (height * 0.9)); // 90% height to leave padding at top
-      return { x, y };
-    });
-    
-    let path = `M ${points[0].x},${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const curr = points[i];
-      const next = points[i + 1];
-      const cpX = curr.x + (next.x - curr.x) / 2;
-      path += ` C ${cpX},${curr.y} ${cpX},${next.y} ${next.x},${next.y}`;
-    }
-    return path;
-  };
-
-  const chartWidth = Math.max(800, chartData.length * 60);
-  const chartHeight = 240;
 
   return (
     <div className="space-y-6 animate-in fade-in">
@@ -114,97 +109,67 @@ export function AnalyticsClient({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        <div className="p-4 sm:p-6 bg-card border border-border/40 rounded-xl shadow-sm lg:col-span-2">
+        <div className="p-4 sm:p-6 bg-card border border-border/50 rounded-xl lg:col-span-2">
           <h2 className="text-lg font-semibold mb-6">النشاط اليومي (آخر 30 يوم)</h2>
           {chartData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-muted-foreground">لا توجد بيانات متاحة</div>
           ) : (
-            <div className="relative h-[300px] overflow-x-auto overflow-y-hidden custom-scrollbar pb-6" dir="ltr">
-              <div style={{ width: `${chartWidth}px`, height: `${chartHeight}px` }} className="relative mt-4">
-                
-                {/* SVG Curves */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${chartWidth} ${chartHeight}`} preserveAspectRatio="none">
+            <div className="h-[300px] w-full mt-4" dir="ltr">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={chartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
                   <defs>
                     <linearGradient id="colorVisits" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2} />
                       <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
                       <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-
-                  {/* Visits Path Fill */}
-                  <path 
-                    d={`${generateSmoothPath(chartData, 'visits', maxVal, chartWidth, chartHeight)} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`}
-                    fill="url(#colorVisits)"
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(val) => val.split('-').slice(1).join('/')}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: 'currentColor', opacity: 0.6 }}
+                    dy={10}
+                    minTickGap={20}
                   />
-                  {/* Views Path Fill */}
-                  <path 
-                    d={`${generateSmoothPath(chartData, 'views', maxVal, chartWidth, chartHeight)} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`}
-                    fill="url(#colorViews)"
+                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                  <Area 
+                    type="monotone" 
+                    dataKey="visits" 
+                    stroke="#4f46e5" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorVisits)" 
+                    activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
                   />
-                  
-                  {/* Visits Line */}
-                  <path 
-                    d={generateSmoothPath(chartData, 'visits', maxVal, chartWidth, chartHeight)}
-                    fill="none" stroke="#4f46e5" strokeWidth="3" strokeLinecap="round"
-                    className="drop-shadow-sm"
+                  <Area 
+                    type="monotone" 
+                    dataKey="views" 
+                    stroke="#3b82f6" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorViews)" 
+                    activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }}
                   />
-                  {/* Views Line */}
-                  <path 
-                    d={generateSmoothPath(chartData, 'views', maxVal, chartWidth, chartHeight)}
-                    fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round"
-                    className="drop-shadow-sm"
-                  />
-                </svg>
-
-                {/* Interactive Points & Tooltips */}
-                <div className="absolute inset-0 flex justify-between">
-                  {chartData.map((day: any, i: number) => {
-                    const widthPerPoint = chartWidth / Math.max(chartData.length - 1, 1);
-                    const left = i * widthPerPoint;
-                    
-                    return (
-                      <div key={i} className="group absolute h-full w-[40px] -ml-[20px] flex flex-col items-center justify-end z-10 cursor-pointer" style={{ left: `${left}px` }}>
-                        
-                        {/* Tooltip */}
-                        <div className="absolute bottom-[calc(100%+10px)] bg-black/90 text-white text-xs p-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl border border-white/10">
-                          <p dir="ltr" className="text-center font-bold mb-1">{day.date}</p>
-                          <div className="flex items-center gap-2 text-indigo-300">
-                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                            <span>زيارات المتجر: {formatNumber(day.visits)}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-blue-300 mt-1">
-                            <div className="w-2 h-2 rounded-full bg-blue-500" />
-                            <span>مشاهدات المنتجات: {formatNumber(day.views)}</span>
-                          </div>
-                        </div>
-
-                        {/* Hover vertical line */}
-                        <div className="absolute top-0 bottom-0 w-px bg-border opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                        {/* X-axis label */}
-                        <span className="absolute -bottom-6 text-[10px] text-muted-foreground font-medium whitespace-nowrap">
-                          {day.date.split('-').slice(1).join('/')}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-              </div>
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           )}
           <div className="flex justify-center gap-4 sm:gap-6 mt-6">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-primary rounded-full"></div>
-              <span className="text-xs text-muted-foreground">زيارات المتجر</span>
+              <span className="text-xs font-semibold text-muted-foreground">زيارات المتجر</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span className="text-xs text-muted-foreground">مشاهدات المنتجات</span>
+              <span className="text-xs font-semibold text-muted-foreground">مشاهدات المنتجات</span>
             </div>
           </div>
         </div>
