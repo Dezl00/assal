@@ -266,16 +266,22 @@ export function ProductsClient({ products, categories, brands = [], departments 
 
   // Excel Handlers
   function handleExportExcel() {
-    const dataToExport = filteredProducts.map(p => ({
-      "الاسم": p.name,
-      "الرمز (SKU)": p.sku,
-      "السعر": p.price,
-      "سعر التخفيض": p.discountPrice || "",
-      "المخزون": p.stock,
-      "القسم": categories.find(c => c.id === p.categoryId)?.name || "",
-      "الماركة": brands.find(b => b.id === p.brandId)?.name || "",
-      "الوصف": p.description || ""
-    }))
+    const dataToExport = filteredProducts.map(p => {
+      const cat = categories.find(c => c.id === p.categoryId);
+      const parentCat = cat?.parentId ? categories.find(c => c.id === cat.parentId) : cat;
+      const subCat = cat?.parentId ? cat : null;
+
+      return {
+        "اسم المنتج": p.name,
+        "الرمز (SKU)": p.sku || "",
+        "السعر": p.price,
+        "المخزون": p.stock,
+        "القسم": parentCat?.name || "",
+        "التصنيف": subCat?.name || "",
+        "الماركة": brands.find(b => b.id === p.brandId)?.name || "",
+        "الوصف": p.description || ""
+      };
+    })
 
     const ws = XLSX.utils.json_to_sheet(dataToExport)
     const wb = XLSX.utils.book_new()
