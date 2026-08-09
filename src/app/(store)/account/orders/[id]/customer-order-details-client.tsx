@@ -139,16 +139,16 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
         <div className="flex flex-col md:flex-row gap-8">
           <div className="flex-1 space-y-4">
             <h3 className="text-lg font-bold border-b border-border/50 pb-2">عنوان التوصيل</h3>
-            <div className="text-sm text-muted-foreground space-y-2 bg-muted/30 p-4 rounded-xl border border-border/50">
+            <div className="text-sm text-muted-foreground space-y-2 p-4 rounded-xl border border-border/50">
               <p><span className="font-medium text-foreground">المدينة:</span> {order.city}</p>
               <p><span className="font-medium text-foreground">العنوان:</span> {order.address}</p>
               {order.country && <p><span className="font-medium text-foreground">الدولة:</span> {order.country}</p>}
               {order.postalCode && <p><span className="font-medium text-foreground">الرمز البريدي:</span> <span className="font-sans">{order.postalCode}</span></p>}
-              <p><span className="font-medium text-foreground">رقم الهاتف:</span> <span className="font-sans" dir="ltr">{order.phone}</span></p>
+              <p><span className="font-medium text-foreground">رقم الهاتف:</span> <span className="font-sans" dir="ltr">{order.customerPhone || order.user?.phone}</span></p>
             </div>
           </div>
           
-          <div className="flex-1 bg-muted/30 rounded-xl p-6 border border-border/50">
+          <div className="flex-1 rounded-xl p-6 border border-border/50">
             <h3 className="text-lg font-bold border-b border-border/50 pb-2 mb-4">ملخص الدفع</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">

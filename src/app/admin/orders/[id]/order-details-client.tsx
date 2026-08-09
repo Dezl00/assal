@@ -182,13 +182,14 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
             </div>
             
             <div className="bg-card border border-border shadow-sm rounded-xl p-6">
-              <h3 className="font-bold mb-4 flex items-center gap-2"><MapPin className="w-4 h-4" /> عنوان الشحن</h3>
+              <h3 className="font-bold mb-4 flex items-center gap-2"><MapPin className="w-4 h-4" /> بيانات الطلب</h3>
               <div className="text-sm space-y-2 text-muted-foreground">
+                {order.customerName && <p><span className="text-foreground font-medium">الاسم:</span> {order.customerName}</p>}
                 <p><span className="text-foreground font-medium">المدينة:</span> {order.city}</p>
                 <p><span className="text-foreground font-medium">العنوان:</span> {order.address}</p>
                 {order.country && <p><span className="text-foreground font-medium">الدولة:</span> {order.country}</p>}
                 {order.postalCode && <p><span className="text-foreground font-medium">الرمز البريدي:</span> <span className="font-sans">{order.postalCode}</span></p>}
-                {order.phone && <p><span className="text-foreground font-medium">الهاتف:</span> <span className="font-sans" dir="ltr">{order.phone}</span></p>}
+                <p><span className="text-foreground font-medium">الهاتف:</span> <span className="font-sans" dir="ltr">{order.customerPhone || order.user?.phone}</span></p>
               </div>
             </div>
           </div>
@@ -232,11 +233,11 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
             {order.user?.phone && <p className="text-gray-600 font-sans" dir="ltr">{order.user?.phone}</p>}
           </div>
           <div className="w-1/2 pr-4 text-left">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">عنوان الشحن</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">بيانات الطلب</h3>
             <p className="font-bold">{order.address}</p>
             <p className="text-gray-600">{order.city}{order.postalCode ? ` - ${order.postalCode}` : ''}</p>
             <p className="text-gray-600">{order.country || 'مصر'}</p>
-            <p className="text-gray-600 font-sans" dir="ltr">{order.phone}</p>
+            <p className="text-gray-600 font-sans" dir="ltr">{order.customerPhone || order.user?.phone}</p>
           </div>
         </div>
 
@@ -257,8 +258,8 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
                   <p className="font-bold text-gray-900">{item.product?.name || 'منتج غير معروف'}</p>
                 </td>
                 <td className="py-4 text-center text-gray-700 font-sans" dir="ltr">{item.quantity}</td>
-                <td className="py-4 text-left text-gray-700 font-sans" dir="ltr">{enNumber(item.price)} EGP</td>
-                <td className="py-4 text-left font-bold text-gray-900 font-sans" dir="ltr">{enNumber(item.price * item.quantity)} EGP</td>
+                <td className="py-4 text-left text-gray-700 font-sans" dir="ltr">{enNumber(item.price)} ج.م</td>
+                <td className="py-4 text-left font-bold text-gray-900 font-sans" dir="ltr">{enNumber(item.price * item.quantity)} ج.م</td>
               </tr>
             ))}
           </tbody>
@@ -269,21 +270,21 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
           <div className="w-1/2 sm:w-1/3">
             <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
               <span>المجموع الفرعي</span>
-              <span className="font-sans" dir="ltr">{enNumber(order.totalAmount - (order.shippingCost || 0) + (order.discount || 0))} EGP</span>
+              <span className="font-sans" dir="ltr">{enNumber(order.totalAmount - (order.shippingCost || 0) + (order.discount || 0))} ج.م</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
               <span>تكلفة الشحن</span>
-              <span className="font-sans" dir="ltr">{enNumber(order.shippingCost || 0)} EGP</span>
+              <span className="font-sans" dir="ltr">{enNumber(order.shippingCost || 0)} ج.م</span>
             </div>
             {(order.discount > 0) && (
               <div className="flex justify-between py-2 border-b border-gray-200 text-gray-600">
                 <span>الخصم</span>
-                <span className="font-sans" dir="ltr">-{enNumber(order.discount)} EGP</span>
+                <span className="font-sans" dir="ltr">-{enNumber(order.discount)} ج.م</span>
               </div>
             )}
             <div className="flex justify-between py-3 font-bold text-xl">
               <span>الإجمالي</span>
-              <span className="font-sans" dir="ltr">{enNumber(order.totalAmount)} EGP</span>
+              <span className="font-sans" dir="ltr">{enNumber(order.totalAmount)} ج.م</span>
             </div>
           </div>
         </div>
