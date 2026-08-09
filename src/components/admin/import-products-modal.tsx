@@ -100,7 +100,6 @@ export function ImportProductsModal({ isOpen, onClose, onSuccess, categories, br
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
 
   // ----------------------------------------------------------------------
   // 3. Step 1: Upload & Parse
@@ -435,6 +434,8 @@ export function ImportProductsModal({ isOpen, onClose, onSuccess, categories, br
     }
     return true;
   });
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 admin-theme rtl" dir="rtl">
