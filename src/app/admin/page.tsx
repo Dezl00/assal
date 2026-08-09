@@ -112,7 +112,7 @@ export default async function AdminDashboardPage() {
                   )}
                   <span className="text-sm font-medium line-clamp-2">{tv.product.name}</span>
                 </div>
-                <span className="text-xs font-bold text-muted-foreground bg-secondary/20 px-2 py-0.5 rounded whitespace-nowrap">{tv._count.productId} <span className="hidden sm:inline">مشاهدة</span></span>
+                <span className="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700 font-bold whitespace-nowrap">{tv._count.productId} <span className="hidden sm:inline">مشاهدة</span></span>
               </div>
             )) : (
               <p className="text-sm text-muted-foreground text-center py-8">لا توجد بيانات بعد</p>

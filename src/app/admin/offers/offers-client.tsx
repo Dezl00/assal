@@ -177,7 +177,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                         <tr key={coupon.id} className="border-b border-border/30 hover:bg-muted/20">
                           <td className="px-4 py-4 font-bold text-slate-700" dir="ltr">{coupon.code}</td>
                           <td className="px-4 py-4">
-                            <span className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
+                            <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 font-semibold">
                               {coupon.type === "PERCENTAGE" ? "نسبة مئوية %" : coupon.type === "FIXED" ? "مبلغ ثابت" : "شحن مجاني"}
                             </span>
                           </td>
@@ -247,7 +247,7 @@ export function OffersClient({ initialCoupons, initialSettings }: any) {
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-muted-foreground">النوع:</span>
-                            <span className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
+                            <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 font-semibold">
                               {coupon.type === "PERCENTAGE" ? "نسبة مئوية %" : coupon.type === "FIXED" ? "مبلغ ثابت" : "شحن مجاني"}
                             </span>
                           </div>

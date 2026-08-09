@@ -429,7 +429,7 @@ export function ShippingPaymentClient({ initialGovernorates, initialPaymentMetho
                         <tr key={p.id} className="border-b border-border/30 hover:bg-muted/10">
                           <td className="px-4 py-4 font-bold">{p.name}</td>
                           <td className="px-4 py-4">
-                            <span className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded text-xs font-semibold">
+                            <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 font-semibold">
                               {p.type === 'CASH_ON_DELIVERY' ? 'الدفع عند الاستلام' : p.type === 'VODAFONE_CASH' ? 'فودافون كاش' : p.type === 'INSTAPAY' ? 'انستاباي' : 'تحويل بنكي'}
                             </span>
                           </td>

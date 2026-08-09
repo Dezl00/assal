@@ -140,7 +140,7 @@ export function AnalyticsClient({
               {topProducts.map((p: any, i: number) => (
                 <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                   <span className="truncate max-w-[200px] font-medium">{p.name}</span>
-                  <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} مشاهدة</span>
+                  <span className="font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">{formatNumber(p.count)} مشاهدة</span>
                 </div>
               ))}
             </div>
@@ -156,7 +156,7 @@ export function AnalyticsClient({
             {topCountries.map((c: any, i: number) => (
               <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                 <span className="font-medium">{c.name}</span>
-                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(c.count)} زيارة</span>
+                <span className="font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">{formatNumber(c.count)} زيارة</span>
               </div>
             ))}
           </div>
@@ -168,7 +168,7 @@ export function AnalyticsClient({
             {topCities.map((c: any, i: number) => (
               <div key={i} className="flex justify-between items-center text-sm border-b border-border/40 pb-2 last:border-0 last:pb-0">
                 <span className="font-medium">{c.name}</span>
-                <span className="font-bold bg-secondary/20 text-muted-foreground px-2 py-0.5 rounded text-xs">{formatNumber(c.count)} زيارة</span>
+                <span className="font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">{formatNumber(c.count)} زيارة</span>
               </div>
             ))}
           </div>

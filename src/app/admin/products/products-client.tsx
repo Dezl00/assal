@@ -489,7 +489,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center rounded-full bg-secondary/50 px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-blue-100 text-blue-700 font-medium">
                             {categories.find(c => c.id === product.categoryId)?.name || "بدون قسم"}
                           </span>
                         </td>
@@ -564,7 +564,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
                         <div className="min-w-0 flex-1">
                           <div className="font-semibold text-foreground text-sm line-clamp-2">{product.name}</div>
                           <div className="text-xs text-muted-foreground mt-1" dir="ltr">{product.sku}</div>
-                          <span className="inline-block mt-2 rounded-full bg-secondary/20 px-2 py-0.5 text-[10px] font-medium text-secondary-foreground">
+                          <span className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] bg-blue-100 text-blue-700 font-medium">
                             {categories.find(c => c.id === product.categoryId)?.name || "بدون قسم"}
                           </span>
                         </div>
