@@ -8,6 +8,7 @@ import { signOut, useSession, SessionProvider } from "next-auth/react"
 import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
 import { NotificationsDropdown } from "@/components/notifications-dropdown"
 import { PushNotificationPrompt } from "@/components/admin/push-notification-prompt"
+import { GlobalOrderListener } from "@/components/admin/global-order-listener"
 
 export function AdminLayoutClient({
   children,
@@ -27,7 +28,10 @@ export function AdminLayoutClient({
 
   return (
     <SessionProvider>
-      <AdminLayoutInner storeName={storeName} logoUrl={logoUrl}>{children}</AdminLayoutInner>
+      <AdminLayoutInner storeName={storeName} logoUrl={logoUrl}>
+        {children}
+        <GlobalOrderListener />
+      </AdminLayoutInner>
     </SessionProvider>
   )
 }

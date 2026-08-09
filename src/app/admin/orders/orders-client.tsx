@@ -16,6 +16,14 @@ export function OrdersClient({ orders }: { orders: any[] }) {
   const canEdit = hasPermission("orders.edit")
   const canDelete = hasPermission("orders.delete")
 
+  // Auto-refresh orders every 15 seconds to show new orders instantly
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh()
+    }, 15000)
+    return () => clearInterval(interval)
+  }, [router])
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   
