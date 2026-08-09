@@ -1,6 +1,6 @@
 import React from "react"
 import Link from "next/link"
-import DOMPurify from "isomorphic-dompurify"
+import sanitizeHtml from 'sanitize-html'
 import { getActiveArticles } from "@/features/articles/actions"
 import { ArrowLeft } from "lucide-react"
 
@@ -57,7 +57,7 @@ export async function LatestArticlesWidget({ widget }: { widget: any }) {
                 </h3>
                 <div 
                   className="text-muted-foreground text-sm line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content.replace(/<[^>]*>?/gm, '')) }} 
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content, { allowedTags: [], allowedAttributes: {} }).substring(0, 150) + "..." }} 
                 />
               </div>
             </div>

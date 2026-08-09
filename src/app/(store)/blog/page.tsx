@@ -1,5 +1,5 @@
 import { getActiveArticles } from "@/features/articles/actions"
-import DOMPurify from "isomorphic-dompurify"
+import sanitizeHtml from 'sanitize-html'
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -63,7 +63,7 @@ export default async function BlogPage() {
                   </h2>
                   <div 
                     className="prose prose-slate prose-sm text-muted-foreground line-clamp-3 mb-6 flex-1 overflow-hidden"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content.replace(/<[^>]*>?/gm, '')) }} 
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content, { allowedTags: [], allowedAttributes: {} }).substring(0, 150) + "..." }} 
                   />
                   <div className="inline-flex items-center gap-2 text-primary font-medium mt-auto">
                     قراءة المزيد

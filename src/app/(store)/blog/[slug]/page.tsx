@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, ArrowRight, Share2, Calendar } from "lucide-react"
 import { ShareArticleButton } from "./share-button"
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 
 export const revalidate = 3600 // Cache for 1 hour
 
@@ -65,13 +65,17 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           {/* Main Content (Right Side in RTL) */}
           <div className="min-w-0 bg-white px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10">
             <div 
-              className="prose prose-slate prose-lg md:prose-xl max-w-none w-full text-right rtl prose-p:leading-[2.2] prose-headings:leading-normal prose-img:rounded-xl prose-img:max-w-full"
-              dangerouslySetInnerHTML={{ 
-                __html: DOMPurify.sanitize(article.content.replace(
-                  /<a[^>]*href="(https?:\/\/(?:www\.)?youtube\.com\/embed\/[^"]+)"[^>]*>.*?<\/a>/gi,
-                  '<iframe class="ql-video" frameborder="0" allowfullscreen="true" src="$1"></iframe>'
-                ).replace(/&nbsp;/g, ' '), { ADD_TAGS: ['iframe'], ADD_ATTR: ['allowfullscreen', 'frameborder', 'target'] }) 
-              }}
+              className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-img:rounded-2xl"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content, {
+                allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'strong', 'em', 'u', 's', 'blockquote', 'code', 'pre', 'span', 'ul', 'ol', 'li', 'br', 'hr', 'a', 'iframe']),
+                allowedAttributes: {
+                  ...sanitizeHtml.defaults.allowedAttributes,
+                  'img': ['src', 'alt', 'width', 'height', 'style', 'class'],
+                  'a': ['href', 'name', 'target', 'rel', 'class', 'style'],
+                  'iframe': ['src', 'frameborder', 'allowfullscreen', 'class'],
+                  '*': ['class', 'style']
+                }
+              }) }}
             />
             
             <div className="mt-12 pt-8 border-t border-border flex justify-between items-center">
