@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
+import { auth } from "@/lib/auth"
 
 export async function updateThemeConfig(formData: FormData) {
   try {
@@ -36,6 +37,17 @@ export async function updateThemeConfig(formData: FormData) {
       create: { id: "default", storeName: "متجر عسل", ...data }
     })
 
+    const session = await auth()
+    if (session?.user?.id) {
+      await db.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "UPDATE_SETTINGS",
+          entityType: "Settings"
+        }
+      })
+    }
+
     revalidatePath("/admin/settings")
     revalidatePath("/")
     return { success: true }
@@ -47,7 +59,7 @@ export async function updateThemeConfig(formData: FormData) {
 
 export async function createBranch(formData: FormData) {
   try {
-    await db.branch.create({
+    const branch = await db.branch.create({
       data: {
         name: formData.get("name") as string,
         address: formData.get("address") as string,
@@ -55,6 +67,19 @@ export async function createBranch(formData: FormData) {
         mapUrl: formData.get("mapUrl") as string,
       }
     })
+
+    const session = await auth()
+    if (session?.user?.id) {
+      await db.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "CREATE_BRANCH",
+          entityType: "Branch",
+          entityId: branch.id,
+          details: { name: branch.name }
+        }
+      })
+    }
     revalidatePath("/admin/settings")
     return { success: true }
   } catch (error: any) {
@@ -64,7 +89,7 @@ export async function createBranch(formData: FormData) {
 
 export async function updateBranch(id: string, formData: FormData) {
   try {
-    await db.branch.update({
+    const branch = await db.branch.update({
       where: { id },
       data: {
         name: formData.get("name") as string,
@@ -74,6 +99,19 @@ export async function updateBranch(id: string, formData: FormData) {
         isActive: formData.get("isActive") === "true",
       }
     })
+
+    const session = await auth()
+    if (session?.user?.id) {
+      await db.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "UPDATE_BRANCH",
+          entityType: "Branch",
+          entityId: branch.id,
+          details: { name: branch.name }
+        }
+      })
+    }
     revalidatePath("/admin/settings")
     return { success: true }
   } catch (error: any) {
@@ -83,7 +121,19 @@ export async function updateBranch(id: string, formData: FormData) {
 
 export async function deleteBranch(id: string) {
   try {
-    await db.branch.delete({ where: { id } })
+    const branch = await db.branch.delete({ where: { id } })
+    const session = await auth()
+    if (session?.user?.id) {
+      await db.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "DELETE_BRANCH",
+          entityType: "Branch",
+          entityId: branch.id,
+          details: { name: branch.name }
+        }
+      })
+    }
     revalidatePath("/admin/settings")
     return { success: true }
   } catch (error: any) {

@@ -3,6 +3,7 @@
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { sendNotification } from "@/lib/send-notification"
+import { auth } from "@/lib/auth"
 
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
@@ -13,6 +14,19 @@ export async function updateOrderStatus(orderId: string, status: string) {
       where: { id: orderId },
       data: { status }
     })
+
+    const session = await auth()
+    if (session?.user?.id) {
+      await db.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "UPDATE_ORDER_STATUS",
+          entityType: "Order",
+          entityId: orderId,
+          details: { status }
+        }
+      })
+    }
 
     // Send notification to customer if they exist and want updates
     if (order.userId) {
@@ -66,6 +80,18 @@ export async function deleteOrder(orderId: string) {
     await db.order.delete({
       where: { id: orderId }
     })
+
+    const session = await auth()
+    if (session?.user?.id) {
+      await db.activityLog.create({
+        data: {
+          userId: session.user.id,
+          action: "DELETE_ORDER",
+          entityType: "Order",
+          entityId: orderId
+        }
+      })
+    }
     revalidatePath("/admin/orders")
     return { success: true }
   } catch (error: any) {

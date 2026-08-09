@@ -69,7 +69,7 @@ function AdminLayoutInner({
     { name: "منشئ الواجهات", href: "/admin/widgets", icon: LayoutTemplate, show: hasPerm('widgets') },
     { name: "المقالات", href: "/admin/articles", icon: BookOpen, show: hasPerm('widgets') },
     { name: "الحسابات والصلاحيات", href: "/admin/accounts", icon: FolderTree, show: hasPerm('accounts') },
-    { name: "سجل الأمان", href: "/admin/security", icon: LayoutDashboard, show: hasPerm('security') },
+    { name: "السجلات", href: "/admin/logs", icon: LayoutDashboard, show: hasPerm('security') },
     { name: "الإعدادات", href: "/admin/settings", icon: Settings, show: hasPerm('settings') },
   ].filter(item => item.show)
 

@@ -105,10 +105,10 @@ const PERMISSIONS_SCHEMA = [
   },
   { 
     id: 'security', 
-    label: 'سجل الأمان والأنشطة',
+    label: 'السجلات',
     subPermissions: [
       { id: 'profile', label: 'الملف الشخصي' },
-      { id: 'logs', label: 'الوصول لسجل الأمان' }
+      { id: 'logs', label: 'الوصول للسجلات' }
     ]
   }
 ]

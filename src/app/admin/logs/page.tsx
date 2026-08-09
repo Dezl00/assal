@@ -1,11 +1,11 @@
 import { db as prisma } from '@/lib/db'
-import { SecurityClient } from './security-client'
+import { LogsClient } from './logs-client'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
-export default async function SecurityPage() {
+export default async function LogsPage() {
   const session = await auth()
   if (!session?.user) redirect('/admin')
 
@@ -18,5 +18,5 @@ export default async function SecurityPage() {
     include: { user: true }
   }) : []
 
-  return <SecurityClient logs={logs} currentUser={session.user} />
+  return <LogsClient logs={logs} currentUser={session.user} />
 }
