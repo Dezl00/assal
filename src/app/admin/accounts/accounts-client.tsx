@@ -245,7 +245,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
     <div className="space-y-6 animate-in fade-in">
       <ConfirmModal 
         isOpen={deleteModalOpen} 
-        onClose={() => setDeleteModalOpen(false)} 
+        onCancel={() => setDeleteModalOpen(false)} 
         onConfirm={handleDeleteConfirm}
         title="تأكيد الحذف"
         description="هل أنت متأكد من رغبتك في حذف هذا الحساب؟ هذا الإجراء لا يمكن التراجع عنه."
