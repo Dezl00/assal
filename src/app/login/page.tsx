@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from "next/navigation"
@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AlertCircle } from "lucide-react"
 
-
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [phone, setPhone] = useState("")
@@ -20,8 +19,7 @@ export default function LoginPage() {
   React.useEffect(() => {
     if (searchParams?.get("locked") === "true") {
       setError("تم تعطيل حسابك من قبل الإدارة. يرجى التواصل مع الدعم.")
-      signIn("credentials", { redirect: false }) // Clear by dummy signin, or signOut
-      // More reliable to just call signOut
+      signIn("credentials", { redirect: false }) 
       import("next-auth/react").then(({ signOut }) => signOut({ redirect: false }))
     }
   }, [searchParams])
@@ -45,7 +43,6 @@ export default function LoginPage() {
         router.push("/admin")
         router.refresh()
         
-        // Fallback to reset loading if navigation is intercepted
         setTimeout(() => {
           setLoading(false)
         }, 3000)
@@ -111,5 +108,13 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-muted/50 p-4">جاري التحميل...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 }
