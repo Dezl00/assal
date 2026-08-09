@@ -438,22 +438,22 @@ export function ProductsClient({ products, categories, brands = [], departments 
           <div className="text-sm font-medium text-foreground">تم تحديد {selectedIds.length} منتج</div>
           <div className="flex items-center gap-2">
             {canEdit && (
-              <Button variant="secondary" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 border-none shadow-none text-foreground bg-white hover:bg-white/80">
+              <Button variant="ghost" size="sm" onClick={openBulkEdit} className="h-8 gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 border-none shadow-none">
                 <Edit className="h-3.5 w-3.5" /> تعديل جماعي
               </Button>
             )}
             {canEdit && (
-              <Button variant="secondary" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 border-none shadow-none text-foreground bg-white hover:bg-white/80">
-                <Eye className="h-3.5 w-3.5 text-green-600" /> تفعيل
+              <Button variant="ghost" size="sm" onClick={() => handleBulkToggleStatus(true)} className="h-8 gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 border-none shadow-none">
+                <Eye className="h-3.5 w-3.5" /> تفعيل
               </Button>
             )}
             {canEdit && (
-              <Button variant="secondary" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 border-none shadow-none text-foreground bg-white hover:bg-white/80">
-                <EyeOff className="h-3.5 w-3.5 text-yellow-600" /> إخفاء
+              <Button variant="ghost" size="sm" onClick={() => handleBulkToggleStatus(false)} className="h-8 gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 hover:text-yellow-800 border-none shadow-none">
+                <EyeOff className="h-3.5 w-3.5" /> إخفاء
               </Button>
             )}
             {canDelete && (
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 border-none shadow-none">
+              <Button variant="ghost" size="sm" onClick={handleBulkDelete} className="h-8 gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 hover:text-red-800 border-none shadow-none">
                 <Trash2 className="h-3.5 w-3.5" /> حذف
               </Button>
             )}
