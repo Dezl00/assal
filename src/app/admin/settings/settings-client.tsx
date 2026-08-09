@@ -399,7 +399,7 @@ export function SettingsClient({ config, branches = [], backups = [], initialIsA
                       <option value="monthly">شهرياً</option>
                     </select>
                     <p className="text-xs text-muted-foreground mt-1">
-                      ملاحظة: يتطلب هذا تفعيل Cron Jobs في منصة Vercel للعمل بشكل تلقائي.
+
                     </p>
                   </div>
                   <Button type="submit" disabled={isSubmitting}>
