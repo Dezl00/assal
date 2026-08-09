@@ -1,6 +1,6 @@
 "use server"
 
-import { requireAdmin } from "@/lib/auth/require-admin"
+import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { sendNotification } from "@/lib/send-notification"
@@ -9,7 +9,7 @@ import { auth } from "@/lib/auth"
 export async function updateOrderStatus(orderId: string, status: string) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("orders.edit")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -83,9 +83,12 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
 export async function deleteOrder(orderId: string) {
   try {
+    try {
+      await requirePermission("orders.delete")
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Unauthorized' }
+    }
     const session = await auth()
-    const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "MANAGER"
-    if (!isAdmin && !session?.user?.permissions?.includes('orders.delete')) return { success: false, error: 'Unauthorized' }
     
     await db.order.delete({
       where: { id: orderId }

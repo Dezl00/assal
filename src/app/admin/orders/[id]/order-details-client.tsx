@@ -14,15 +14,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
-export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, logoUrl?: string | null, storeName?: string }) {
+export function OrderDetailsClient({ order, logoUrl, storeName, branches = [] }: { order: any, logoUrl?: string | null, storeName?: string, branches?: any[] }) {
   const router = useRouter()
   const [isUpdating, setIsUpdating] = useState(false)
   const [customerModalOpen, setCustomerModalOpen] = useState(false)
 
   const statusLabels: Record<string, string> = {
-    "PENDING": "قيد التنفيذ",
-    "PAID": "تم الدفع",
-    "SHIPPED": "تم الشحن",
+    "PENDING": "قيد المراجعة",
+    "CONFIRMED": "تم التأكيد",
+    "SHIPPED": "جاري الشحن",
+    "OUT_FOR_DELIVERY": "خرج للتوصيل",
+    "DELIVERED": "تم التوصيل",
     "CANCELLED": "ملغي"
   }
 
@@ -149,36 +151,26 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
           <div className="space-y-6">
             <div className="bg-card border border-border shadow-sm rounded-xl p-6">
               <h3 className="font-bold mb-4">إجراءات الطلب</h3>
-              <div className="space-y-3">
-                {order.status === "PENDING" && (
-                  <Button 
-                    className="w-full gap-2 bg-blue-500 hover:bg-blue-600 text-white border-0 shadow-none" 
-                    onClick={() => handleStatusUpdate("PAID")}
-                    disabled={isUpdating}
-                  >
-                    <CheckCircle2 className="w-4 h-4" /> تأكيد الطلب
-                  </Button>
-                )}
-                {(order.status === "PENDING" || order.status === "PAID") && (
-                  <Button 
-                    className="w-full gap-2 bg-green-500 hover:bg-green-600 text-white border-0 shadow-none"
-                    onClick={() => handleStatusUpdate("SHIPPED")}
-                    disabled={isUpdating}
-                  >
-                    <Truck className="w-4 h-4" /> جاري الشحن
-                  </Button>
-                )}
-                {order.status !== "CANCELLED" && (
-                  <Button 
-                    className="w-full gap-2 bg-red-500 hover:bg-red-600 text-white border-0 shadow-none" 
-                    variant="destructive"
-                    onClick={() => handleStatusUpdate("CANCELLED")}
-                    disabled={isUpdating}
-                  >
-                    <XCircle className="w-4 h-4" /> إلغاء الطلب
-                  </Button>
-                )}
-              </div>
+              <div className="flex flex-col gap-2 w-full">
+              {['PENDING', 'CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].map((s) => (
+                <Button 
+                  key={s}
+                  variant={order.status === s ? "default" : "outline"}
+                  onClick={() => handleStatusUpdate(s)}
+                  disabled={isUpdating || order.status === s}
+                  className={`w-full justify-start ${order.status === s ? 'bg-primary pointer-events-none' : ''}`}
+                >
+                  {statusLabels[s] || s}
+                </Button>
+              ))}
+              <Button 
+                variant={order.status === 'CANCELLED' ? "destructive" : "outline"}
+                className={`w-full justify-start ${order.status === 'CANCELLED' ? 'pointer-events-none' : 'text-destructive border-destructive/20 hover:bg-destructive/10'}`}
+                onClick={() => handleStatusUpdate('CANCELLED')}
+                disabled={isUpdating || order.status === 'CANCELLED'}
+              >
+                إلغاء الطلب
+              </Button>
             </div>
             
             <div className="bg-card border border-border shadow-sm rounded-xl p-6">
@@ -282,10 +274,29 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
                 <span className="font-sans" dir="ltr">-{enNumber(order.discount)} ج.م</span>
               </div>
             )}
-            <div className="flex justify-between py-3 font-bold text-xl">
+            <div className="flex justify-between py-3 font-bold text-xl border-t-2 border-black/10 mt-4">
               <span>الإجمالي</span>
               <span className="font-sans" dir="ltr">{enNumber(order.totalAmount)} ج.م</span>
             </div>
+            
+            {branches && branches.length > 0 && (
+              <div className="mt-12 pt-6 border-t border-dashed border-black/20">
+                <h4 className="text-center font-bold mb-4">فروعنا</h4>
+                <div className="grid grid-cols-2 gap-4 text-[10px]">
+                  {branches.map((branch: any) => (
+                    <div key={branch.id} className="text-center space-y-1">
+                      <p className="font-bold">{branch.name}</p>
+                      <p>{branch.address}</p>
+                      {branch.phone && <p>{branch.phone}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <p className="text-center mt-12 text-sm text-gray-500 italic">
+              شكراً لتسوقكم معنا!
+            </p>
           </div>
         </div>
         

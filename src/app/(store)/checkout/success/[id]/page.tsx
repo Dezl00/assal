@@ -29,7 +29,7 @@ export default async function CheckoutSuccessPage(props: { params: Promise<{ id:
         <h1 className="text-4xl font-bold tracking-tight mb-4 text-foreground">شكراً لتسوقك معنا!</h1>
         <p className="text-lg text-muted-foreground mb-2">تم استلام طلبك بنجاح وجاري تجهيزه.</p>
         <p className="text-sm text-muted-foreground mb-8">
-          رقم الطلب: <span className="font-mono font-bold text-foreground">#{order.id.slice(-8).toUpperCase()}</span>
+          رقم الطلب: <span className="font-mono font-bold text-foreground">#{order.id.slice(-6).toUpperCase()}</span>
         </p>
 
         <div className="border-t border-border/50 pt-8 mt-4">

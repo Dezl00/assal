@@ -15,7 +15,10 @@ export default async function AccountsPage() {
   }
 
   const accounts = await prisma.user.findMany({
-    where: { role: { in: ['ADMIN', 'MANAGER'] } },
+    where: { 
+      role: { in: ['ADMIN', 'MANAGER'] },
+      phone: { not: 'admin@assal.com' }
+    },
     orderBy: { createdAt: 'desc' }
   })
 

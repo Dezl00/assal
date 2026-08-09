@@ -1,13 +1,13 @@
 "use server"
 
-import { requireAdmin } from "@/lib/auth/require-admin"
+import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
 export async function createDepartment(formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("departments.create")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -39,7 +39,7 @@ export async function createDepartment(formData: FormData) {
 export async function deleteDepartment(id: string) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("departments.delete")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -63,7 +63,7 @@ export async function deleteDepartment(id: string) {
 export async function updateDepartment(id: string, formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("departments.edit")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

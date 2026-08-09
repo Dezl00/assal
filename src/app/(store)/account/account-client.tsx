@@ -124,8 +124,9 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
   const getStatusStep = (status: string) => {
     switch(status) {
       case 'PENDING': return 1;
-      case 'PAID': return 2;
+      case 'CONFIRMED': return 2;
       case 'SHIPPED': return 3;
+      case 'OUT_FOR_DELIVERY': return 3;
       case 'DELIVERED': return 4;
       default: return 0;
     }
@@ -216,7 +217,7 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                       <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                       الطلب الحالي نشط
                     </span>
-                    <span className="text-sm font-bold text-muted-foreground">#{activeOrder.id.slice(-6).toUpperCase()}</span>
+                    <span className="text-sm font-bold text-muted-foreground">#{activeOrder.id}</span>
                   </div>
                   
                   <div className="flex gap-5 items-center relative z-10">
@@ -230,7 +231,7 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                     <div className="flex-1">
                       <p className="text-xs text-muted-foreground font-medium mb-2">حالة الطلب:</p>
                       <p className="text-lg font-bold text-primary mb-3">
-                        {activeOrder.status === 'PENDING' ? 'قيد المراجعة' : activeOrder.status === 'PAID' ? 'تم التأكيد' : activeOrder.status === 'SHIPPED' ? 'جاري الشحن' : 'مكتمل'}
+                        {activeOrder.status === 'PENDING' ? 'قيد المراجعة' : activeOrder.status === 'CONFIRMED' ? 'تم التأكيد' : activeOrder.status === 'SHIPPED' ? 'جاري الشحن' : activeOrder.status === 'OUT_FOR_DELIVERY' ? 'خرج للتوصيل' : 'مكتمل'}
                       </p>
                       <div className="relative pt-1 pb-1">
                         <div className="absolute top-3 left-2 right-2 h-1.5 bg-muted/50 rounded-full overflow-hidden">
@@ -316,7 +317,7 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-border/50 pb-6 gap-4">
                           <div>
                             <Link href={`/account/orders/${order.id}`} className="font-bold text-xl hover:text-primary transition-colors flex items-center gap-2">
-                              طلب #{order.id.slice(-6).toUpperCase()}
+                              طلب #{order.id}
                             </Link>
                             <p className="text-sm text-muted-foreground font-medium mt-2" dir="ltr">
                               {new Date(order.createdAt).toLocaleDateString('en-GB')} • {new Date(order.createdAt).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}
@@ -324,7 +325,7 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                           </div>
                           <div className="text-right sm:text-left w-full sm:w-auto">
                             <p className="font-black text-primary text-2xl" dir="ltr">{order.totalAmount} ج.م</p>
-                            {(order.status === 'PENDING' || order.status === 'PAID') && (
+                            {(order.status === 'PENDING' || order.status === 'CONFIRMED') && (
                               <button 
                                 onClick={() => cancelOrder(order.id)}
                                 className="text-sm font-bold text-destructive hover:bg-destructive/10 px-4 py-2 rounded-full transition-colors mt-3 border border-destructive/20 w-full sm:w-auto"
@@ -342,12 +343,12 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                                <div className="h-full bg-primary transition-all duration-1000 ease-out" style={{ width: `${(getStatusStep(order.status) / 4) * 100}%` }}></div>
                             </div>
                             <div className="relative flex justify-between">
-                               {[
-                                 { step: 1, label: 'مراجعة', icon: Clock },
-                                 { step: 2, label: 'تأكيد', icon: CheckCircle2 },
-                                 { step: 3, label: 'شحن', icon: Truck },
-                                 { step: 4, label: 'مكتمل', icon: CheckCircle2 }
-                               ].map((s) => (
+                             {[
+                               { step: 1, label: 'مراجعة', icon: Clock },
+                               { step: 2, label: 'تأكيد', icon: CheckCircle2 },
+                               { step: 3, label: 'شحن', icon: Truck },
+                               { step: 4, label: 'توصيل', icon: CheckCircle2 }
+                             ].map((s) => (
                                  <div key={s.step} className="flex flex-col items-center gap-3">
                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-colors shadow-sm ${getStatusStep(order.status) >= s.step ? 'bg-primary text-primary-foreground scale-110' : 'bg-card border-2 border-muted-foreground/20 text-muted-foreground'}`}>
                                      <s.icon className="w-5 h-5" />

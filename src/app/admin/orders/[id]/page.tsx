@@ -37,5 +37,9 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
     where: { id: "default" }
   })
 
-  return <OrderDetailsClient order={order} logoUrl={config?.logoUrl} storeName={config?.storeName} />
+  const branches = await db.branch.findMany({
+    orderBy: { createdAt: 'asc' }
+  })
+
+  return <OrderDetailsClient order={order} logoUrl={config?.logoUrl} storeName={config?.storeName} branches={branches} />
 }

@@ -1,6 +1,6 @@
 "use server"
 
-import { requireAdmin } from "@/lib/auth/require-admin"
+import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { uploadImage, deleteImage as deleteCloudinaryImage } from "@/lib/cloudinary"
 import { revalidatePath } from "next/cache"
@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache"
 export async function uploadMediaAction(formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("media.upload")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -57,7 +57,7 @@ export async function uploadMediaAction(formData: FormData) {
 export async function deleteMediaAction(id: string) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("media.delete")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

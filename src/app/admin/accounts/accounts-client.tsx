@@ -71,6 +71,14 @@ const PERMISSIONS_SCHEMA = [
     ]
   },
   { 
+    id: 'media', 
+    label: 'الوسائط والمكتبة',
+    subPermissions: [
+      { id: 'upload', label: 'رفع صور وملفات' },
+      { id: 'delete', label: 'حذف الوسائط' }
+    ]
+  },
+  { 
     id: 'widgets', 
     label: 'واجهة المتجر والتصميم',
     subPermissions: [
@@ -235,6 +243,13 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   return (
     <div className="space-y-6 animate-in fade-in">
+      <ConfirmModal 
+        isOpen={deleteModalOpen} 
+        onClose={() => setDeleteModalOpen(false)} 
+        onConfirm={handleDeleteConfirm}
+        title="تأكيد الحذف"
+        description="هل أنت متأكد من رغبتك في حذف هذا الحساب؟ هذا الإجراء لا يمكن التراجع عنه."
+      />
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>الرئيسية</span>
@@ -312,31 +327,19 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${acc.isActive !== false ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-50 text-gray-600 border border-gray-100'}`}>
-                              <div className={`w-1.5 h-1.5 rounded-full ${acc.isActive !== false ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                              {acc.isActive !== false ? 'نشط' : 'غير نشط'}
-                            </div>
+                            <Switch 
+                              checked={acc.isActive !== false} 
+                              onCheckedChange={(checked) => {
+                                if (canEdit) handleUpdateStatus(acc.id, checked)
+                              }}
+                              disabled={!canEdit}
+                              className={acc.isActive !== false ? 'data-[state=checked]:bg-green-500' : ''}
+                            />
+                            <span className="text-sm text-muted-foreground">{acc.isActive !== false ? 'نشط' : 'معطل'}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground">
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-40 p-1 border-border/40 shadow-sm rounded-xl" align="end">
-                                <Button 
-                                  variant="ghost" 
-                                  className={`w-full justify-start text-sm ${acc.isActive !== false ? 'text-orange-600 hover:text-orange-700 hover:bg-orange-50' : 'text-green-600 hover:text-green-700 hover:bg-green-50'}`}
-                                  onClick={() => handleUpdateStatus(acc.id, acc.isActive === false)}
-                                  disabled={!canEdit}
-                                >
-                                  {acc.isActive !== false ? 'إلغاء التنشيط' : 'إعادة التنشيط'}
-                                </Button>
-                              </PopoverContent>
-                            </Popover>
                             {canEdit && (
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md bg-blue-50/50 hover:bg-blue-100 text-blue-600" onClick={() => { 
                                 setEditingItem(acc); 
@@ -384,9 +387,15 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                             <div className="text-muted-foreground text-sm mt-0.5" dir="ltr">{acc.phone}</div>
                           </div>
                         </div>
-                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${acc.isActive !== false ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-50 text-gray-600 border border-gray-100'}`}>
-                           <div className={`w-1.5 h-1.5 rounded-full ${acc.isActive !== false ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                           {acc.isActive !== false ? 'نشط' : 'غير نشط'}
+                        <div className="flex items-center gap-2">
+                          <Switch 
+                            checked={acc.isActive !== false} 
+                            onCheckedChange={(checked) => {
+                              if (canEdit) handleUpdateStatus(acc.id, checked)
+                            }}
+                            disabled={!canEdit}
+                            className={acc.isActive !== false ? 'data-[state=checked]:bg-green-500' : ''}
+                          />
                         </div>
                       </div>
                       

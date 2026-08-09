@@ -3,15 +3,28 @@
 import React, { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  React.useEffect(() => {
+    if (searchParams?.get("locked") === "true") {
+      setError("تم تعطيل حسابك من قبل الإدارة. يرجى التواصل مع الدعم.")
+      signIn("credentials", { redirect: false }) // Clear by dummy signin, or signOut
+      // More reliable to just call signOut
+      import("next-auth/react").then(({ signOut }) => signOut({ redirect: false }))
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,6 +1,6 @@
 "use server"
 
-import { requireAdmin } from "@/lib/auth/require-admin"
+import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/lib/auth"
@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth"
 export async function updateThemeConfig(formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("settings.general")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -66,7 +66,7 @@ export async function updateThemeConfig(formData: FormData) {
 export async function createBranch(formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("settings.general")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -101,7 +101,7 @@ export async function createBranch(formData: FormData) {
 export async function updateBranch(id: string, formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("settings.general")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -138,7 +138,7 @@ export async function updateBranch(id: string, formData: FormData) {
 export async function deleteBranch(id: string) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("settings.general")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -165,7 +165,7 @@ export async function deleteBranch(id: string) {
 export async function resetStoreStats() {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("settings.general")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

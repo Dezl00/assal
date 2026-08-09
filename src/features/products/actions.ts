@@ -1,13 +1,13 @@
 "use server"
 
-import { requireAdmin } from "@/lib/auth/require-admin"
+import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
 
 export async function createProduct(formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("products.create")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -143,7 +143,7 @@ export async function bulkDeleteProducts(ids: string[]) {
 export async function updateProduct(id: string, formData: FormData) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("products.edit")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -210,7 +210,7 @@ export async function updateProduct(id: string, formData: FormData) {
 export async function toggleProductStatus(id: string, isActive: boolean) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("products.edit")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -229,7 +229,7 @@ export async function toggleProductStatus(id: string, isActive: boolean) {
 export async function bulkToggleProductsStatus(ids: string[], isActive: boolean) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("products.edit")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -248,7 +248,7 @@ export async function bulkToggleProductsStatus(ids: string[], isActive: boolean)
 export async function bulkUpdateProducts(productsData: any[]) {
   try {
     try {
-      await requireAdmin()
+      await requirePermission("products.edit")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

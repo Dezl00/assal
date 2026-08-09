@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X, Bell, Tag, Truck, BookOpen } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, FolderTree, Image as ImageIcon, LayoutTemplate, Settings, ListTree, ExternalLink, LogOut, Menu as MenuIcon, X, Bell, Tag, Truck, BookOpen, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { signOut, useSession, SessionProvider } from "next-auth/react"
 import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
@@ -50,6 +50,12 @@ function AdminLayoutInner({
   const permissions = session?.user?.permissions || []
   const isAdmin = session?.user?.role === "ADMIN"
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    await signOut({ callbackUrl: '/' })
+  }
 
   const hasPerm = (permOrPrefix: string) => {
     if (isAdmin) return true;
@@ -113,11 +119,12 @@ function AdminLayoutInner({
         </nav>
         <div className="p-4 border-t border-border shrink-0">
           <button 
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-red-50 hover:text-red-700 active:scale-95"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-red-50 hover:text-red-700 active:scale-95 disabled:opacity-70 disabled:pointer-events-none"
           >
-            <LogOut className="h-5 w-5 rtl-flip" />
-            تسجيل الخروج
+            {isLoggingOut ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogOut className="h-5 w-5 rtl-flip" />}
+            {isLoggingOut ? 'جاري الخروج...' : 'تسجيل الخروج'}
           </button>
         </div>
       </aside>
@@ -166,11 +173,12 @@ function AdminLayoutInner({
         </nav>
         <div className="p-4 border-t border-border shrink-0">
           <button 
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 active:scale-95"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive transition-all hover:bg-destructive/10 active:scale-95 disabled:opacity-70 disabled:pointer-events-none"
           >
-            <LogOut className="h-5 w-5 rtl-flip" />
-            تسجيل الخروج
+            {isLoggingOut ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogOut className="h-5 w-5 rtl-flip" />}
+            {isLoggingOut ? 'جاري الخروج...' : 'تسجيل الخروج'}
           </button>
         </div>
       </aside>

@@ -20,7 +20,23 @@ export async function submitOrder(data: {
       return { success: false, error: "السلة فارغة" }
     }
 
+    // Find next order ID
+    const lastOrder = await db.order.findFirst({
+      where: { id: { startsWith: 'AG-' } },
+      orderBy: { createdAt: 'desc' }
+    });
+    
+    let nextId = 1;
+    if (lastOrder) {
+      const match = lastOrder.id.match(/^AG-(\d+)$/i);
+      if (match) {
+        nextId = parseInt(match[1], 10) + 1;
+      }
+    }
+    const newOrderId = `AG-${nextId}`;
+
     const orderData: any = {
+      id: newOrderId,
       customerName: data.customerName,
       customerPhone: data.customerPhone,
       address: data.address,
@@ -73,7 +89,7 @@ export async function submitOrder(data: {
         userId: undefined, // Admins
         targetRole: "ADMIN",
         title: "طلب جديد",
-        message: `تم استلام طلب جديد #${order.id.slice(-6).toUpperCase()} بقيمة ${order.totalAmount} ج.م`,
+        message: `تم استلام طلب جديد #${order.id} بقيمة ${order.totalAmount} ج.م`,
         type: "ORDER_CREATED",
         link: `/admin/orders/${order.id}`,
         sound: true
