@@ -63,7 +63,7 @@ export function OrderDetailsClient({ order, logoUrl, storeName }: { order: any, 
               <User className="w-4 h-4" />
               تفاصيل العميل
             </Button>
-            <Button onClick={handlePrint} className="gap-2 bg-slate-900 text-white hover:bg-slate-800">
+            <Button onClick={handlePrint} className="gap-2 bg-[#2453E3] text-white hover:bg-slate-800">
               <Printer className="w-4 h-4" />
               طباعة الطلب
             </Button>

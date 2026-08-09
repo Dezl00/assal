@@ -78,13 +78,13 @@ function AdminLayoutInner({
   return (
     <div className="flex min-h-screen bg-background admin-theme">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 border-l border-border bg-white text-slate-900 transition-all flex-col fixed inset-y-0 right-0 z-50">
+      <aside className="hidden md:flex w-72 border-l border-border bg-white text-[#2453E3] transition-all flex-col fixed inset-y-0 right-0 z-50">
         <div className="flex h-16 items-center px-6 border-b border-border shrink-0">
           {/* Logo or Title */}
           {logoUrl ? (
             <img src={logoUrl} alt={storeName} className="h-8 w-auto object-contain" />
           ) : (
-            <span className="text-xl font-bold text-slate-900">{storeName}</span>
+            <span className="text-xl font-bold text-[#2453E3]">{storeName}</span>
           )}
         </div>
         <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
@@ -96,10 +96,10 @@ function AdminLayoutInner({
                 href={item.href}
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all active:scale-95",
-                  isActive ? "bg-slate-900 text-white" : "hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+                  isActive ? "bg-[#2453E3] text-white" : "hover:bg-slate-100 text-slate-600 hover:text-[#2453E3]"
                 )}
               >
-                <item.icon className={cn("h-5 w-5 transition-colors rtl-flip", isActive ? "text-white" : "text-slate-500 group-hover:text-slate-900")} />
+                <item.icon className={cn("h-5 w-5 transition-colors rtl-flip", isActive ? "text-white" : "text-slate-500 group-hover:text-[#2453E3]")} />
                 {item.name}
               </Link>
             )
@@ -126,14 +126,14 @@ function AdminLayoutInner({
 
       {/* Mobile Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 right-0 z-50 w-72 bg-white text-slate-900 border-l border-border flex flex-col transition-transform duration-300 ease-in-out md:hidden shadow-xl",
+        "fixed inset-y-0 right-0 z-50 w-72 bg-white text-[#2453E3] border-l border-border flex flex-col transition-transform duration-300 ease-in-out md:hidden shadow-xl",
         isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
       )}>
         <div className="flex h-14 items-center justify-between px-6 border-b border-border shrink-0">
           {logoUrl ? (
             <img src={logoUrl} alt={storeName} className="h-7 w-auto object-contain" />
           ) : (
-            <span className="text-xl font-bold text-slate-900">{storeName}</span>
+            <span className="text-xl font-bold text-[#2453E3]">{storeName}</span>
           )}
           <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 rounded-md hover:bg-slate-100 text-slate-600">
             <X className="h-5 w-5" />
@@ -149,10 +149,10 @@ function AdminLayoutInner({
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={cn(
                   "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all active:scale-95",
-                  isActive ? "bg-slate-900 text-white" : "hover:bg-slate-100 text-slate-600 hover:text-slate-900"
+                  isActive ? "bg-[#2453E3] text-white" : "hover:bg-slate-100 text-slate-600 hover:text-[#2453E3]"
                 )}
               >
-                <item.icon className={cn("h-5 w-5 transition-colors rtl-flip", isActive ? "text-white" : "text-slate-500 group-hover:text-slate-900")} />
+                <item.icon className={cn("h-5 w-5 transition-colors rtl-flip", isActive ? "text-white" : "text-slate-500 group-hover:text-[#2453E3]")} />
                 {item.name}
               </Link>
             )

@@ -22,7 +22,7 @@ export default async function SettingsPage() {
       secondaryColor: "#FBBF24",
       borderRadius: "8px",
       buttonStyle: "solid",
-      adminColor: "#0f172a",
+      adminColor: "#2453E3",
       whatsappNumber: null,
       whatsappEnabled: true,
       facebookUrl: null,

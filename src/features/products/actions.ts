@@ -83,7 +83,9 @@ import { auth } from "@/lib/auth"
 export async function deleteProduct(id: string) {
   try {
     const session = await auth()
-    if (session?.user?.role !== "ADMIN") {
+    const isAdmin = session?.user?.role === "ADMIN"
+    const hasPerm = session?.user?.permissions?.includes("products.delete")
+    if (!isAdmin && !hasPerm) {
       return { success: false, error: "Not authorized to delete products" }
     }
     
@@ -113,7 +115,9 @@ export async function deleteProduct(id: string) {
 export async function bulkDeleteProducts(ids: string[]) {
   try {
     const session = await auth()
-    if (session?.user?.role !== "ADMIN") {
+    const isAdmin = session?.user?.role === "ADMIN"
+    const hasPerm = session?.user?.permissions?.includes("products.delete")
+    if (!isAdmin && !hasPerm) {
       return { success: false, error: "Not authorized to delete products" }
     }
 

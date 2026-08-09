@@ -260,7 +260,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
               {canAdd && (
                 <Button 
                   onClick={() => resetForm()} 
-                  className="w-full sm:w-auto bg-[#0f172a] hover:bg-[#1e293b] text-white rounded-lg px-6"
+                  className="w-full sm:w-auto bg-[#2453E3] hover:bg-[#1e293b] text-white rounded-lg px-6"
                 >
                   <Plus className="w-4 h-4 ml-2" />
                   إضافة مستخدم

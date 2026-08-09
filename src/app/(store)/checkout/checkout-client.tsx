@@ -451,7 +451,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
                     href={paymentMethods.find((p: any) => p.id === selectedPaymentId)?.accountInfo}
                     target="_blank"
                     rel="noopener noreferrer" 
-                    className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg mt-4 text-sm font-bold hover:bg-slate-800 transition-colors"
+                    className="inline-flex items-center gap-2 bg-[#2453E3] text-white px-4 py-2 rounded-lg mt-4 text-sm font-bold hover:bg-slate-800 transition-colors"
                   >
                     التوجه إلى الرابط
                   </a>
