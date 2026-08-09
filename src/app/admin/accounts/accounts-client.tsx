@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useMemo, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
-import { PlusCircle, Edit, Trash2, X, Loader2, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Edit, Trash2, X, Loader2, ChevronDown, ChevronUp, Users, Search, User, Phone, Lock, MoreVertical, Crown } from 'lucide-react'
 import { deleteAccount, createAccount, updateAccount, updateAccountStatus } from "@/features/accounts/actions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
@@ -234,70 +234,118 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>الرئيسية</span>
-          <span>/</span>
-          <span className="text-foreground">الحسابات والصلاحيات</span>
-        </nav>
+      {/* Header Section */}
+      <div className="flex items-center gap-4 bg-transparent mb-6">
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Users className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">الحسابات والصلاحيات</h1>
+          <p className="text-sm text-muted-foreground mt-1">إدارة حسابات المستخدمين وصلاحيات الوصول</p>
+        </div>
       </div>
 
       <div className="flex flex-col lg:flex-row-reverse gap-6 relative items-start">
         {/* Table Area */}
         <div className="flex-1 w-full order-last lg:order-first">
-          <div className="border rounded-xl bg-card overflow-hidden shadow-sm">
+          <div className="rounded-[16px] border border-border/40 bg-card overflow-hidden">
+            {/* Table Toolbar */}
+            <div className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-border/40 bg-card">
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input 
+                  type="text" 
+                  placeholder="ابحث عن مستخدم..." 
+                  className="w-full h-10 pl-3 pr-10 border border-border/60 rounded-lg bg-transparent text-sm focus:outline-none focus:border-primary transition-colors"
+                />
+              </div>
+              {canAdd && (
+                <Button 
+                  onClick={() => resetForm()} 
+                  className="w-full sm:w-auto bg-[#0f172a] hover:bg-[#1e293b] text-white rounded-lg px-6"
+                >
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة مستخدم
+                </Button>
+              )}
+            </div>
+
+            {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm text-right">
-                <thead className="bg-muted/50 border-b">
+                <thead className="bg-muted/20 border-b border-border/40 text-muted-foreground">
                   <tr>
-                    <th className="p-4 font-medium">الاسم</th>
-                    <th className="p-4 font-medium">رقم الهاتف</th>
-                    <th className="p-4 font-medium">الصلاحيات</th>
-                    <th className="p-4 font-medium text-center">الإجراءات</th>
+                    <th className="px-6 py-4 font-medium">الاسم</th>
+                    <th className="px-6 py-4 font-medium">رقم الهاتف / البريد</th>
+                    <th className="px-6 py-4 font-medium">الصلاحيات</th>
+                    <th className="px-6 py-4 font-medium">الحالة</th>
+                    <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
                   {localAccounts.map(acc => {
                     const permCount = acc.permissions?.length || 0;
                     return (
-                      <tr key={acc.id} className="border-b last:border-0 hover:bg-muted/20">
-                        <td className="p-4 font-medium">{acc.name || 'بدون اسم'}</td>
-                        <td className="p-4" dir="ltr">{acc.phone}</td>
-                        <td className="p-4">
+                      <tr key={acc.id} className="border-b border-border/40 last:border-0 hover:bg-muted/10 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg shrink-0">
+                              {(acc.name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-semibold text-foreground">{acc.name || 'بدون اسم'}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground" dir="ltr">{acc.phone}</td>
+                        <td className="px-6 py-4">
                           {permCount === allPermissionKeys.length ? (
-                            <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-700 font-medium">مدير بنظام كامل</span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-red-50 text-red-600 font-medium border border-red-100">
+                              <Crown className="w-3.5 h-3.5" />
+                              مدير بنظام كامل
+                            </span>
                           ) : permCount > 0 ? (
-                            <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 font-medium">{permCount} صلاحية</span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-blue-50 text-blue-600 font-medium border border-blue-100">
+                              {permCount} صلاحية
+                            </span>
                           ) : (
-                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700 font-medium">بدون صلاحيات</span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-gray-50 text-gray-600 font-medium border border-gray-100">
+                              بدون صلاحيات
+                            </span>
                           )}
                         </td>
-                        <td className="p-4 flex gap-2 items-center justify-center">
-                          <Switch 
-                            checked={acc.isActive !== false} 
-                            onCheckedChange={(checked) => handleUpdateStatus(acc.id, checked)}
-                            disabled={!canEdit}
-                          />
-                          {canEdit && (
-                            <Button variant="ghost" size="icon" onClick={() => { 
-                              setEditingItem(acc); 
-                              setSelectedPermissions(acc.permissions || []);
-                              setIsFormVisible(true) 
-                            }}>
-                              <Edit className="w-4 h-4" />
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${acc.isActive !== false ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-50 text-gray-600 border border-gray-100'}`}>
+                              <div className={`w-1.5 h-1.5 rounded-full ${acc.isActive !== false ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                              {acc.isActive !== false ? 'نشط' : 'غير نشط'}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md hover:bg-muted text-muted-foreground">
+                              <MoreVertical className="w-4 h-4" />
                             </Button>
-                          )}
-                          {canDelete && acc.role !== "ADMIN" && (
-                            <Button variant="ghost" size="icon" onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}>
-                              <Trash2 className="w-4 h-4 text-red-500" />
-                            </Button>
-                          )}
+                            {canEdit && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md bg-blue-50/50 hover:bg-blue-100 text-blue-600" onClick={() => { 
+                                setEditingItem(acc); 
+                                setSelectedPermissions(acc.permissions || []);
+                                setIsFormVisible(true) 
+                              }}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            )}
+                            {canDelete && acc.role !== "ADMIN" && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md bg-red-50/50 hover:bg-red-100 text-red-600" onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}>
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )
                   })}
                   {localAccounts.length === 0 && (
-                    <tr><td colSpan={4} className="p-8 text-center text-muted-foreground">لا توجد حسابات مسجلة</td></tr>
+                    <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">لا توجد حسابات مسجلة</td></tr>
                   )}
                 </tbody>
               </table>
@@ -306,46 +354,54 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
             {/* Mobile View */}
             <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
               {localAccounts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-lg border border-border/50">
+                <div className="text-center py-8 text-muted-foreground bg-muted/5 rounded-xl border border-border/40">
                   لا توجد حسابات مسجلة
                 </div>
               ) : (
                 localAccounts.map(acc => {
                   const permCount = acc.permissions?.length || 0;
                   return (
-                    <div key={acc.id} className="bg-card border border-border/50 rounded-lg p-4 shadow-sm flex flex-col gap-4">
+                    <div key={acc.id} className="bg-card border border-border/40 rounded-xl p-4 flex flex-col gap-4">
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="font-semibold text-foreground text-base">{acc.name || 'بدون اسم'}</div>
-                          <div className="text-muted-foreground text-sm mt-1" dir="ltr">{acc.phone}</div>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg shrink-0">
+                            {(acc.name || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-foreground text-base">{acc.name || 'بدون اسم'}</div>
+                            <div className="text-muted-foreground text-sm mt-0.5" dir="ltr">{acc.phone}</div>
+                          </div>
                         </div>
-                        <div>
-                          <Switch 
-                            checked={acc.isActive !== false} 
-                            onCheckedChange={(checked) => handleUpdateStatus(acc.id, checked)}
-                            disabled={!canEdit}
-                          />
+                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${acc.isActive !== false ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-gray-50 text-gray-600 border border-gray-100'}`}>
+                           <div className={`w-1.5 h-1.5 rounded-full ${acc.isActive !== false ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                           {acc.isActive !== false ? 'نشط' : 'غير نشط'}
                         </div>
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">الصلاحيات:</span>
                         {permCount === allPermissionKeys.length ? (
-                          <span className="px-2 py-1 rounded text-xs bg-red-100 text-red-700 font-medium">مدير بنظام كامل</span>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-red-50 text-red-600 font-medium border border-red-100">
+                            <Crown className="w-3.5 h-3.5" />
+                            مدير بنظام كامل
+                          </span>
                         ) : permCount > 0 ? (
-                          <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 font-medium">{permCount} صلاحية</span>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-blue-50 text-blue-600 font-medium border border-blue-100">
+                            {permCount} صلاحية
+                          </span>
                         ) : (
-                          <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-700 font-medium">بدون صلاحيات</span>
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs bg-gray-50 text-gray-600 font-medium border border-gray-100">
+                            بدون صلاحيات
+                          </span>
                         )}
                       </div>
 
                       {(canEdit || canDelete) && (
-                        <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+                        <div className="flex items-center gap-2 pt-3 border-t border-border/40">
                           {canEdit && (
                             <Button 
-                              variant="outline" 
+                              variant="ghost" 
                               size="sm" 
-                              className="flex-1 text-muted-foreground hover:text-primary"
+                              className="flex-1 bg-blue-50/50 hover:bg-blue-100 text-blue-600 rounded-lg"
                               onClick={() => {
                                 setEditingItem(acc); 
                                 setSelectedPermissions(acc.permissions || []);
@@ -363,9 +419,9 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
                           )}
                           {canDelete && acc.role !== "ADMIN" && (
                             <Button 
-                              variant="outline" 
+                              variant="ghost" 
                               size="sm" 
-                              className="flex-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20"
+                              className="flex-1 bg-red-50/50 hover:bg-red-100 text-red-600 rounded-lg"
                               onClick={() => { setItemToDelete(acc); setDeleteModalOpen(true) }}
                             >
                               <Trash2 className="h-4 w-4 ml-2" />
@@ -382,100 +438,111 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
           </div>
         </div>
 
-        {/* Form Area */}
+        {/* Form Area (Sidebar) */}
         {(canAdd || editingItem) && (
-          <div className="w-full lg:w-[380px] shrink-0 lg:sticky lg:top-4 transition-all duration-300">
-            <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="border-b border-border/50 px-6 py-4 bg-muted/5 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="text-lg font-semibold tracking-tight">{editingItem ? 'تعديل صلاحيات الحساب' : 'إضافة حساب جديد'}</h2>
-              </div>
-              {editingItem && (
-                <Button variant="ghost" size="icon" onClick={resetForm} className="h-8 w-8 shrink-0 text-muted-foreground">
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
+          <div className="w-full lg:w-[400px] shrink-0 lg:sticky lg:top-4 transition-all duration-300">
+            <div className="rounded-[16px] border border-border/40 bg-card overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="p-6 flex items-center justify-between shrink-0">
+              <h2 className="text-xl font-bold tracking-tight text-foreground">{editingItem ? 'تعديل صلاحيات الحساب' : 'إضافة حساب جديد'}</h2>
+              <Button variant="outline" size="icon" onClick={resetForm} className="h-8 w-8 rounded-lg border-border/60 text-muted-foreground hover:bg-muted">
+                <X className="w-4 h-4" />
+              </Button>
             </div>
             
-            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="px-6 pb-6 overflow-y-auto flex-1 custom-scrollbar">
               <form onSubmit={handleSubmit} id="add-account-form" className="space-y-6">
-                <div className="space-y-4 bg-muted/10 p-4 rounded-lg border border-border/50">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">الاسم</label>
-                    <input name="name" type="text" required defaultValue={editingItem?.name || ''} className="w-full h-10 px-3 border rounded-md" />
+                
+                {/* Inputs */}
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold text-foreground">الاسم</label>
+                    <div className="relative">
+                      <input name="name" type="text" required defaultValue={editingItem?.name || ''} className="w-full h-11 pl-3 pr-10 border border-border/60 rounded-xl bg-transparent focus:outline-none focus:border-primary transition-colors text-sm" />
+                      <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">رقم الهاتف</label>
-                    <input name="phone" type="tel" required defaultValue={editingItem?.phone || ''} className="w-full h-10 px-3 border rounded-md" dir="ltr" placeholder="010..." />
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold text-foreground">رقم الهاتف</label>
+                    <div className="relative">
+                      <input name="phone" type="tel" required defaultValue={editingItem?.phone || ''} className="w-full h-11 pl-3 pr-10 border border-border/60 rounded-xl bg-transparent focus:outline-none focus:border-primary transition-colors text-sm" dir="ltr" />
+                      <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">كلمة المرور {editingItem && <span className="text-muted-foreground text-xs">(اتركه فارغاً لعدم التغيير)</span>}</label>
-                    <input name="password" type="password" required={!editingItem} className="w-full h-10 px-3 border rounded-md" dir="ltr" />
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-semibold text-foreground flex items-center justify-between">
+                      كلمة المرور 
+                      {editingItem && <span className="text-muted-foreground text-xs font-normal">(اتركه فارغاً لعدم التغيير)</span>}
+                    </label>
+                    <div className="relative">
+                      <input name="password" type="password" required={!editingItem} className="w-full h-11 pl-3 pr-10 border border-border/60 rounded-xl bg-transparent focus:outline-none focus:border-primary transition-colors text-sm" dir="ltr" placeholder="********" />
+                      <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                    <label className="text-base font-semibold">الصلاحيات المخصصة</label>
-                    <div className="flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-md border border-primary/10">
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-base font-bold text-foreground">الصلاحيات المخصصة</label>
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="select-all" className="text-sm font-medium text-foreground cursor-pointer select-none">تحديد الكل</label>
                       <Checkbox 
                         id="select-all" 
                         checked={selectedPermissions.length === allPermissionKeys.length && allPermissionKeys.length > 0}
                         onCheckedChange={handleSelectAll}
+                        className="rounded-[4px] data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
-                      <label htmlFor="select-all" className="text-sm font-medium text-primary cursor-pointer select-none">تحديد الكل</label>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {PERMISSIONS_SCHEMA.map(section => {
                       const sectionKeys = section.subPermissions.map(sub => `${section.id}.${sub.id}`)
                       const selectedInSection = sectionKeys.filter(k => selectedPermissions.includes(k)).length
                       const isAllSelected = selectedInSection === sectionKeys.length
-                      const isPartiallySelected = selectedInSection > 0 && !isAllSelected
                       const isOpen = openSections[section.id]
 
                       return (
-                        <div key={section.id} className="border border-border/50 rounded-lg overflow-hidden bg-card transition-all">
+                        <div key={section.id} className="rounded-xl overflow-hidden bg-transparent transition-all border border-border/40">
                           {/* Section Header */}
-                          <div className={`flex items-center justify-between p-3 cursor-pointer select-none transition-colors ${isOpen ? 'bg-muted/30' : 'hover:bg-muted/10'}`} onClick={() => toggleSection(section.id)}>
+                          <div className={`flex items-center justify-between p-3.5 cursor-pointer select-none transition-colors hover:bg-muted/30 ${isOpen ? 'bg-muted/30' : ''}`} onClick={() => toggleSection(section.id)}>
                             <div className="flex items-center gap-3">
-                              <div onClick={(e) => e.stopPropagation()}>
-                                <Checkbox 
-                                  id={`section-${section.id}`} 
-                                  checked={isAllSelected}
-                                  // Workaround for indeterminate state in radix Checkbox if needed, or simply use style
-                                  className={isPartiallySelected ? 'bg-primary/50 border-primary' : ''}
-                                  onCheckedChange={(checked) => handleSectionSelect(section.id, checked as boolean)}
-                                />
-                              </div>
-                              <label htmlFor={`section-${section.id}`} className="text-sm font-medium cursor-pointer" onClick={(e) => e.stopPropagation()}>{section.label}</label>
-                            </div>
-                            <div className="flex items-center gap-3">
+                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground pointer-events-none p-0 shrink-0">
+                                {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                              </Button>
+                              
                               {selectedInSection > 0 && (
                                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                                   {selectedInSection}/{sectionKeys.length}
                                 </span>
                               )}
-                              <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground pointer-events-none">
-                                {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                              </Button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <label htmlFor={`section-${section.id}`} className="text-sm font-semibold cursor-pointer" onClick={(e) => e.stopPropagation()}>{section.label}</label>
+                              <div onClick={(e) => e.stopPropagation()} className="flex items-center justify-center bg-primary text-primary-foreground rounded-md w-5 h-5 shrink-0">
+                                <Checkbox 
+                                  id={`section-${section.id}`} 
+                                  checked={isAllSelected}
+                                  className="border-none w-full h-full data-[state=checked]:bg-primary data-[state=checked]:text-white rounded-[4px]"
+                                  onCheckedChange={(checked) => handleSectionSelect(section.id, checked as boolean)}
+                                />
+                              </div>
                             </div>
                           </div>
 
                           {/* Sub Permissions */}
                           {isOpen && (
-                            <div className="p-3 bg-muted/5 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="p-4 bg-muted/10 border-t border-border/40 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
                               {section.subPermissions.map(sub => {
                                 const permKey = `${section.id}.${sub.id}`
                                 return (
-                                  <div key={sub.id} className="flex items-center gap-2 pl-2">
+                                  <div key={sub.id} className="flex items-center justify-between">
+                                    <label htmlFor={`perm-${permKey}`} className="text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors">{sub.label}</label>
                                     <Checkbox 
                                       id={`perm-${permKey}`} 
                                       checked={selectedPermissions.includes(permKey)}
                                       onCheckedChange={(checked) => handleSubPermissionSelect(permKey, checked as boolean)}
+                                      className="rounded-[4px] border-border/60 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                     />
-                                    <label htmlFor={`perm-${permKey}`} className="text-sm text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors">{sub.label}</label>
                                   </div>
                                 )
                               })}
@@ -489,8 +556,8 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
               </form>
             </div>
             
-            <div className="p-4 border-t border-border/50 bg-card shrink-0">
-               <Button type="submit" form="add-account-form" className="w-full h-12 text-lg" disabled={isSubmitting}>
+            <div className="p-5 border-t border-border/40 bg-card shrink-0">
+               <Button type="submit" form="add-account-form" className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
                   {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingItem ? 'تحديث الصلاحيات والحساب' : 'إضافة الحساب')}
                 </Button>
             </div>
