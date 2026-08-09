@@ -811,7 +811,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
 
       {/* Bulk Update Modal */}
       {isBulkModalOpen && selectedIds.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
           <div className="bg-background rounded-xl border border-border shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="border-b border-border/50 px-6 py-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold tracking-tight">
