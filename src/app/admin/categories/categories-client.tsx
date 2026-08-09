@@ -234,6 +234,15 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
   const [filterDepartment, setFilterDepartment] = useState<string>("all")
   const [filterCategory, setFilterCategory] = useState<string>("all")
 
+  const truncateText = (text: string, maxWords: number = 3) => {
+    if (!text) return "";
+    const words = text.split(" ");
+    if (words.length > maxWords) {
+      return words.slice(0, maxWords).join(" ") + "...";
+    }
+    return text;
+  };
+
   const getProductCount = (category: any) => {
     let count = category._count?.products || 0;
     if (!category.parentId) {
@@ -383,7 +392,7 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                       />
                     </th>
                     <th className="px-6 py-4 font-medium">اسم القسم</th>
-                    <th className="px-6 py-4 font-medium">القسم الرئيسي</th>
+                    <th className="px-6 py-4 font-medium">القسم الرئيسي / المجال</th>
                     <th className="px-6 py-4 font-medium">المنتجات</th>
                     <th className="px-6 py-4 font-medium text-center">الحالة</th>
                     <th className="px-6 py-4 font-medium text-center">الإجراءات</th>
@@ -441,7 +450,9 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                           {category.parent ? (
                             <span className="text-muted-foreground">{category.parent.name}</span>
                           ) : (
-                            <span className="text-muted-foreground italic">-</span>
+                            <span className="text-muted-foreground" title={departments.find(d => d.id === category.departmentId)?.name || ""}>
+                              {truncateText(departments.find(d => d.id === category.departmentId)?.name || "-", 3)}
+                            </span>
                           )}
                         </td>
                         <td className="px-6 py-4">
@@ -566,8 +577,12 @@ export function CategoriesClient({ categories, departments = [] }: { categories:
                     
                     <div className="flex flex-wrap gap-2 text-sm">
                       <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
-                        <span className="text-muted-foreground text-xs">الرئيسي:</span>
-                        <span className="font-medium text-xs">{category.parent ? category.parent.name : '-'}</span>
+                        <span className="text-muted-foreground text-xs">{category.parentId ? 'الرئيسي:' : 'المجال:'}</span>
+                        <span className="font-medium text-xs" title={!category.parent ? (departments.find(d => d.id === category.departmentId)?.name || "") : ""}>
+                          {category.parent 
+                            ? category.parent.name 
+                            : truncateText(departments.find(d => d.id === category.departmentId)?.name || "-", 3)}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5 bg-muted/50 px-2.5 py-1 rounded-md">
                         <span className="text-muted-foreground text-xs">المنتجات:</span>
