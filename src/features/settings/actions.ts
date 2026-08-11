@@ -194,7 +194,7 @@ export async function resetStoreStats() {
   }
 }
 export async function getNotificationCampaigns() {
-  await checkAdmin()
+  await requireAdmin()
   return await db.notificationCampaign.findMany({
     orderBy: { createdAt: 'desc' },
     take: 50
@@ -202,7 +202,7 @@ export async function getNotificationCampaigns() {
 }
 
 export async function getSubscribersCount() {
-  await checkAdmin()
+  await requireAdmin()
   return await db.pushSubscription.count({
     where: {
       OR: [
