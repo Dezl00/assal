@@ -575,7 +575,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                               setConfirmState(p => ({ ...p, isLoading: true }));
                               const res = await resetStoreStats();
                               if (res.success) {
-                                toast.success(res.message);
+                                toast.success('تم تصفير المتجر بنجاح');
                                 router.refresh();
                               } else {
                                 toast.error(res.error || 'حدث خطأ أثناء التصفير');
