@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download, Settings2, Bell, Send, History } from "lucide-react"
@@ -14,6 +15,7 @@ import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { User as UserIcon } from "lucide-react"
 
 export function SettingsClient({ config, branches: initialBranches = [], backups = [], notificationCampaigns = [], subscribersCount = 0, initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], notificationCampaigns?: any[], subscribersCount?: number, initialIsAdmin?: boolean, initialPermissions?: string[] }) {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [branches, setBranches] = useState(initialBranches)
   const [backupPage, setBackupPage] = useState(1)
@@ -72,7 +74,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
         setCampaignMessage("")
         setCampaignLink("")
         setCampaignImageUrl("")
-        window.location.reload()
+        router.refresh()
       } else {
         toast.error(data.error || "حدث خطأ أثناء الإرسال")
       }
@@ -100,8 +102,8 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
     setIsSubmitting(false)
 
     if (res.success) {
-      toast.success("تم حفظ الإعدادات بنجاح")
-      window.location.reload()
+      toast.success("تم تحديث الإعدادات بنجاح")
+      router.refresh()
     } else {
       toast.error(res.error || "حدث خطأ أثناء الحفظ")
     }
@@ -458,8 +460,8 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                           try {
                             const res = await fetch('/api/backups/import', { method: 'POST', body: formData });
                             if (res.ok) {
-                              toast.success("تمت استعادة النسخة الاحتياطية بنجاح!");
-                              setTimeout(() => window.location.reload(), 2000);
+                              toast.success('تم استعادة النسخة بنجاح');
+                              setTimeout(() => router.refresh(), 2000);
                             } else {
                               const data = await res.json();
                               toast.error(data.error || "فشل استعادة النسخة الاحتياطية");
@@ -573,8 +575,8 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                               setConfirmState(p => ({ ...p, isLoading: true }));
                               const res = await resetStoreStats();
                               if (res.success) {
-                                toast.success('تم تصفير المتجر بنجاح');
-                                window.location.reload();
+                                toast.success(res.message);
+                                router.refresh();
                               } else {
                                 toast.error(res.error || 'حدث خطأ أثناء التصفير');
                               }

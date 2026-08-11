@@ -21,6 +21,13 @@ export function AdminLayoutClient({
 }) {
   useEffect(() => {
     document.body.classList.add('admin-theme', 'bg-background');
+    
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/admin/' })
+        .catch(err => console.error('Service Worker registration failed:', err));
+    }
+
     return () => {
       document.body.classList.remove('admin-theme', 'bg-background');
     }

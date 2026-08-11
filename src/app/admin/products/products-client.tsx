@@ -832,7 +832,7 @@ export function ProductsClient({ products, categories, brands = [], departments 
         onClose={() => setIsImportModalOpen(false)} 
         onSuccess={() => {
           setIsImportModalOpen(false);
-          window.location.reload();
+          router.refresh();
         }} 
         categories={categories} 
         brands={brands} 
