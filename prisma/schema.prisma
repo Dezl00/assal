@@ -294,6 +294,7 @@ model ThemeConfig {
   adminColor    String   @default("#0f172a")
   whatsappNumber String?
   whatsappEnabled Boolean @default(true)
+  whatsappOrderEnabled Boolean @default(false)
   facebookUrl   String?
   instagramUrl  String?
   twitterUrl    String?

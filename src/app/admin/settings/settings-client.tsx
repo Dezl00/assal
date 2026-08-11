@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download } from "lucide-react"
+import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download, Settings2 } from "lucide-react"
 import { updateThemeConfig, createBranch, updateBranch, deleteBranch, resetStoreStats } from "@/features/settings/actions"
 import { updateProfile } from "@/features/accounts/actions"
 import { toast } from "sonner"
@@ -36,6 +36,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
   const [secondaryColor, setSecondaryColor] = useState(config.secondaryColor || "#FBBF24")
 
   const [whatsappEnabled, setWhatsappEnabled] = useState(config.whatsappEnabled !== false)
+  const [whatsappOrderEnabled, setWhatsappOrderEnabled] = useState(config.whatsappOrderEnabled === true)
 
   async function handleConfigSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -46,6 +47,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
     formData.set("primaryColor", primaryColor)
     formData.set("secondaryColor", secondaryColor)
     formData.set("whatsappEnabled", whatsappEnabled.toString())
+    formData.set("whatsappOrderEnabled", whatsappOrderEnabled.toString())
 
     const res = await updateThemeConfig(formData)
     setIsSubmitting(false)
@@ -130,6 +132,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
     { id: "general", label: "عام", icon: <Store className="w-4 h-4" />, perm: 'settings.general' },
     { id: "appearance", label: "المظهر والهوية", icon: <Palette className="w-4 h-4" />, perm: 'settings.appearance' },
     { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" />, perm: 'settings.social' },
+    { id: "advanced", label: "الإعدادات المتقدمة", icon: <Settings2 className="w-4 h-4" />, perm: 'settings.general' },
     { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" />, perm: 'settings.branches' },
     { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" />, perm: 'settings.backups' },
     { id: "profile", label: "إعدادات حسابي", icon: <UserIcon className="w-4 h-4" />, perm: 'settings.general' },
@@ -161,7 +164,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
         </div>
 
         <div className="flex-1 min-w-0 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
-          {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && (
+          {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && activeTab !== "advanced" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
               <div className="p-4 sm:p-6 flex-1 space-y-8">
                 <div className={activeTab === "general" ? "block space-y-6 animate-in fade-in" : "hidden"}>
@@ -177,36 +180,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                       </div>
                     </div>
                     
-                    <div className="mt-12 pt-6 border-t border-border/50">
-                      <h3 className="text-lg font-semibold text-red-600 mb-2">منطقة الخطر</h3>
-                      <p className="text-sm text-muted-foreground mb-4">تصفير المتجر سيقوم بحذف كافة الطلبات والإحصائيات الخاصة بالزيارات والمشاهدات نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
-                      <Button 
-                        type="button" 
-                        variant="destructive" 
-                        onClick={() => {
-                          setConfirmState({
-                            isOpen: true,
-                            title: "تصفير المتجر",
-                            desc: "هل أنت متأكد من رغبتك في تصفير المتجر؟ هذا الإجراء سيحذف جميع الطلبات والإحصائيات بشكل نهائي ولا يمكن التراجع عنه.",
-                            isDestructive: true,
-                            isLoading: false,
-                            action: async () => {
-                              setConfirmState(p => ({ ...p, isLoading: true }));
-                              const res = await resetStoreStats();
-                              if (res.success) {
-                                toast.success('تم تصفير المتجر بنجاح');
-                                window.location.reload();
-                              } else {
-                                toast.error(res.error || 'حدث خطأ أثناء التصفير');
-                              }
-                              setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
-                            }
-                          });
-                        }}
-                      >
-                        تصفير بيانات المتجر
-                      </Button>
-                    </div>
+
                 </div>
 
                 <div className={activeTab === "appearance" ? "block space-y-6 animate-in fade-in" : "hidden"}>
@@ -506,6 +480,72 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {activeTab === "advanced" && (
+            <div className="flex flex-col h-full">
+              <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
+                <div className="p-4 sm:p-6 flex-1 space-y-8">
+                  <div className="block space-y-6 animate-in fade-in">
+                    <h2 className="text-lg font-semibold border-b border-border/50 pb-2">الإعدادات المتقدمة</h2>
+                    
+                    <div className="max-w-xl space-y-5">
+                      {/* WhatsApp Order Toggle */}
+                      <div className="flex items-center justify-between p-4 border border-green-200 bg-green-50/50 rounded-lg">
+                        <div>
+                          <p className="font-medium text-green-800">إرسال الطلبات عبر واتساب</p>
+                          <p className="text-sm text-green-700/80">عند التفعيل، يتم توجيه العميل بعد تأكيد الطلب إلى محادثة واتساب تتضمن تفاصيل الطلب الكاملة</p>
+                        </div>
+                        <Switch checked={whatsappOrderEnabled} onCheckedChange={setWhatsappOrderEnabled} />
+                      </div>
+                      
+                      {whatsappOrderEnabled && !config.whatsappNumber && (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
+                          ⚠️ يجب إضافة رقم واتساب في تبويب &quot;التواصل الاجتماعي&quot; لتعمل هذه الخاصية
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Danger Zone - moved from General tab */}
+                    <div className="mt-12 pt-6 border-t border-border/50">
+                      <h3 className="text-lg font-semibold text-red-600 mb-2">منطقة الخطر</h3>
+                      <p className="text-sm text-muted-foreground mb-4">تصفير المتجر سيقوم بحذف كافة الطلبات والإحصائيات الخاصة بالزيارات والمشاهدات نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        onClick={() => {
+                          setConfirmState({
+                            isOpen: true,
+                            title: "تصفير المتجر",
+                            desc: "هل أنت متأكد من رغبتك في تصفير المتجر؟ هذا الإجراء سيحذف جميع الطلبات والإحصائيات بشكل نهائي ولا يمكن التراجع عنه.",
+                            isDestructive: true,
+                            isLoading: false,
+                            action: async () => {
+                              setConfirmState(p => ({ ...p, isLoading: true }));
+                              const res = await resetStoreStats();
+                              if (res.success) {
+                                toast.success('تم تصفير المتجر بنجاح');
+                                window.location.reload();
+                              } else {
+                                toast.error(res.error || 'حدث خطأ أثناء التصفير');
+                              }
+                              setConfirmState(p => ({ ...p, isOpen: false, isLoading: false }));
+                            }
+                          });
+                        }}
+                      >
+                        تصفير بيانات المتجر
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 border-t border-border/50 bg-muted/20 flex justify-end">
+                  <Button type="submit" disabled={isSubmitting} className="min-w-[120px]">
+                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ الإعدادات"}
+                  </Button>
+                </div>
+              </form>
             </div>
           )}
 

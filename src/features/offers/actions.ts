@@ -55,7 +55,9 @@ export async function getOfferSettings() {
     promoPopupDelay: theme?.promoPopupDelay,
     promoPopupTitle: theme?.promoPopupTitle,
     promoPopupDescription: theme?.promoPopupDescription,
-    promoPopupCode: theme?.promoPopupCode
+    promoPopupCode: theme?.promoPopupCode,
+    whatsappOrderEnabled: theme?.whatsappOrderEnabled ?? false,
+    whatsappNumber: theme?.whatsappNumber ?? null,
   }
 }
 

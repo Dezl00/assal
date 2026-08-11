@@ -18,6 +18,8 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   const [mounted, setMounted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSummaryOpen, setIsSummaryOpen] = useState(false)
+  const [guestName, setGuestName] = useState("")
+  const [guestPhone, setGuestPhone] = useState("")
   
   // -- Shipping State --
   const hasSavedAddresses = user?.addresses && user.addresses.length > 0
@@ -191,7 +193,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     }
 
     const data: any = {
-      customerName: user?.name || "عميل",
+      customerName: user?.name || guestName || "عميل",
       customerPhone: finalPhone,
       address: finalAddress,
       city: finalCity,
@@ -216,6 +218,38 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
     
     if (result.success && result.orderId) {
       clearCart()
+      
+      if (settings?.whatsappOrderEnabled && settings?.whatsappNumber) {
+        const orderItems = items.map((item: any, i: number) => 
+          `${i + 1}. ${item.name} × ${item.quantity} — ${item.price * item.quantity} ج.م`
+        ).join('\n')
+        
+        const message = [
+          `🛒 *طلب جديد #${result.orderId}*`,
+          '',
+          `👤 *بيانات العميل:*`,
+          `الاسم: ${data.customerName}`,
+          `الهاتف: ${data.customerPhone}`,
+          `العنوان: ${data.address}`,
+          `المنطقة: ${[data.governorate, data.city].filter(Boolean).join(' - ')}`,
+          '',
+          `📦 *المنتجات:*`,
+          orderItems,
+          '',
+          `💰 *ملخص الطلب:*`,
+          `المنتجات: ${total} ج.م`,
+          data.shippingCost ? `الشحن: ${data.shippingCost} ج.م` : null,
+          data.discount ? `الخصم: -${data.discount} ج.م` : null,
+          `━━━━━━━━━━━━━━`,
+          `الإجمالي: ${data.totalAmount} ج.م`,
+          '',
+          `💳 طريقة الدفع: ${data.paymentMethod}`,
+        ].filter(Boolean).join('\n')
+        
+        const whatsappUrl = `https://wa.me/${settings.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`
+        window.open(whatsappUrl, '_blank')
+      }
+      
       toast.success("تم إرسال طلبك بنجاح!")
       router.push(`/checkout/success/${result.orderId}`)
     } else {
@@ -258,14 +292,117 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
         {/* Customer Details Form */}
         <div className="lg:col-span-7 space-y-8">
           {!user ? (
-            <div className="bg-card border border-border/50 rounded-3xl p-12 shadow-sm text-center flex flex-col items-center justify-center">
-              <User className="w-16 h-16 text-muted-foreground mb-4" />
-              <h2 className="text-2xl font-bold mb-2">تسجيل الدخول مطلوب</h2>
-              <p className="text-muted-foreground mb-8">يجب عليك تسجيل الدخول أو إنشاء حساب جديد لإتمام طلبك.</p>
-              <Button type="button" size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-8" onClick={() => setAuthModalOpen(true)}>
-                تسجيل الدخول / إنشاء حساب
-              </Button>
+            <>
+            <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
+              <h2 className="text-2xl font-bold mb-6">بيانات التوصيل</h2>
+              
+              {/* Login suggestion */}
+              <div className="flex items-center justify-between p-4 mb-6 border border-primary/20 bg-primary/5 rounded-xl">
+                <div>
+                  <p className="font-medium">لديك حساب بالفعل؟</p>
+                  <p className="text-sm text-muted-foreground">سجّل دخولك لتعبئة بياناتك تلقائياً</p>
+                </div>
+                <Button type="button" variant="outline" className="shrink-0" onClick={() => setAuthModalOpen(true)}>
+                  تسجيل الدخول
+                </Button>
+              </div>
+              
+              <p className="text-sm text-muted-foreground mb-4 font-medium">أو أكمل طلبك كضيف:</p>
+              
+              <h3 className="font-bold mb-3 text-lg">عنوان التوصيل</h3>
+              
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">الاسم الكامل <span className="text-destructive">*</span></label>
+                    <input 
+                      name="guestName"
+                      required
+                      type="text"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="أدخل اسمك الكامل"
+                      className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">رقم الهاتف <span className="text-destructive">*</span></label>
+                    <input 
+                      name="customerPhone"
+                      required
+                      type="tel"
+                      dir="ltr"
+                      pattern="^01[0-9]{9}$"
+                      maxLength={11}
+                      placeholder="01XXXXXXXXX"
+                      value={guestPhone}
+                      onChange={(e) => setGuestPhone(e.target.value)}
+                      onInvalid={(e) => (e.target as HTMLInputElement).setCustomValidity("رقم الهاتف يجب أن يتكون من 11 رقم ويبدأ بـ 01")}
+                      onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
+                      className="w-full h-12 bg-background border border-input rounded-xl px-4 text-right focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {governorates.length > 1 && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">المحافظة <span className="text-destructive">*</span></label>
+                      <select 
+                        required
+                        value={selectedGovId}
+                        onChange={(e) => {
+                          setSelectedGovId(e.target.value)
+                          setSelectedCityId("")
+                        }}
+                        onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("يرجى اختيار المحافظة")}
+                        onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
+                        className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none"
+                      >
+                        <option value="" disabled>اختر المحافظة...</option>
+                        {governorates.map((g: any) => (
+                          <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  {(!selectedGov || !selectedGov.hideCities) && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">المدينة / المنطقة <span className="text-destructive">*</span></label>
+                      <select 
+                        required
+                        disabled={!selectedGovId}
+                        value={selectedCityId}
+                        onChange={(e) => setSelectedCityId(e.target.value)}
+                        onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("يرجى اختيار المدينة")}
+                        onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
+                        className="w-full h-12 bg-background border border-input rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                      >
+                        <option value="" disabled>اختر المدينة...</option>
+                        {selectedGov?.cities?.map((c: any) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">عنوان التوصيل بالتفصيل <span className="text-destructive">*</span></label>
+                  <textarea 
+                    name="address"
+                    required
+                    rows={3}
+                    placeholder="اسم الحي، الشارع، رقم المبنى أو أي علامة مميزة"
+                    onInvalid={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("يرجى إدخال عنوان التوصيل بالتفصيل")}
+                    onInput={(e) => (e.target as HTMLTextAreaElement).setCustomValidity("")}
+                    className="w-full bg-background border border-input rounded-xl p-4 focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none resize-none"
+                  />
+                </div>
+              </div>
             </div>
+            </>  
           ) : (
           <>
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm">
@@ -574,33 +711,20 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
               </div>
             </div>
 
-            {!user ? (
-              <Button 
-                type="button" 
-                onClick={(e) => {
-                  e.preventDefault()
-                  setAuthModalOpen(true)
-                }}
-                className="w-full h-14 mt-8 rounded-2xl bg-primary text-primary-foreground text-lg font-bold hover:bg-primary/90 transition-all"
-              >
-                تسجيل الدخول لإتمام الطلب
-              </Button>
-            ) : (
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full h-14 mt-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin ml-2" />
-                    جاري تأكيد الطلب...
-                  </>
-                ) : (
-                  "تأكيد الطلب الآن"
-                )}
-              </Button>
-            )}
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full h-14 mt-8 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-lg font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin ml-2" />
+                  جاري تأكيد الطلب...
+                </>
+              ) : (
+                "تأكيد الطلب الآن"
+              )}
+            </Button>
             
             <p className="text-xs text-center text-muted-foreground mt-4">
               بالضغط على تأكيد الطلب، أنت توافق على شروط وأحكام المتجر.

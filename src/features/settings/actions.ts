@@ -32,6 +32,10 @@ export async function updateThemeConfig(formData: FormData) {
       data.whatsappEnabled = formData.get("whatsappEnabled") === "true"
     }
 
+    if (formData.has("whatsappOrderEnabled")) {
+      data.whatsappOrderEnabled = formData.get("whatsappOrderEnabled") === "true"
+    }
+
     if (!existing) {
       // If creating for the first time, ensure required fields have fallback
       data.storeName = data.storeName || "متجر عسل"
