@@ -57,7 +57,9 @@ const PERMISSIONS_SCHEMA = [
       { id: 'appearance', label: 'المظهر والهوية' },
       { id: 'social', label: 'التواصل الاجتماعي' },
       { id: 'branches', label: 'الفروع والمواقع' },
-      { id: 'backups', label: 'النسخ الاحتياطي' }
+      { id: 'backups', label: 'النسخ الاحتياطي' },
+      { id: 'notifications', label: 'الإشعارات المتقدمة' },
+      { id: 'advanced', label: 'الإعدادات المتقدمة' }
     ]
   },
   { 
@@ -138,6 +140,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [itemToDelete, setItemToDelete] = useState<any>(null)
 
   // Compute all available permission keys
@@ -190,7 +193,9 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   async function handleDeleteConfirm() {
     if (!itemToDelete) return
+    setIsDeleting(true)
     const res = await deleteAccount(itemToDelete.id)
+    setIsDeleting(false)
     if (res.success) toast.success('تم الحذف بنجاح')
     else toast.error(res.error || 'فشل الحذف')
     setDeleteModalOpen(false)
@@ -243,13 +248,6 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
 
   return (
     <div className="space-y-6 animate-in fade-in">
-      <ConfirmModal 
-        isOpen={deleteModalOpen} 
-        onCancel={() => setDeleteModalOpen(false)} 
-        onConfirm={handleDeleteConfirm}
-        title="تأكيد الحذف"
-        description="هل أنت متأكد من رغبتك في حذف هذا الحساب؟ هذا الإجراء لا يمكن التراجع عنه."
-      />
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground">
           <span>الرئيسية</span>
@@ -592,6 +590,7 @@ export function AccountsClient({ accounts }: { accounts: any[] }) {
         description="هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع عن هذا الإجراء."
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteModalOpen(false)}
+        isLoading={isDeleting}
       />
     </div>
   )
