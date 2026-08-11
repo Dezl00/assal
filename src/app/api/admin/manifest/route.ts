@@ -10,7 +10,14 @@ export async function GET() {
   const adminName = `${storeName} - الإدارة`
   
   const defaultIcon = "/icon-512x512.png" 
-  const iconUrl = config?.logoUrl || defaultIcon
+  const baseIconUrl = config?.logoUrl || defaultIcon
+
+  function getIcon(url: string, size: number) {
+    if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+      return url.replace('/upload/', `/upload/w_${size},h_${size},c_pad,f_png/`)
+    }
+    return url
+  }
 
   const manifest = {
     name: adminName,
@@ -23,13 +30,15 @@ export async function GET() {
     scope: "/admin/",
     icons: [
       {
-        src: iconUrl,
+        src: getIcon(baseIconUrl, 192),
         sizes: "192x192",
+        type: "image/png",
         purpose: "any maskable"
       },
       {
-        src: iconUrl,
+        src: getIcon(baseIconUrl, 512),
         sizes: "512x512",
+        type: "image/png",
         purpose: "any maskable"
       }
     ]
