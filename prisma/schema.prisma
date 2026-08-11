@@ -464,3 +464,15 @@ model Article {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model NotificationCampaign {
+  id            String   @id @default(cuid())
+  title         String
+  message       String
+  imageUrl      String?
+  link          String?
+  successCount  Int      @default(0)
+  failureCount  Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+

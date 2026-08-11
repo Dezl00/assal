@@ -3,8 +3,10 @@ import { db } from "@/lib/db"
 import Link from "next/link"
 import { CheckCircle2, MapPin, Phone, User, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { auth } from "@/lib/auth"
 
 export default async function CheckoutSuccessPage(props: { params: Promise<{ id: string }> }) {
+  const session = await auth();
   const params = await props.params;
   const order = await db.order.findUnique({
     where: { id: params.id },
@@ -90,11 +92,13 @@ export default async function CheckoutSuccessPage(props: { params: Promise<{ id:
               متابعة التسوق
             </Button>
           </Link>
-          <Link href="/account" className="w-full sm:w-auto">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-xl px-12 h-14 text-lg font-bold border-2 hover:bg-muted">
-              متابعة طلباتي
-            </Button>
-          </Link>
+          {session?.user && (
+            <Link href="/account" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-xl px-12 h-14 text-lg font-bold border-2 hover:bg-muted">
+                متابعة طلباتي
+              </Button>
+            </Link>
+          )}
         </div>
 
       </div>

@@ -193,3 +193,22 @@ export async function resetStoreStats() {
     return { success: false, error: "فشل في تصفير بيانات المتجر" }
   }
 }
+export async function getNotificationCampaigns() {
+  await checkAdmin()
+  return await db.notificationCampaign.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 50
+  })
+}
+
+export async function getSubscribersCount() {
+  await checkAdmin()
+  return await db.pushSubscription.count({
+    where: {
+      OR: [
+        { role: "CUSTOMER" },
+        { role: null }
+      ]
+    }
+  })
+}

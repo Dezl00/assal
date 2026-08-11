@@ -42,6 +42,15 @@ export default async function SettingsPage() {
     orderBy: { createdAt: 'desc' }
   })
 
+  const notificationCampaigns = await db.notificationCampaign.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 20
+  })
+
+  const subscribersCount = await db.pushSubscription.count({
+    where: { OR: [{ role: "CUSTOMER" }, { role: null }] }
+  })
+
   const session = await auth()
   const currentUser = session?.user
   const isAdmin = currentUser?.role === "ADMIN"
@@ -59,6 +68,8 @@ export default async function SettingsPage() {
         config={config} 
         branches={branches} 
         backups={backups} 
+        notificationCampaigns={notificationCampaigns}
+        subscribersCount={subscribersCount}
         initialIsAdmin={isAdmin} 
         initialPermissions={permissions} 
       />

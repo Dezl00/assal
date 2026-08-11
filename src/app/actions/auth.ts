@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { sendNotification } from "@/lib/send-notification"
 
 export async function registerUser(formData: FormData) {
   const name = formData.get("name") as string
@@ -31,6 +32,17 @@ export async function registerUser(formData: FormData) {
         role: "CUSTOMER"
       }
     })
+
+    const config = await db.themeConfig.findUnique({ where: { id: "default" } })
+    if (config?.adminNewCustomerNotifications !== false) {
+      await sendNotification({
+        targetRole: "ADMIN",
+        title: "عميل جديد!",
+        message: `تم تسجيل عميل جديد: ${name} (${phone})`,
+        type: "NEW_CUSTOMER",
+        link: "/admin/customers",
+      });
+    }
 
     return { success: true, user: { id: user.id, phone: user.phone, name: user.name } }
   } catch (error) {

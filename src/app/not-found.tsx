@@ -20,7 +20,7 @@ export default async function NotFound() {
             <line x1="9" y1="15" x2="15" y2="15"></line>
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-[#2453E3] mb-2">الصفحة الحالية غير موجودة</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2">الصفحة الحالية غير موجودة</h1>
         <p className="text-slate-600 mb-8 text-sm">عذراً، لم نتمكن من العثور على الصفحة التي تبحث عنها.</p>
         <Link 
           href="/" 

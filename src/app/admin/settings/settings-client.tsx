@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download, Settings2 } from "lucide-react"
+import { Loader2, Store, Palette, Globe, MapPin, Share2, Plus, Edit, Trash2, Database, Upload, Download, Settings2, Bell, Send, History } from "lucide-react"
 import { updateThemeConfig, createBranch, updateBranch, deleteBranch, resetStoreStats } from "@/features/settings/actions"
 import { updateProfile } from "@/features/accounts/actions"
 import { toast } from "sonner"
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { User as UserIcon } from "lucide-react"
 
-export function SettingsClient({ config, branches: initialBranches = [], backups = [], initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], initialIsAdmin?: boolean, initialPermissions?: string[] }) {
+export function SettingsClient({ config, branches: initialBranches = [], backups = [], notificationCampaigns = [], subscribersCount = 0, initialIsAdmin = false, initialPermissions = [] }: { config: any, branches?: any[], backups?: any[], notificationCampaigns?: any[], subscribersCount?: number, initialIsAdmin?: boolean, initialPermissions?: string[] }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [branches, setBranches] = useState(initialBranches)
   const [backupPage, setBackupPage] = useState(1)
@@ -38,6 +38,51 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
   const [whatsappEnabled, setWhatsappEnabled] = useState(config.whatsappEnabled !== false)
   const [whatsappOrderEnabled, setWhatsappOrderEnabled] = useState(config.whatsappOrderEnabled === true)
 
+  const [adminOrderNotifications, setAdminOrderNotifications] = useState(config.adminOrderNotifications !== false)
+  const [adminNewCustomerNotifications, setAdminNewCustomerNotifications] = useState(config.adminNewCustomerNotifications !== false)
+  const [campaignTitle, setCampaignTitle] = useState("")
+  const [campaignMessage, setCampaignMessage] = useState("")
+  const [campaignLink, setCampaignLink] = useState("")
+  const [campaignImageUrl, setCampaignImageUrl] = useState("")
+  const [isSendingCampaign, setIsSendingCampaign] = useState(false)
+
+  async function handleSendCampaign(e: React.FormEvent) {
+    e.preventDefault()
+    if (!campaignTitle || !campaignMessage) {
+      toast.error("العنوان والرسالة مطلوبان")
+      return
+    }
+    
+    setIsSendingCampaign(true)
+    try {
+      const res = await fetch("/api/admin/notifications/campaign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: campaignTitle,
+          message: campaignMessage,
+          link: campaignLink,
+          imageUrl: campaignImageUrl
+        })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        toast.success(`تم إرسال الإشعار لـ ${data.totalSent} مشترك بنجاح`)
+        setCampaignTitle("")
+        setCampaignMessage("")
+        setCampaignLink("")
+        setCampaignImageUrl("")
+        window.location.reload()
+      } else {
+        toast.error(data.error || "حدث خطأ أثناء الإرسال")
+      }
+    } catch (error) {
+      toast.error("فشل الاتصال بالخادم")
+    } finally {
+      setIsSendingCampaign(false)
+    }
+  }
+
   async function handleConfigSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
@@ -48,6 +93,8 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
     formData.set("secondaryColor", secondaryColor)
     formData.set("whatsappEnabled", whatsappEnabled.toString())
     formData.set("whatsappOrderEnabled", whatsappOrderEnabled.toString())
+    formData.set("adminOrderNotifications", adminOrderNotifications.toString())
+    formData.set("adminNewCustomerNotifications", adminNewCustomerNotifications.toString())
 
     const res = await updateThemeConfig(formData)
     setIsSubmitting(false)
@@ -132,6 +179,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
     { id: "general", label: "عام", icon: <Store className="w-4 h-4" />, perm: 'settings.general' },
     { id: "appearance", label: "المظهر والهوية", icon: <Palette className="w-4 h-4" />, perm: 'settings.appearance' },
     { id: "social", label: "التواصل الاجتماعي", icon: <Share2 className="w-4 h-4" />, perm: 'settings.social' },
+    { id: "notifications", label: "الإشعارات", icon: <Bell className="w-4 h-4" />, perm: 'settings.general' },
     { id: "advanced", label: "الإعدادات المتقدمة", icon: <Settings2 className="w-4 h-4" />, perm: 'settings.general' },
     { id: "branches", label: "الفروع والمواقع", icon: <MapPin className="w-4 h-4" />, perm: 'settings.branches' },
     { id: "backups", label: "النسخ الاحتياطي", icon: <Database className="w-4 h-4" />, perm: 'settings.backups' },
@@ -164,7 +212,7 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
         </div>
 
         <div className="flex-1 min-w-0 bg-card border border-border/50 rounded-xl shadow-sm min-h-[500px]">
-          {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && activeTab !== "advanced" && (
+          {activeTab !== "branches" && activeTab !== "backups" && activeTab !== "profile" && activeTab !== "advanced" && activeTab !== "notifications" && (
             <form onSubmit={handleConfigSubmit} className="flex flex-col h-full">
               <div className="p-4 sm:p-6 flex-1 space-y-8">
                 <div className={activeTab === "general" ? "block space-y-6 animate-in fade-in" : "hidden"}>
@@ -546,6 +594,125 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                   </Button>
                 </div>
               </form>
+            </div>
+          )}
+
+          {activeTab === "notifications" && (
+            <div className="flex flex-col h-full overflow-hidden">
+              <div className="p-4 sm:p-6 flex-1 space-y-8 overflow-y-auto">
+                <div className="block space-y-6 animate-in fade-in">
+                  <h2 className="text-lg font-semibold border-b border-border/50 pb-2">إدارة الإشعارات</h2>
+                  
+                  {/* Admin Toggles */}
+                  <div className="space-y-4 max-w-2xl bg-muted/30 p-4 rounded-xl border border-border/50">
+                    <h3 className="font-semibold text-foreground">إشعارات لوحة التحكم</h3>
+                    <form onSubmit={handleConfigSubmit} className="space-y-4">
+                      <div className="flex items-center justify-between p-4 border bg-background rounded-lg">
+                        <div>
+                          <p className="font-medium">الطلبات الجديدة</p>
+                          <p className="text-sm text-muted-foreground">استلام إشعار في المتصفح عند وصول طلب جديد</p>
+                        </div>
+                        <Switch checked={adminOrderNotifications} onCheckedChange={setAdminOrderNotifications} />
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 border bg-background rounded-lg">
+                        <div>
+                          <p className="font-medium">العملاء الجدد</p>
+                          <p className="text-sm text-muted-foreground">استلام إشعار في المتصفح عند تسجيل عميل جديد</p>
+                        </div>
+                        <Switch checked={adminNewCustomerNotifications} onCheckedChange={setAdminNewCustomerNotifications} />
+                      </div>
+                      
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ الإعدادات"}
+                      </Button>
+                    </form>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                    {/* Manual Campaign Form */}
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between bg-primary/10 text-primary p-4 rounded-xl border border-primary/20">
+                        <div className="font-semibold flex items-center gap-2">
+                          <Bell className="w-5 h-5" />
+                          إجمالي المشتركين
+                        </div>
+                        <div className="text-2xl font-bold">{subscribersCount}</div>
+                      </div>
+
+                      <div className="bg-card border border-border/50 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+                        <h3 className="font-semibold flex items-center gap-2 border-b border-border/50 pb-2">
+                          <Send className="w-4 h-4" />
+                          إرسال إشعار للعملاء
+                        </h3>
+                        <form onSubmit={handleSendCampaign} className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">عنوان الإشعار *</label>
+                            <Input value={campaignTitle} onChange={e => setCampaignTitle(e.target.value)} required placeholder="مثال: خصم 50% اليوم فقط!" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">محتوى الإشعار *</label>
+                            <textarea 
+                              value={campaignMessage} 
+                              onChange={e => setCampaignMessage(e.target.value)} 
+                              required 
+                              rows={3} 
+                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                              placeholder="اكتب رسالتك للعملاء هنا..."
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">الرابط (اختياري)</label>
+                            <Input value={campaignLink} onChange={e => setCampaignLink(e.target.value)} placeholder="/products" dir="ltr" className="text-left" />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium">صورة كبيرة للإشعار (اختياري)</label>
+                            <ImageUploader
+                              value={campaignImageUrl}
+                              onChange={setCampaignImageUrl}
+                              folder="campaigns"
+                            />
+                          </div>
+                          <Button type="submit" disabled={isSendingCampaign || subscribersCount === 0} className="w-full">
+                            {isSendingCampaign ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                            {isSendingCampaign ? "جاري الإرسال..." : "إرسال الإشعار الآن"}
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+
+                    {/* Campaign History */}
+                    <div className="bg-card border border-border/50 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+                      <h3 className="font-semibold flex items-center gap-2 border-b border-border/50 pb-2">
+                        <History className="w-4 h-4" />
+                        سجل الإشعارات المرسلة
+                      </h3>
+                      <div className="space-y-3">
+                        {notificationCampaigns.length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground text-sm">
+                            لم يتم إرسال أي إشعارات سابقة
+                          </div>
+                        ) : (
+                          notificationCampaigns.map((camp: any) => (
+                            <div key={camp.id} className="p-3 bg-muted/30 rounded-lg border border-border/50 text-sm">
+                              <div className="font-semibold">{camp.title}</div>
+                              <div className="text-muted-foreground line-clamp-2 mt-1">{camp.message}</div>
+                              <div className="flex justify-between items-center mt-3 text-xs">
+                                <span className="text-emerald-600 font-medium bg-emerald-50 px-2 py-1 rounded">
+                                  تم الاستلام: {camp.successCount}
+                                </span>
+                                <span className="text-muted-foreground" dir="ltr">
+                                  {new Date(camp.createdAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
