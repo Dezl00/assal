@@ -670,7 +670,6 @@ export function SettingsClient({ config, branches: initialBranches = [], backups
                             <ImageUploader
                               value={campaignImageUrl}
                               onChange={setCampaignImageUrl}
-                              folder="campaigns"
                             />
                           </div>
                           <Button type="submit" disabled={isSendingCampaign || subscribersCount === 0} className="w-full">
