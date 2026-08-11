@@ -19,6 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     manifest: '/api/admin/manifest',
     themeColor: config?.adminColor || '#2453E3',
+    icons: {
+      icon: config?.faviconUrl || config?.logoUrl || '/favicon.ico',
+      apple: config?.faviconUrl || config?.logoUrl || '/apple-icon.png',
+    },
     appleWebApp: {
       capable: true,
       statusBarStyle: 'default',
