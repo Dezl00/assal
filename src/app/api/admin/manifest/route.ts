@@ -10,11 +10,11 @@ export async function GET() {
   const adminName = `${storeName} - الإدارة`
   
   const defaultIcon = "/icon-512x512.png" 
-  const baseIconUrl = config?.logoUrl || defaultIcon
+  const baseIconUrl = config?.faviconUrl || config?.logoUrl || defaultIcon
 
   function getIcon(url: string, size: number) {
     if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
-      return url.replace('/upload/', `/upload/w_${size},h_${size},c_pad,f_png/`)
+      return url.replace('/upload/', `/upload/w_${size},h_${size},c_pad,b_white,f_png/`)
     }
     return url
   }
