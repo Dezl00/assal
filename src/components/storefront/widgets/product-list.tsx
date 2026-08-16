@@ -15,10 +15,23 @@ export async function ProductList({ widget }: { widget: any }) {
         where: { slug },
         include: {
           products: {
-            include: {
-              category: true,
-              brand: true,
-              images: true,
+            where: { isActive: true },
+            take: 6,
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+              price: true,
+              discountPrice: true,
+              stock: true,
+              images: { 
+                take: 1, 
+                orderBy: { sortOrder: 'asc' },
+                select: { url: true }
+              },
+              category: { 
+                select: { name: true, slug: true }
+              },
             }
           }
         }

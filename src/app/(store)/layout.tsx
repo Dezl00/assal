@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth"
 import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
 import { PromoPopup } from "@/components/storefront/promo-popup"
 import { PushNotificationPrompt } from "@/components/admin/push-notification-prompt"
+import { getCachedMenu, getCachedFallbackMenu, getCachedThemeConfig, getCachedCategories, getCachedBranches, getCachedDepartments } from "@/lib/db-cache"
 
 export const dynamic = "force-dynamic"
 
@@ -18,46 +19,25 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   const user = session?.user || null
 
   // Fetch header menu (assuming 'header-menu' is a common name/identifier we use)
-  const headerMenu = await db.menu.findFirst({
-    where: { name: { contains: "header", mode: "insensitive" } },
-    include: { items: { orderBy: { sortOrder: 'asc' } } }
-  })
+  const headerMenu = await getCachedMenu("header")
   
   // Fetch footer menu
-  const footerMenu = await db.menu.findFirst({
-    where: { name: { contains: "footer", mode: "insensitive" } },
-    include: { items: { orderBy: { sortOrder: 'asc' } } }
-  })
+  const footerMenu = await getCachedMenu("footer")
 
   // Fallback to first available menu if specific ones aren't found
-  const fallbackMenu = await db.menu.findFirst({
-    include: { items: { orderBy: { sortOrder: 'asc' } } }
-  })
+  const fallbackMenu = await getCachedFallbackMenu()
 
   // Fetch Theme Config
-  const themeConfig = await db.themeConfig.findUnique({
-    where: { id: "default" }
-  })
+  const themeConfig = await getCachedThemeConfig()
 
   // Fetch Categories for Mega Menu
-  const categories = await db.category.findMany({
-    include: {
-      children: true
-    }
-  })
+  const categories = await getCachedCategories()
 
   // Fetch active branches
-  const branches = await db.branch.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: 'asc' }
-  })
+  const branches = await getCachedBranches()
 
   // Fetch Departments
-  const departments = await db.department.findMany({
-    include: {
-      categories: true
-    }
-  })
+  const departments = await getCachedDepartments()
 
   const topNavItems = headerMenu?.items || fallbackMenu?.items || []
   const footerItems = footerMenu?.items || fallbackMenu?.items || []

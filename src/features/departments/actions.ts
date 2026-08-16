@@ -2,7 +2,7 @@
 
 import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 export async function createDepartment(formData: FormData) {
   try {
@@ -30,6 +30,8 @@ export async function createDepartment(formData: FormData) {
     })
 
     revalidatePath("/admin/departments")
+    // @ts-ignore
+    revalidateTag("departments")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create department" }
@@ -54,6 +56,8 @@ export async function deleteDepartment(id: string) {
       where: { id }
     })
     revalidatePath("/admin/departments")
+    // @ts-ignore
+    revalidateTag("departments")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete department" }
@@ -74,6 +78,8 @@ export async function updateDepartment(id: string, formData: FormData) {
         data: { isActive: isActiveStr === "true" }
       });
       revalidatePath("/admin/departments")
+      // @ts-ignore
+    revalidateTag("departments")
       return { success: true }
     }
 
@@ -97,6 +103,8 @@ export async function updateDepartment(id: string, formData: FormData) {
     })
 
     revalidatePath("/admin/departments")
+    // @ts-ignore
+    revalidateTag("departments")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update department" }

@@ -2,7 +2,7 @@
 
 import { requireAdmin } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 
 export async function createMenu(formData: FormData) {
   try {
@@ -22,6 +22,8 @@ export async function createMenu(formData: FormData) {
     })
 
     revalidatePath("/admin/navigation")
+    // @ts-ignore
+    revalidateTag("menus")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create menu" }
@@ -39,6 +41,8 @@ export async function deleteMenu(id: string) {
       where: { id }
     })
     revalidatePath("/admin/navigation")
+    // @ts-ignore
+    revalidateTag("menus")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete menu" }
@@ -70,6 +74,8 @@ export async function createMenuItem(menuId: string, formData: FormData) {
     })
 
     revalidatePath(`/admin/navigation/${menuId}`)
+    // @ts-ignore
+    revalidateTag("menus")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to create menu item" }
@@ -101,6 +107,8 @@ export async function updateMenuItem(id: string, menuId: string, formData: FormD
     })
 
     revalidatePath(`/admin/navigation/${menuId}`)
+    // @ts-ignore
+    revalidateTag("menus")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update menu item" }
@@ -118,6 +126,8 @@ export async function deleteMenuItem(id: string, menuId: string) {
       where: { id }
     })
     revalidatePath(`/admin/navigation/${menuId}`)
+    // @ts-ignore
+    revalidateTag("menus")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete menu item" }

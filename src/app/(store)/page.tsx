@@ -2,12 +2,14 @@ import { getWidgets } from "@/features/widget-builder/actions"
 import { WidgetRenderer } from "@/components/storefront/widget-renderer"
 import { db } from "@/lib/db"
 
-export const dynamic = "force-dynamic"
+
+
+import { getCachedThemeConfig } from "@/lib/db-cache"
+
+export const revalidate = 60 // ISR revalidation every 60 seconds
 
 export async function generateMetadata() {
-  const themeConfig = await db.themeConfig.findUnique({
-    where: { id: "default" }
-  })
+  const themeConfig = await getCachedThemeConfig()
   
   const logo = themeConfig?.logoUrl || "/logo.png" // Fallback to a default logo if none exists
   

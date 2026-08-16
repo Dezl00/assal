@@ -2,7 +2,7 @@
 
 import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { auth } from "@/lib/auth"
 
 export async function updateThemeConfig(formData: FormData) {
@@ -60,6 +60,8 @@ export async function updateThemeConfig(formData: FormData) {
 
     revalidatePath("/admin/settings")
     revalidatePath("/")
+    // @ts-ignore
+    revalidateTag("theme-config")
     return { success: true }
   } catch (error: any) {
     console.error("Save settings error:", error)
@@ -96,6 +98,8 @@ export async function createBranch(formData: FormData) {
       })
     }
     revalidatePath("/admin/settings")
+    // @ts-ignore
+    revalidateTag("branches")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to create branch" }
@@ -133,6 +137,8 @@ export async function updateBranch(id: string, formData: FormData) {
       })
     }
     revalidatePath("/admin/settings")
+    // @ts-ignore
+    revalidateTag("branches")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update branch" }
@@ -160,6 +166,8 @@ export async function deleteBranch(id: string) {
       })
     }
     revalidatePath("/admin/settings")
+    // @ts-ignore
+    revalidateTag("branches")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete branch" }

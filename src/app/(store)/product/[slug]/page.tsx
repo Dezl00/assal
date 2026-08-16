@@ -1,6 +1,7 @@
 import React from "react"
 import { notFound } from "next/navigation"
 import { db } from "@/lib/db"
+import { getCachedThemeConfig, getCachedProductBySlug } from "@/lib/db-cache"
 import Link from "next/link"
 import { ChevronRight, Truck, ShieldCheck, Tag } from "lucide-react"
 import { ProductGallery } from "@/components/storefront/product-gallery"
@@ -18,11 +19,8 @@ import { logProductView } from "@/features/analytics/actions"
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const [product, theme] = await Promise.all([
-    db.product.findUnique({
-      where: { slug: decodeURIComponent(params.slug) },
-      include: { images: { orderBy: { sortOrder: 'asc' } } }
-    }),
-    db.themeConfig.findUnique({ where: { id: "default" } })
+    getCachedProductBySlug(decodeURIComponent(params.slug)),
+    getCachedThemeConfig()
   ])
   
   if (!product) return { title: "المنتج غير موجود" }
@@ -57,19 +55,7 @@ import { headers } from "next/headers"
 export default async function ProductDetailsPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
   const productSlug = decodeURIComponent(params.slug);
-  const product = await db.product.findUnique({
-    where: { slug: productSlug, isActive: true },
-    include: {
-      images: { orderBy: { sortOrder: 'asc' } },
-      category: {
-        include: {
-          department: true,
-          parent: { include: { department: true } }
-        }
-      },
-      brand: true,
-    }
-  })
+  const product = await getCachedProductBySlug(productSlug)
 
   if (!product || !product.isActive) {
     notFound()

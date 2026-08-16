@@ -14,10 +14,12 @@ const fallbackFont = IBM_Plex_Sans_Arabic({
   display: "swap",
 });
 
+import { getCachedThemeConfig } from "@/lib/db-cache";
+
 export async function generateMetadata(): Promise<Metadata> {
   let theme = null;
   try {
-    theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+    theme = await getCachedThemeConfig();
   } catch (e) {
     // Ignore DB error during build/metadata generation if Neon is asleep
   }
@@ -85,7 +87,7 @@ export default async function RootLayout({
 }>) {
   let theme = null;
   try {
-    theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+    theme = await getCachedThemeConfig();
   } catch (e) {
     // Ignore DB error for root layout if Neon is asleep
   }

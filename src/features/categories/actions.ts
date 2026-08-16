@@ -2,7 +2,7 @@
 
 import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { auth } from "@/lib/auth"
 
 export async function createCategory(formData: FormData) {
@@ -36,6 +36,8 @@ export async function createCategory(formData: FormData) {
     })
 
     revalidatePath("/admin/categories")
+    // @ts-ignore
+    revalidateTag("categories")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create category" }
@@ -66,6 +68,8 @@ export async function deleteCategory(id: string) {
       where: { id }
     })
     revalidatePath("/admin/categories")
+    // @ts-ignore
+    revalidateTag("categories")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete category" }
@@ -86,6 +90,8 @@ export async function updateCategory(id: string, formData: FormData) {
         data: { isActive: isActiveStr === "true" }
       });
       revalidatePath("/admin/categories")
+      // @ts-ignore
+    revalidateTag("categories")
       return { success: true }
     }
 
@@ -114,6 +120,8 @@ export async function updateCategory(id: string, formData: FormData) {
     })
 
     revalidatePath("/admin/categories")
+    // @ts-ignore
+    revalidateTag("categories")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update category" }
@@ -138,6 +146,8 @@ export async function bulkUpdateCategories(ids: string[], data: { departmentId?:
     })
 
     revalidatePath("/admin/categories")
+    // @ts-ignore
+    revalidateTag("categories")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error.message || "فشل تحديث الأقسام" }
@@ -198,6 +208,8 @@ export async function bulkCreateCategories(categoriesToCreate: { main: string, s
     }
 
     revalidatePath("/admin/categories")
+    // @ts-ignore
+    revalidateTag("categories")
     return { success: true }
   } catch (error: any) {
     console.error("bulkCreateCategories error:", error)
