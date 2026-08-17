@@ -50,10 +50,14 @@ export async function updateAccount(id: string, data: FormData) {
     const password = data.get('password') as string
     let hashedPassword: string | undefined
     
+    // Check current user to preserve ADMIN role if they are an admin
+    const currentUser = await prisma.user.findUnique({ where: { id } })
+    const targetRole = currentUser?.role === 'ADMIN' ? 'ADMIN' : (data.get('role') || 'MANAGER')
+
     const updateData: any = {
       name: data.get('name') as string,
       phone: data.get('phone') as string,
-      role: data.get('role') as any,
+      role: targetRole,
       permissions: permissions,
     }
 
@@ -67,8 +71,9 @@ export async function updateAccount(id: string, data: FormData) {
     })
     revalidatePath('/admin/accounts')
     return { success: true, error: undefined }
-  } catch(e) {
-    return { success: false, error: 'فشل التحديث' }
+  } catch(e: any) {
+    console.error("updateAccount error:", e)
+    return { success: false, error: 'فشل التحديث: ' + (e.message || String(e)) }
   }
 }
 
