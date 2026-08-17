@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db"
+import { db as prisma } from "@/lib/db"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Award, ChevronLeft } from "lucide-react"
