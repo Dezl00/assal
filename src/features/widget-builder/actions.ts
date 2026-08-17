@@ -46,7 +46,7 @@ export async function createWidget(data: z.infer<typeof WidgetSchema>) {
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true, widget }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -75,7 +75,7 @@ export async function updateWidgetOrder(updates: { id: string, sortOrder: number
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget order" }
@@ -115,7 +115,7 @@ export async function deleteWidget(id: string) {
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete widget" }
@@ -149,7 +149,7 @@ export async function updateWidget(id: string, data: any) {
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true, widget }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget" }
@@ -254,7 +254,7 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
 
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true, item }
   } catch (error: any) {
     return { success: false, error: "Failed to create widget item" }
@@ -288,7 +288,7 @@ export async function deleteWidgetContentItem(id: string) {
     await db.widgetContentItem.delete({ where: { id } })
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete widget item" }
@@ -417,7 +417,7 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
 
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true, item }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget item" }
@@ -469,7 +469,7 @@ export async function updateWidgetContentItemOrder(updates: { id: string, sortOr
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
-    revalidateTag("widgets")
+    revalidateTag("widgets", "default")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget item order" }
