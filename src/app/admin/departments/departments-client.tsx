@@ -11,9 +11,9 @@ import { usePermissions } from "@/hooks/use-permissions"
 
 export function DepartmentsClient({ departments }: { departments: any[] }) {
   const { hasPermission } = usePermissions()
-  const canAdd = hasPermission("categories.add")
-  const canEdit = hasPermission("categories.edit")
-  const canDelete = hasPermission("categories.delete")
+  const canAdd = hasPermission("departments.add")
+  const canEdit = hasPermission("departments.edit")
+  const canDelete = hasPermission("departments.delete")
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false)

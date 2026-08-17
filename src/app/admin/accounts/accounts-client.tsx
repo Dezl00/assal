@@ -40,13 +40,43 @@ const PERMISSIONS_SCHEMA = [
     ]
   },
   { 
-    id: 'categories', 
-    label: 'الأقسام والمجالات',
+    id: 'departments', 
+    label: 'المجالات',
     subPermissions: [
-      { id: 'view', label: 'الوصول للأقسام والمجالات' },
-      { id: 'add', label: 'إضافة' },
-      { id: 'edit', label: 'تعديل' },
-      { id: 'delete', label: 'حذف' }
+      { id: 'view', label: 'الوصول للمجالات' },
+      { id: 'add', label: 'إضافة مجال' },
+      { id: 'edit', label: 'تعديل مجال' },
+      { id: 'delete', label: 'حذف مجال' }
+    ]
+  },
+  { 
+    id: 'categories', 
+    label: 'الأقسام',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للأقسام' },
+      { id: 'add', label: 'إضافة قسم' },
+      { id: 'edit', label: 'تعديل قسم' },
+      { id: 'delete', label: 'حذف قسم' }
+    ]
+  },
+  { 
+    id: 'articles', 
+    label: 'المقالات',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للمقالات' },
+      { id: 'add', label: 'إضافة مقال' },
+      { id: 'edit', label: 'تعديل مقال' },
+      { id: 'delete', label: 'حذف مقال' }
+    ]
+  },
+  { 
+    id: 'employees_of_the_month', 
+    label: 'موظف الشهر',
+    subPermissions: [
+      { id: 'view', label: 'الوصول للقائمة' },
+      { id: 'add', label: 'إضافة موظف' },
+      { id: 'edit', label: 'تعديل موظف' },
+      { id: 'delete', label: 'حذف موظف' }
     ]
   },
   { 
@@ -70,14 +100,6 @@ const PERMISSIONS_SCHEMA = [
       { id: 'add', label: 'إضافة عروض' },
       { id: 'edit', label: 'تعديل العروض' },
       { id: 'delete', label: 'حذف العروض' }
-    ]
-  },
-  { 
-    id: 'media', 
-    label: 'الوسائط والمكتبة',
-    subPermissions: [
-      { id: 'upload', label: 'رفع صور وملفات' },
-      { id: 'delete', label: 'حذف الوسائط' }
     ]
   },
   { 
