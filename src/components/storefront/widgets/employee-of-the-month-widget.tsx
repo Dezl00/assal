@@ -32,7 +32,7 @@ export async function EmployeeOfTheMonthWidget({ widget }: { widget: any }) {
   if (!employee) return null
 
   return (
-    <section className="py-16 bg-muted/30 relative overflow-hidden">
+    <section className="py-16 bg-background relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
@@ -53,7 +53,7 @@ export async function EmployeeOfTheMonthWidget({ widget }: { widget: any }) {
 
         <div className="flex flex-col items-center justify-center">
           {/* Employee Card/Frame */}
-          <div className="relative w-72 h-80 sm:w-80 sm:h-96 flex items-center justify-center mb-3">
+          <div className="relative w-[320px] h-[360px] sm:w-[360px] sm:h-[420px] flex items-center justify-center mb-0">
             {/* The Frame Image */}
             <img 
               src="/images/employee-frame.png" 
@@ -63,7 +63,7 @@ export async function EmployeeOfTheMonthWidget({ widget }: { widget: any }) {
             
             {/* The Employee Image */}
             <div className="absolute inset-0 z-10 flex items-center justify-center">
-              <div className="w-[60%] h-[60%] rounded-full overflow-hidden bg-white mb-[5%]">
+              <div className="w-[68%] h-[68%] rounded-full overflow-hidden bg-white mb-[5%]">
                 <img 
                   src={employee.imageUrl} 
                   alt={employee.name}
@@ -85,9 +85,9 @@ export async function EmployeeOfTheMonthWidget({ widget }: { widget: any }) {
             </div>
           </div>
 
-          <div className="mt-8">
+          <div className="mt-6">
             <Link href="/employees-of-the-month">
-              <Button className="gap-2 rounded-full group">
+              <Button variant="ghost" className="gap-2 rounded-full text-primary hover:bg-transparent hover:text-primary/80 group text-base font-bold">
                 عرض كل الموظفين
                 <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               </Button>

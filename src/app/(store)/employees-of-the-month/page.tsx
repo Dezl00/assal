@@ -71,7 +71,7 @@ export default async function EmployeesOfTheMonthPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
                   {groupedByYear[year].map(employee => (
                     <div key={employee.id} className="flex flex-col items-center group">
-                      <div className="relative w-64 h-72 flex items-center justify-center mb-3 transition-transform duration-300 group-hover:-translate-y-2">
+                      <div className="relative w-[320px] h-[360px] flex items-center justify-center mb-0 transition-transform duration-300 group-hover:-translate-y-2">
                         {/* The Frame Image */}
                         <img 
                           src="/images/employee-frame.png" 
@@ -81,7 +81,7 @@ export default async function EmployeesOfTheMonthPage() {
                         
                         {/* The Employee Image */}
                         <div className="absolute inset-0 z-10 flex items-center justify-center">
-                          <div className="w-[60%] h-[60%] rounded-full overflow-hidden bg-white mb-[5%]">
+                          <div className="w-[68%] h-[68%] rounded-full overflow-hidden bg-white mb-[5%]">
                             <img 
                               src={employee.imageUrl} 
                               alt={employee.name}
@@ -96,7 +96,7 @@ export default async function EmployeesOfTheMonthPage() {
                         </div>
                       </div>
 
-                      <div className="text-center space-y-2 relative z-10">
+                      <div className="text-center space-y-2 relative z-10 mt-0">
                         <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{employee.name}</h3>
                         <div className="inline-block bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm font-medium shadow-sm">
                           {employee.jobTitle}
