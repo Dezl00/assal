@@ -10,7 +10,7 @@ import { StorePagination } from "@/components/storefront/pagination"
 
 import type { Metadata } from "next"
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -26,7 +26,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   
   if (!category) return { title: "القسم غير موجود" }
   
-  const storeName = theme?.storeName || "عسل";
+  const storeName = theme?.storeName || "العسال";
   const ogImages = category.imageUrl 
     ? [{ url: category.imageUrl, width: 800, height: 600, alt: category.name }]
     : [];

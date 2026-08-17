@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache"
 import { z } from "zod"
 
 async function translateToEnglish(text: string): Promise<string> {
@@ -46,6 +46,7 @@ export async function createWidget(data: z.infer<typeof WidgetSchema>) {
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true, widget }
   } catch (error: any) {
     return { success: false, error: error.message }
@@ -74,23 +75,31 @@ export async function updateWidgetOrder(updates: { id: string, sortOrder: number
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget order" }
   }
 }
 
-export async function getWidgets() {
-  try {
-    const widgets = await db.widget.findMany({
-      include: { items: { orderBy: { sortOrder: 'asc' } } },
-      orderBy: { sortOrder: 'asc' }
-    })
-    return { success: true, widgets }
-  } catch (error: any) {
-    return { success: false, error: "Failed to fetch widgets" }
+export const getWidgets = unstable_cache(
+  async () => {
+    try {
+      const widgets = await db.widget.findMany({
+        include: { items: { orderBy: { sortOrder: 'asc' } } },
+        orderBy: { sortOrder: 'asc' }
+      })
+      return { success: true, widgets }
+    } catch (error: any) {
+      return { success: false, error: "Failed to fetch widgets" }
+    }
+  },
+  ['store-widgets'],
+  {
+    revalidate: 3600, // Revalidate every hour
+    tags: ['widgets']
   }
-}
+)
 
 export async function deleteWidget(id: string) {
   try {
@@ -106,6 +115,7 @@ export async function deleteWidget(id: string) {
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete widget" }
@@ -139,6 +149,7 @@ export async function updateWidget(id: string, data: any) {
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true, widget }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget" }
@@ -243,6 +254,7 @@ export async function createWidgetContentItem(widgetId: string, formData: FormDa
 
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true, item }
   } catch (error: any) {
     return { success: false, error: "Failed to create widget item" }
@@ -276,6 +288,7 @@ export async function deleteWidgetContentItem(id: string) {
     await db.widgetContentItem.delete({ where: { id } })
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete widget item" }
@@ -404,6 +417,7 @@ export async function updateWidgetContentItem(id: string, formData: FormData) {
 
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true, item }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget item" }
@@ -455,6 +469,7 @@ export async function updateWidgetContentItemOrder(updates: { id: string, sortOr
     
     revalidatePath("/admin/widgets")
     revalidatePath("/")
+    revalidateTag("widgets")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update widget item order" }

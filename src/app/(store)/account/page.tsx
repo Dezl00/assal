@@ -7,7 +7,7 @@ import { AccountClient } from "./account-client"
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: "حسابي | عسل",
+  title: "حسابي | العسال",
 }
 
 export default async function AccountPage() {

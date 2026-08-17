@@ -2,7 +2,7 @@ import React from "react"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "اتصل بنا | عسل",
+  title: "اتصل بنا | العسال",
   description: "تواصل معنا لأي استفسارات",
 }
 

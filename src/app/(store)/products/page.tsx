@@ -7,7 +7,7 @@ import { FilterSidebar } from "@/components/storefront/filter-sidebar"
 import { StoreToolbar } from "@/components/storefront/store-toolbar"
 import { StorePagination } from "@/components/storefront/pagination"
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 import type { Metadata } from "next"
 
@@ -18,7 +18,7 @@ type Props = {
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const resolvedParams = await searchParams;
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
-  const storeName = theme?.storeName || "عسل";
+  const storeName = theme?.storeName || "العسال";
   const logo = theme?.logoUrl || "/favicon.ico";
   
   let title = "جميع المنتجات"

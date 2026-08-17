@@ -38,13 +38,13 @@ export async function updateThemeConfig(formData: FormData) {
 
     if (!existing) {
       // If creating for the first time, ensure required fields have fallback
-      data.storeName = data.storeName || "متجر عسل"
+      data.storeName = data.storeName || "متجر العسال"
     }
 
     await db.themeConfig.upsert({
       where: { id: "default" },
       update: data,
-      create: { id: "default", storeName: "متجر عسل", ...data }
+      create: { id: "default", storeName: "متجر العسال", ...data }
     })
 
     const session = await auth()

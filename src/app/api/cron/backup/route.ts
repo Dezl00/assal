@@ -24,6 +24,10 @@ async function addFolderToZipAsync(folderPath: string, zip: JSZip, rootPath: str
 
 export async function GET(req: Request) {
   try {
+    const authHeader = req.headers.get('authorization');
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const config = await prisma.themeConfig.findFirst({ where: { id: "default" } });
     if (!config || config.backupFrequency === 'never') {
       return NextResponse.json({ message: 'Auto backup disabled' });

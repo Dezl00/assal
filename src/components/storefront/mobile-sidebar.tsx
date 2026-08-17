@@ -46,7 +46,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
             ) : (
               <span className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium shadow-lg shadow-primary/20">ع</span>
             )}
-            <span className="font-medium text-foreground">{themeConfig?.storeName || "عسل"}</span>
+            <span className="font-medium text-foreground">{themeConfig?.storeName || "العسال"}</span>
           </Link>
           <button 
             onClick={() => setMobileMenuOpen(false)}
@@ -297,7 +297,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               </Link>
             )}
           </div>
-          <p className="text-sm text-center text-muted-foreground">© {new Date().getFullYear()} {themeConfig?.storeName || "عسل"}. جميع الحقوق محفوظة.</p>
+          <p className="text-sm text-center text-muted-foreground">© {new Date().getFullYear()} {themeConfig?.storeName || "العسال"}. جميع الحقوق محفوظة.</p>
         </div>
       </div>
     </div>

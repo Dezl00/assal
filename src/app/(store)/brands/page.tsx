@@ -3,7 +3,7 @@ import { db } from "@/lib/db"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 
 export default async function BrandsPage() {
   const brands = await db.brand.findMany({

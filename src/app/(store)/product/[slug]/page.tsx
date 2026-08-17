@@ -27,7 +27,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   
   if (!product) return { title: "المنتج غير موجود" }
   
-  const storeName = theme?.storeName || "عسل";
+  const storeName = theme?.storeName || "العسال";
   const ogImages = product.images.length > 0 
     ? product.images.map(img => ({ url: img.url, width: 800, height: 800, alt: product.name }))
     : [];

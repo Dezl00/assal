@@ -2,7 +2,7 @@ import { getWidgets } from "@/features/widget-builder/actions"
 import { WidgetRenderer } from "@/components/storefront/widget-renderer"
 import { db } from "@/lib/db"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 
 export async function generateMetadata() {
   const themeConfig = await db.themeConfig.findUnique({
@@ -12,8 +12,8 @@ export async function generateMetadata() {
   const logo = themeConfig?.logoUrl || "/logo.png" // Fallback to a default logo if none exists
   
   return {
-    title: themeConfig?.storeName || "متجر عسل",
-    description: "أهلاً بك في متجر عسل",
+    title: themeConfig?.storeName || "متجر العسال",
+    description: "أهلاً بك في متجر العسال",
     openGraph: {
       images: [logo],
     }
@@ -40,7 +40,7 @@ export default async function StorefrontPage() {
         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
           <span className="text-3xl">🍯</span>
         </div>
-        <h2 className="text-3xl font-bold text-foreground tracking-tight">أهلاً بك في متجر عسل</h2>
+        <h2 className="text-3xl font-bold text-foreground tracking-tight">أهلاً بك في متجر العسال</h2>
         <p className="mt-3 text-lg">نحن نقوم بتجهيز واجهة المتجر حالياً. يرجى العودة لاحقاً!</p>
       </div>
     )

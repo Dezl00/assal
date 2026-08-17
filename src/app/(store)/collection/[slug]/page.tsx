@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react"
 import { ProductCard } from "@/components/storefront/product-card"
 import { notFound } from "next/navigation"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 
 export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

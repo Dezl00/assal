@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     // Ignore DB error during build/metadata generation if Neon is asleep
   }
   
-  const storeName = theme?.storeName || "عسل";
+  const storeName = theme?.storeName || "العسال";
   const storeDescription = theme?.storeDescription || "أفضل المنتجات وأعلاها جودة";
   const logo = theme?.logoUrl || "/favicon.ico";
   const favicon = theme?.faviconUrl || "/favicon.ico";

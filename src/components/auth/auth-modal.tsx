@@ -197,7 +197,7 @@ export function AuthModal({ themeConfig }: { themeConfig?: any }) {
               <span className="w-16 h-16 rounded-full gold-gradient flex items-center justify-center text-white text-3xl shadow-lg shadow-primary/20 mb-4">ع</span>
             )}
             <h2 className="text-2xl font-bold text-foreground">
-              {themeConfig?.storeName || "عسل"}
+              {themeConfig?.storeName || "العسال"}
             </h2>
           </div>
 

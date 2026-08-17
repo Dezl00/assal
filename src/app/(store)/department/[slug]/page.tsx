@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react"
 
 import type { Metadata } from "next"
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -22,7 +22,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   
   if (!department) return { title: "المجال غير موجود" }
   
-  const storeName = theme?.storeName || "عسل";
+  const storeName = theme?.storeName || "العسال";
   const ogImages = department.imageUrl 
     ? [{ url: department.imageUrl, width: 800, height: 600, alt: department.name }]
     : [];

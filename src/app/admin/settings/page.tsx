@@ -14,7 +14,7 @@ export default async function SettingsPage() {
   if (!config) {
     config = {
       id: "default",
-      storeName: "عسل طبيعي",
+      storeName: "متجر العسال",
       storeDescription: "",
       logoUrl: null,
       faviconUrl: null,

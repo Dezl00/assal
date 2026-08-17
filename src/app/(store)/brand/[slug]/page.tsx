@@ -9,7 +9,7 @@ import { StorePagination } from "@/components/storefront/pagination"
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 3600
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -24,7 +24,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   
   if (!brand) return { title: "الماركة غير موجودة" }
   
-  const storeName = theme?.storeName || "عسل"
+  const storeName = theme?.storeName || "العسال"
   const title = `منتجات ${brand.name}`
   const logo = brand.logoUrl || theme?.logoUrl || "/favicon.ico"
 

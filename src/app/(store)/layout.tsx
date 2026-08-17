@@ -1,5 +1,5 @@
 import React from "react"
-import { db } from "@/lib/db"
+import { getCachedLayoutData } from "@/lib/cached-layout-data"
 import { StorefrontHeader } from "@/components/storefront/header"
 import { StorefrontFooter } from "@/components/storefront/footer"
 import { CartDrawer } from "@/components/storefront/cart-drawer"
@@ -11,53 +11,21 @@ import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
 import { PromoPopup } from "@/components/storefront/promo-popup"
 import { PushNotificationPrompt } from "@/components/admin/push-notification-prompt"
 
-export const dynamic = "force-dynamic"
+export const revalidate = 3600
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   const user = session?.user || null
 
-  // Fetch header menu (assuming 'header-menu' is a common name/identifier we use)
-  const headerMenu = await db.menu.findFirst({
-    where: { name: { contains: "header", mode: "insensitive" } },
-    include: { items: { orderBy: { sortOrder: 'asc' } } }
-  })
-  
-  // Fetch footer menu
-  const footerMenu = await db.menu.findFirst({
-    where: { name: { contains: "footer", mode: "insensitive" } },
-    include: { items: { orderBy: { sortOrder: 'asc' } } }
-  })
-
-  // Fallback to first available menu if specific ones aren't found
-  const fallbackMenu = await db.menu.findFirst({
-    include: { items: { orderBy: { sortOrder: 'asc' } } }
-  })
-
-  // Fetch Theme Config
-  const themeConfig = await db.themeConfig.findUnique({
-    where: { id: "default" }
-  })
-
-  // Fetch Categories for Mega Menu
-  const categories = await db.category.findMany({
-    include: {
-      children: true
-    }
-  })
-
-  // Fetch active branches
-  const branches = await db.branch.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: 'asc' }
-  })
-
-  // Fetch Departments
-  const departments = await db.department.findMany({
-    include: {
-      categories: true
-    }
-  })
+  const {
+    headerMenu,
+    footerMenu,
+    fallbackMenu,
+    themeConfig,
+    categories,
+    branches,
+    departments
+  } = await getCachedLayoutData()
 
   const topNavItems = headerMenu?.items || fallbackMenu?.items || []
   const footerItems = footerMenu?.items || fallbackMenu?.items || []
