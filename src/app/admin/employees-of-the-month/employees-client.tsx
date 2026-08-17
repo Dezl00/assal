@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
 import { Search, Edit, Trash2, Loader2, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
@@ -64,28 +64,28 @@ export function EmployeesClient({ employees }: { employees: any[] }) {
       </div>
 
       <div className="bg-white rounded-lg border overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">الصورة</TableHead>
-              <TableHead>الاسم</TableHead>
-              <TableHead>المسمى الوظيفي</TableHead>
-              <TableHead>الشهر والسنة</TableHead>
-              <TableHead>تاريخ الإضافة</TableHead>
-              <TableHead className="w-[100px] text-left">إجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <table className="w-full text-sm text-left">
+          <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
+            <tr>
+              <th className="px-4 py-3 text-right font-medium w-16">الصورة</th>
+              <th className="px-4 py-3 text-right font-medium">الاسم</th>
+              <th className="px-4 py-3 text-right font-medium">المسمى الوظيفي</th>
+              <th className="px-4 py-3 text-right font-medium">الشهر والسنة</th>
+              <th className="px-4 py-3 text-right font-medium">تاريخ الإضافة</th>
+              <th className="px-4 py-3 text-left font-medium w-[100px]">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
             {employees.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+              <tr>
+                <td colSpan={6} className="h-32 text-center text-muted-foreground">
                   لا يوجد موظفين مسجلين
-                </TableCell>
-              </TableRow>
+                </td>
+              </tr>
             ) : (
               employees.map(emp => (
-                <TableRow key={emp.id}>
-                  <TableCell>
+                <tr key={emp.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                  <td className="px-4 py-3">
                     {emp.imageUrl ? (
                       <img src={emp.imageUrl} alt={emp.name} className="w-10 h-10 rounded-full object-cover border" />
                     ) : (
@@ -93,39 +93,39 @@ export function EmployeesClient({ employees }: { employees: any[] }) {
                         <ImageIcon className="w-4 h-4 text-muted-foreground" />
                       </div>
                     )}
-                  </TableCell>
-                  <TableCell className="font-medium">{emp.name}</TableCell>
-                  <TableCell>{emp.jobTitle}</TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3 font-medium text-foreground">{emp.name}</td>
+                  <td className="px-4 py-3">{emp.jobTitle}</td>
+                  <td className="px-4 py-3">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                       {MONTHS[emp.month - 1]} {emp.year}
                     </span>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground text-sm">
                     {format(new Date(emp.createdAt), 'dd MMMM yyyy', { locale: arSA })}
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <Link href={`/admin/employees-of-the-month/${emp.id}`}>
-                        <Button variant="ghost" size="icon" className="hover:text-primary">
+                        <Button variant="ghost" size="icon" className="hover:text-primary h-8 w-8">
                           <Edit className="w-4 h-4" />
                         </Button>
                       </Link>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 w-8"
                         onClick={() => setEmployeeToDelete(emp.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ))
             )}
-          </TableBody>
-        </Table>
+          </tbody>
+        </table>
       </div>
 
       <ConfirmModal
