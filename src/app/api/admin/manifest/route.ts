@@ -23,7 +23,7 @@ export async function GET() {
     name: adminName,
     short_name: "الإدارة",
     description: `لوحة تحكم إدارة متجر ${storeName}`,
-    start_url: "/admin",
+    start_url: "/admin/",
     display: "standalone",
     background_color: config?.adminColor || "#ffffff",
     theme_color: config?.adminColor || "#2453E3",
