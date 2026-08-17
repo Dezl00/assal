@@ -34,8 +34,8 @@ export function GlobalOrderListener() {
   useEffect(() => {
     // Check initially after a short delay
     const initialTimeout = setTimeout(checkForNewOrders, 2000)
-    // Poll every 15 seconds
-    const interval = setInterval(checkForNewOrders, 15000)
+    // Poll every 60 seconds instead of 15 seconds to save network/DB usage
+    const interval = setInterval(checkForNewOrders, 60000)
     return () => {
       clearTimeout(initialTimeout)
       clearInterval(interval)

@@ -28,13 +28,7 @@ export function OrdersClient({
   const canEdit = hasPermission("orders.edit")
   const canDelete = hasPermission("orders.delete")
 
-  // Auto-refresh orders every 15 seconds to show new orders instantly
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      router.refresh()
-    }, 15000)
-    return () => clearInterval(interval)
-  }, [router])
+
 
   const pathname = usePathname()
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -99,13 +93,7 @@ export function OrdersClient({
     }
   }
 
-  // Real-time polling every 10 seconds
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      router.refresh()
-    }, 10000)
-    return () => clearInterval(interval)
-  }, [router])
+
 
   async function confirmDelete() {
     if (!orderToDelete) return
