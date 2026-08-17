@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, ShoppingCart, AlignLeft, ChevronRight, X, ImagePlus, Loader2, ShieldCheck, BookOpen } from "lucide-react"
+import { Plus, GripVertical, Settings2, Trash2, Eye, EyeOff, LayoutTemplate, Image as ImageIcon, ShoppingBag, ShoppingCart, AlignLeft, ChevronRight, X, ImagePlus, Loader2, ShieldCheck, BookOpen, Award } from "lucide-react"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { createWidget, deleteWidget, updateWidgetOrder, updateWidget, createWidgetContentItem, deleteWidgetContentItem, updateWidgetContentItem, updateWidgetContentItemOrder } from "@/features/widget-builder/actions"
@@ -26,6 +26,7 @@ const WIDGET_TYPES = [
   { id: "StoreFeatures", name: "مميزات المتجر", icon: ShieldCheck, desc: "عرض مميزات المتجر مثل الشحن السريع وضمان الجودة" },
   { id: "FeaturedProduct", name: "منتج مميز", icon: ShoppingBag, desc: "عرض منتج واحد بتصميم بارز" },
   { id: "LatestArticles", name: "أحدث المقالات", icon: BookOpen, desc: "عرض أحدث المقالات من المدونة" },
+  { id: "EmployeeOfTheMonth", name: "موظف الشهر", icon: Award, desc: "عرض موظف الشهر ببطاقة مميزة" },
 ]
 
 export function WidgetsClient({ initialWidgets, categories, departments }: { initialWidgets: any[], categories: any[], departments: any[] }) {

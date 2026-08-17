@@ -476,3 +476,15 @@ model NotificationCampaign {
   createdAt     DateTime @default(now())
 }
 
+model EmployeeOfTheMonth {
+  id          String   @id @default(cuid())
+  name        String
+  jobTitle    String
+  imageUrl    String
+  month       Int
+  year        Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([month, year])
+}
