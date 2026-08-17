@@ -9,7 +9,13 @@ import { StorePagination } from "@/components/storefront/pagination"
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 
+import { cache } from "react"
+
 export const revalidate = 3600
+
+const getBrand = cache(async (slug: string) => {
+  return db.brand.findUnique({ where: { slug } })
+})
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -19,7 +25,7 @@ type Props = {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const brandSlug = decodeURIComponent(params.slug);
-  const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
+  const brand = await getBrand(brandSlug)
   const theme = await db.themeConfig.findUnique({ where: { id: "default" } })
   
   if (!brand) return { title: "الماركة غير موجودة" }
@@ -52,7 +58,7 @@ export default async function BrandPage(props: Props) {
   const searchParams = await props.searchParams;
   
   const brandSlug = decodeURIComponent(params.slug);
-  const brand = await db.brand.findUnique({ where: { slug: brandSlug } })
+  const brand = await getBrand(brandSlug)
   if (!brand) notFound()
 
   const categorySlug = searchParams?.category as string

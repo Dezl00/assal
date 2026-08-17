@@ -10,7 +10,20 @@ import { StorePagination } from "@/components/storefront/pagination"
 
 import type { Metadata } from "next"
 
+import { cache } from "react"
+
 export const revalidate = 3600
+
+const getCategory = cache(async (slug: string) => {
+  return db.category.findUnique({
+    where: { slug },
+    include: {
+      parent: { include: { department: true } },
+      department: true,
+      children: { orderBy: { createdAt: "asc" } },
+    }
+  })
+})
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -20,7 +33,7 @@ type Props = {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const [category, theme] = await Promise.all([
-    db.category.findUnique({ where: { slug: decodeURIComponent(params.slug) } }),
+    getCategory(decodeURIComponent(params.slug)),
     db.themeConfig.findUnique({ where: { id: "default" } })
   ])
   
@@ -56,14 +69,7 @@ export default async function CategoryPage(props: Props) {
   const searchParams = await props.searchParams;
   
   const categorySlug = decodeURIComponent(params.slug);
-  const category = await db.category.findUnique({
-    where: { slug: categorySlug },
-    include: {
-      parent: { include: { department: true } },
-      department: true,
-      children: { orderBy: { createdAt: "asc" } },
-    }
-  })
+  const category = await getCategory(categorySlug)
 
   if (!category) notFound()
 

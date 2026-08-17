@@ -6,7 +6,21 @@ import { ChevronRight } from "lucide-react"
 
 import type { Metadata } from "next"
 
+import { cache } from "react"
+
 export const revalidate = 3600
+
+const getDepartment = cache(async (slug: string) => {
+  return db.department.findUnique({
+    where: { slug },
+    include: {
+      categories: { 
+        where: { parentId: null },
+        orderBy: { createdAt: "asc" } 
+      },
+    }
+  })
+})
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -16,7 +30,7 @@ type Props = {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const [department, theme] = await Promise.all([
-    db.department.findUnique({ where: { slug: decodeURIComponent(params.slug) } }),
+    getDepartment(decodeURIComponent(params.slug)),
     db.themeConfig.findUnique({ where: { id: "default" } })
   ])
   
@@ -52,15 +66,7 @@ export default async function DepartmentPage(props: Props) {
   const searchParams = await props.searchParams;
   
   const departmentSlug = decodeURIComponent(params.slug);
-  const department = await db.department.findUnique({
-    where: { slug: departmentSlug },
-    include: {
-      categories: { 
-        where: { parentId: null },
-        orderBy: { createdAt: "asc" } 
-      },
-    }
-  })
+  const department = await getDepartment(departmentSlug)
 
   if (!department) notFound()
 

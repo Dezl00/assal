@@ -14,14 +14,29 @@ import { SimilarProductsCarousel } from "@/components/storefront/product/similar
 import type { Metadata } from "next"
 import { logProductView } from "@/features/analytics/actions"
 
+import { cache } from "react"
+
+const getProduct = cache(async (slug: string) => {
+  return db.product.findUnique({
+    where: { slug, isActive: true },
+    include: { 
+      images: { orderBy: { sortOrder: 'asc' } },
+      category: {
+        include: {
+          department: true,
+          parent: { include: { department: true } }
+        }
+      },
+      brand: true,
+    }
+  })
+})
+
 // Generate metadata for SEO
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const params = await props.params;
   const [product, theme] = await Promise.all([
-    db.product.findUnique({
-      where: { slug: decodeURIComponent(params.slug) },
-      include: { images: { orderBy: { sortOrder: 'asc' } } }
-    }),
+    getProduct(decodeURIComponent(params.slug)),
     db.themeConfig.findUnique({ where: { id: "default" } })
   ])
   
@@ -57,19 +72,7 @@ import { headers } from "next/headers"
 export default async function ProductDetailsPage(props: { params: Promise<{ slug: string }> }) {
   const params = await props.params;
   const productSlug = decodeURIComponent(params.slug);
-  const product = await db.product.findUnique({
-    where: { slug: productSlug, isActive: true },
-    include: {
-      images: { orderBy: { sortOrder: 'asc' } },
-      category: {
-        include: {
-          department: true,
-          parent: { include: { department: true } }
-        }
-      },
-      brand: true,
-    }
-  })
+  const product = await getProduct(productSlug)
 
   if (!product || !product.isActive) {
     notFound()
