@@ -10,6 +10,7 @@ import { auth } from "@/lib/auth"
 import { FloatingWhatsApp } from "@/components/storefront/floating-whatsapp"
 import { PromoPopup } from "@/components/storefront/promo-popup"
 import { PushNotificationPrompt } from "@/components/admin/push-notification-prompt"
+import { ScrollToTop } from "@/components/scroll-to-top"
 
 export const revalidate = 3600
 
@@ -32,6 +33,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen flex flex-col font-sans pb-16 md:pb-0 selection:bg-primary/20">
+      <ScrollToTop />
       <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} categories={categories} departments={departments} />
       <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} categories={categories} departments={departments} />
       <CartDrawer />

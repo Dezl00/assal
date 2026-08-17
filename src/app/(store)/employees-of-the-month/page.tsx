@@ -30,19 +30,26 @@ export default async function EmployeesOfTheMonthPage() {
   const years = Object.keys(groupedByYear).map(Number).sort((a, b) => b - a)
 
   return (
-    <div className="bg-muted/10 min-h-screen pb-20">
-      <div className="bg-primary text-primary-foreground py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center gap-2 text-sm text-primary-foreground/80 mb-6">
-            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
-            <ChevronRight className="w-4 h-4 rtl-flip" />
-            <span>موظفو الشهر</span>
-          </div>
-          
-          <h1 className="text-4xl font-bold mb-4">موظفو الشهر المتميزون</h1>
-          <p className="text-primary-foreground/80 max-w-2xl text-lg leading-relaxed">
-            نفتخر بتكريم المتميزين في فريق عملنا تقديراً لجهودهم المستمرة وتفانيهم في العمل وتقديم أفضل خدمة لعملائنا الكرام.
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-12 min-h-screen">
+      {/* Page Header */}
+      <div className="mb-8 sm:mb-12 relative overflow-hidden rounded-3xl bg-primary p-8 sm:p-16 text-center shadow-lg shadow-primary/20">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">
+            موظفو الشهر المتميزون
+          </h1>
+          <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">
+            تكريم المتميزين في فريق عملنا تقديراً لجهودهم وتفانيهم
           </p>
+          
+          {/* Breadcrumbs */}
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
+            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
+            <span className="text-white font-medium">موظفو الشهر</span>
+          </nav>
         </div>
       </div>
 
@@ -64,12 +71,12 @@ export default async function EmployeesOfTheMonthPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
                   {groupedByYear[year].map(employee => (
                     <div key={employee.id} className="flex flex-col items-center group">
-                      <div className="relative w-64 h-72 flex items-center justify-center mb-6 transition-transform duration-300 group-hover:-translate-y-2">
+                      <div className="relative w-64 h-72 flex items-center justify-center mb-3 transition-transform duration-300 group-hover:-translate-y-2">
                         {/* The Frame Image */}
                         <img 
                           src="/images/employee-frame.png" 
                           alt="إطار موظف الشهر" 
-                          className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-lg"
+                          className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none"
                         />
                         
                         {/* The Employee Image */}
@@ -84,7 +91,7 @@ export default async function EmployeesOfTheMonthPage() {
                         </div>
 
                         {/* Month Name Top Badge */}
-                        <div className="absolute -top-3 z-30 bg-white shadow-md border border-primary/20 text-primary font-bold px-5 py-1 rounded-full text-sm">
+                        <div className="absolute -top-3 z-30 bg-primary shadow-md border border-primary/20 text-primary-foreground font-bold px-5 py-1 rounded-full text-sm">
                           {MONTHS[employee.month - 1]}
                         </div>
                       </div>
