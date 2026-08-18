@@ -14,7 +14,7 @@ export default async function ArticlesAdminPage() {
           <h1 className="text-2xl font-bold">المقالات</h1>
           <p className="text-muted-foreground mt-1">إدارة مقالات المدونة</p>
         </div>
-        <Link href="/admin/articles/new" className="w-full sm:w-auto">
+        <Link prefetch={false} href="/admin/articles/new" className="w-full sm:w-auto">
           <Button className="gap-2 w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             مقال جديد

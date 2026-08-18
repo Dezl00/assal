@@ -27,7 +27,7 @@ export default async function BrandsPage() {
           <p className="text-base sm:text-lg text-primary-foreground/90 max-w-2xl mx-auto mb-6">تصفح منتجاتنا حسب الماركات المفضلة لديك</p>
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
-            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <Link prefetch={false} href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <span className="text-white font-medium">الماركات</span>
           </nav>
@@ -36,7 +36,7 @@ export default async function BrandsPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
         {brands.map(brand => (
-          <Link href={`/brand/${brand.slug}`} key={brand.id}>
+          <Link prefetch={false} href={`/brand/${brand.slug}`} key={brand.id}>
             <div className="bg-card border border-border/50 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 h-full aspect-square text-center group">
               {brand.logoUrl ? (
                 <img src={brand.logoUrl} alt={brand.name} className="w-20 h-20 object-contain group-hover:scale-110 transition-transform duration-300" />

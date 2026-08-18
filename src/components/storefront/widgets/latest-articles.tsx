@@ -22,7 +22,7 @@ export async function LatestArticlesWidget({ widget }: { widget: any }) {
             </p>
           )}
         </div>
-        <Link 
+        <Link prefetch={false} 
           href="/blog"
           className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
         >
@@ -33,7 +33,7 @@ export async function LatestArticlesWidget({ widget }: { widget: any }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.map((article: any) => (
-          <Link href={`/blog/${article.slug}`} key={article.id} className="group block">
+          <Link prefetch={false} href={`/blog/${article.slug}`} key={article.id} className="group block">
             <div className="bg-white rounded-2xl border border-border overflow-hidden transition-all hover:shadow-lg hover:border-primary/20">
               <div className="aspect-[16/10] bg-slate-100 relative overflow-hidden">
                 {article.imageUrl ? (
@@ -66,7 +66,7 @@ export async function LatestArticlesWidget({ widget }: { widget: any }) {
       </div>
       
       <div className="mt-8 text-center sm:hidden">
-        <Link 
+        <Link prefetch={false} 
           href="/blog"
           className="inline-flex items-center justify-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
         >

@@ -87,13 +87,13 @@ export default async function CheckoutSuccessPage(props: { params: Promise<{ id:
         </div>
 
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link href="/" className="w-full sm:w-auto">
+          <Link prefetch={false} href="/" className="w-full sm:w-auto">
             <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-12 h-14 text-lg font-bold shadow-lg shadow-primary/20">
               متابعة التسوق
             </Button>
           </Link>
           {session?.user && (
-            <Link href="/account" className="w-full sm:w-auto">
+            <Link prefetch={false} href="/account" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-xl px-12 h-14 text-lg font-bold border-2 hover:bg-muted">
                 متابعة طلباتي
               </Button>

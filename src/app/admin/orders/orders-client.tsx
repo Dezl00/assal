@@ -210,7 +210,7 @@ export function OrdersClient({
                     {new Date(order.createdAt).toLocaleDateString('en-GB')} {new Date(order.createdAt).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}
                   </span>
                   <div className="flex items-center gap-1">
-                    <Link 
+                    <Link prefetch={false} 
                       href={`/admin/orders/${order.id}`}
                       className="h-8 text-xs hover:bg-primary/10 hover:text-primary flex items-center justify-center px-3 rounded-md transition-colors"
                     >
@@ -294,7 +294,7 @@ export function OrdersClient({
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <Link 
+                        <Link prefetch={false} 
                           href={`/admin/orders/${order.id}`}
                           className="h-8 w-8 text-muted-foreground hover:text-primary flex items-center justify-center rounded-md transition-colors"
                         >

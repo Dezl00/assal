@@ -73,7 +73,7 @@ export function MenuItemsClient({ menu }: { menu: any }) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
-            <Link href="/admin/navigation" className="hover:text-primary transition-colors flex items-center gap-1">
+            <Link prefetch={false} href="/admin/navigation" className="hover:text-primary transition-colors flex items-center gap-1">
               <ArrowRight className="h-4 w-4 rtl-flip" /> العودة للقوائم
             </Link>
           </div>

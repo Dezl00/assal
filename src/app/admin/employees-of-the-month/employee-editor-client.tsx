@@ -85,7 +85,7 @@ export function EmployeeEditorClient({ initialEmployee }: { initialEmployee?: an
     <div className="p-6 max-w-3xl mx-auto space-y-6 pb-24">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Link href="/admin/employees-of-the-month">
+          <Link prefetch={false} href="/admin/employees-of-the-month">
             <Button variant="ghost" size="icon">
               <ArrowRight className="w-5 h-5 rtl-flip" />
             </Button>

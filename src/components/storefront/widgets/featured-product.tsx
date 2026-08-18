@@ -64,7 +64,7 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
                   </Badge>
                 </div>
               )}
-              <Link href={`/product/${product.slug}`} className="absolute inset-0 z-0">
+              <Link prefetch={false} href={`/product/${product.slug}`} className="absolute inset-0 z-0">
                 <div 
                   className="w-full h-full bg-contain bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
                   style={{ backgroundImage: `url(${mainImage})` }}
@@ -76,11 +76,11 @@ export async function FeaturedProductWidget({ widget }: { widget: any }) {
             <div className="flex flex-col justify-center space-y-3">
               <div className="space-y-1">
                 {product.category && (
-                  <Link href={`/category/${product.category.slug}`} className="text-sm font-medium text-primary hover:underline">
+                  <Link prefetch={false} href={`/category/${product.category.slug}`} className="text-sm font-medium text-primary hover:underline">
                     {product.category.name}
                   </Link>
                 )}
-                <Link href={`/product/${product.slug}`}>
+                <Link prefetch={false} href={`/product/${product.slug}`}>
                   <h3 className="text-2xl md:text-3xl font-semibold text-foreground leading-tight hover:text-primary transition-colors">
                     {product.name}
                   </h3>

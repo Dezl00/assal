@@ -111,7 +111,7 @@ function AdminLayoutInner({
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link
+              <Link prefetch={false}
                 key={item.name}
                 href={item.href}
                 className={cn(
@@ -164,7 +164,7 @@ function AdminLayoutInner({
           {navItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link
+              <Link prefetch={false}
                 key={item.name}
                 href={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -207,9 +207,9 @@ function AdminLayoutInner({
           {/* Desktop Header Left (Nav items) */}
           <div className="hidden md:flex items-center gap-6">
              <div className="flex items-center gap-4">
-               <Link href="/admin" className={cn("text-sm font-medium transition-colors", pathname === "/admin" ? "text-primary" : "text-muted-foreground hover:text-foreground")}>الرئيسية</Link>
-               <Link href="/admin/orders" className={cn("text-sm font-medium transition-colors", pathname.startsWith("/admin/orders") ? "text-primary" : "text-muted-foreground hover:text-foreground")}>الطلبات</Link>
-               <Link href="/admin/customers" className={cn("text-sm font-medium transition-colors", pathname.startsWith("/admin/customers") ? "text-primary" : "text-muted-foreground hover:text-foreground")}>العملاء</Link>
+               <Link prefetch={false} href="/admin" className={cn("text-sm font-medium transition-colors", pathname === "/admin" ? "text-primary" : "text-muted-foreground hover:text-foreground")}>الرئيسية</Link>
+               <Link prefetch={false} href="/admin/orders" className={cn("text-sm font-medium transition-colors", pathname.startsWith("/admin/orders") ? "text-primary" : "text-muted-foreground hover:text-foreground")}>الطلبات</Link>
+               <Link prefetch={false} href="/admin/customers" className={cn("text-sm font-medium transition-colors", pathname.startsWith("/admin/customers") ? "text-primary" : "text-muted-foreground hover:text-foreground")}>العملاء</Link>
              </div>
           </div>
 
@@ -224,7 +224,7 @@ function AdminLayoutInner({
               <AdminGlobalSearch />
             </div>
             
-            <Link 
+            <Link prefetch={false} 
               href="/" 
               target="_blank" 
               className="hidden sm:flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-medium text-muted-foreground hover:text-primary transition-colors bg-muted/30 px-3 py-1.5 rounded-full"
@@ -255,7 +255,7 @@ function AdminLayoutInner({
           {bottomNavItems.map((item) => {
             const isActive = pathname === item.href
             return (
-              <Link
+              <Link prefetch={false}
                 key={item.name}
                 href={item.href}
                 className={cn(

@@ -25,7 +25,7 @@ export function CategoryGridClient({ widget, categories }: { widget: any, catego
             delay={index * 0.08} 
             duration={0.5}
           >
-            <Link 
+            <Link prefetch={false} 
               href={`/category/${category.slug}`}
               className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border/50 bg-card p-6 transition-all hover:border-primary/50 hover:shadow-md hover:-translate-y-1"
             >

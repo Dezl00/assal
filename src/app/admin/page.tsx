@@ -132,7 +132,7 @@ export default async function AdminDashboardPage() {
         <div className="rounded-xl border border-border/50 bg-card p-4 sm:p-6 shadow-sm flex flex-col lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold tracking-tight">أحدث الطلبات</h3>
-            <Link href="/admin/orders" className="text-sm text-primary hover:underline font-medium">عرض الكل</Link>
+            <Link prefetch={false} href="/admin/orders" className="text-sm text-primary hover:underline font-medium">عرض الكل</Link>
           </div>
           <div className="flex flex-col gap-4 flex-1">
             {latestOrders.length > 0 ? latestOrders.map((order) => (
@@ -143,7 +143,7 @@ export default async function AdminDashboardPage() {
                 </div>
                 <div className="flex items-center justify-between sm:justify-end sm:flex-col gap-2 sm:gap-1 text-sm">
                   <span className="font-bold text-foreground">{order.totalAmount} ج.م</span>
-                  <Link href={`/admin/orders`} className="text-xs bg-[#2453E3] text-white px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:opacity-90 transition-colors font-medium">
+                  <Link prefetch={false} href={`/admin/orders`} className="text-xs bg-[#2453E3] text-white px-3 py-1.5 sm:px-2 sm:py-1 rounded-md hover:opacity-90 transition-colors font-medium">
                     تفاصيل الطلب
                   </Link>
                 </div>

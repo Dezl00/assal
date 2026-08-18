@@ -100,7 +100,7 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
         )}
       </div>
 
-      <Link href={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
+      <Link prefetch={false} href={`/product/${product.slug}`} className="block relative aspect-square overflow-hidden rounded-xl mb-4 bg-transparent shrink-0">
         {product.images[0] ? (
           <Image 
             src={product.images[0].url} 
@@ -142,7 +142,7 @@ export function ProductCard({ product, disableAnimation = false, index = 0 }: Pr
           {product.category && (
             <p className="text-xs text-muted-foreground">{product.category.name}</p>
           )}
-          <Link href={`/product/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
+          <Link prefetch={false} href={`/product/${product.slug}`} className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base leading-snug">
             {product.name}
           </Link>
         </div>

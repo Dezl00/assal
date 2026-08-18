@@ -25,7 +25,7 @@ export default async function BlogPage() {
           
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
-            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <Link prefetch={false} href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <span className="text-white font-medium">الأدلة والنصائح</span>
           </nav>
@@ -39,7 +39,7 @@ export default async function BlogPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {articles.map((article: any) => (
-            <Link href={`/blog/${article.slug}`} key={article.id} className="group block h-full">
+            <Link prefetch={false} href={`/blog/${article.slug}`} key={article.id} className="group block h-full">
               <div className="bg-white rounded-2xl border border-border overflow-hidden transition-all hover:shadow-xl hover:border-primary/30 h-full flex flex-col">
                 <div className="aspect-[16/10] bg-slate-100 relative overflow-hidden shrink-0">
                   {article.imageUrl ? (

@@ -28,7 +28,7 @@ export default async function EmployeesOfTheMonthPage({
             إدارة موظفي الشهر المتميزين لعرضهم في المتجر
           </p>
         </div>
-        <Link href="/admin/employees-of-the-month/create">
+        <Link prefetch={false} href="/admin/employees-of-the-month/create">
           <Button className="gap-2">
             <Plus className="w-4 h-4" />
             إضافة موظف

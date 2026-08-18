@@ -86,7 +86,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
     <div className="p-6 max-w-5xl mx-auto space-y-6 pb-24">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Link href="/admin/articles">
+          <Link prefetch={false} href="/admin/articles">
             <Button variant="ghost" size="icon">
               <ArrowRight className="w-5 h-5 rtl-flip" />
             </Button>
@@ -98,7 +98,7 @@ export function ArticleEditorClient({ initialArticle }: { initialArticle?: any }
         <div className="flex items-center gap-3">
           {isEditing && (
             <>
-              <Link href={`/blog/${initialArticle?.slug}`} target="_blank">
+              <Link prefetch={false} href={`/blog/${initialArticle?.slug}`} target="_blank">
                 <Button variant="outline" className="gap-2 text-primary hover:text-primary border-primary hover:bg-primary/5">
                   <ExternalLink className="w-4 h-4" />
                   معاينة

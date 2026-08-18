@@ -69,7 +69,7 @@ export function CustomerOrderDetailsClient({ order }: { order: any }) {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-6">
-        <Link href="/account?tab=orders" className="inline-flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
+        <Link prefetch={false} href="/account?tab=orders" className="inline-flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors">
           <ArrowRight className="w-4 h-4" />
           عودة للطلبات
         </Link>

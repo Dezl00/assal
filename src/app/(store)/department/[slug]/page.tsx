@@ -83,9 +83,9 @@ export default async function DepartmentPage(props: Props) {
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-primary-foreground mb-4">{department.name}</h1>
           
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 mb-4 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
-            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <Link prefetch={false} href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
-            <Link href="/products" className="hover:text-white transition-colors">المنتجات</Link>
+            <Link prefetch={false} href="/products" className="hover:text-white transition-colors">المنتجات</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <span className="text-white font-medium">{department.name}</span>
           </nav>
@@ -97,7 +97,7 @@ export default async function DepartmentPage(props: Props) {
           <h2 className="text-2xl font-bold mb-6">أقسام {department.name}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {department.categories.map(child => (
-              <Link 
+              <Link prefetch={false} 
                 key={child.id} 
                 href={`/category/${child.slug}`}
                 className="group relative rounded-2xl border border-border/50 bg-card p-4 text-center transition-all hover:border-primary/50 hover:shadow-lg"

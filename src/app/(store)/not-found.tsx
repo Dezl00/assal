@@ -22,7 +22,7 @@ export default async function NotFound() {
         </div>
         <h1 className="text-2xl font-bold text-[#2453E3] mb-2">الصفحة الحالية غير موجودة</h1>
         <p className="text-slate-600 mb-8 text-sm">عذراً، لم نتمكن من العثور على الصفحة التي تبحث عنها.</p>
-        <Link 
+        <Link prefetch={false} 
           href="/" 
           className="inline-flex items-center justify-center h-10 px-6 rounded-md bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity"
         >

@@ -22,7 +22,7 @@ export function ProductListClient({ widget, products, collectionItem }: { widget
             </div>
             
             {collectionItem.buttonUrl && (
-              <Link 
+              <Link prefetch={false} 
                 href={collectionItem.buttonUrl} 
                 className="group flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >

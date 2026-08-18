@@ -341,7 +341,7 @@ export function OrderDetailsClient({ order, logoUrl, storeName, branches = [] }:
             
             {order.userId && (
               <div className="pt-4 flex justify-end">
-                <Link href={`/admin/customers/${order.userId}`} className="text-sm font-semibold text-primary hover:underline">
+                <Link prefetch={false} href={`/admin/customers/${order.userId}`} className="text-sm font-semibold text-primary hover:underline">
                   عرض ملف العميل كاملاً
                 </Link>
               </div>

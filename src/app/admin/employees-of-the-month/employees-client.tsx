@@ -106,7 +106,7 @@ export function EmployeesClient({ employees }: { employees: any[] }) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
-                      <Link href={`/admin/employees-of-the-month/${emp.id}`}>
+                      <Link prefetch={false} href={`/admin/employees-of-the-month/${emp.id}`}>
                         <Button variant="ghost" size="icon" className="hover:text-primary h-8 w-8">
                           <Edit className="w-4 h-4" />
                         </Button>

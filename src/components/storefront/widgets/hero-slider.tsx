@@ -72,7 +72,7 @@ export function HeroSlider({ widget }: { widget: any }) {
                   )}
                   {slide.buttonUrl && (
                     <div className="animate-in slide-in-from-bottom-12 duration-700 delay-150">
-                      <Link href={getValidLink(slide.buttonUrl)}>
+                      <Link prefetch={false} href={getValidLink(slide.buttonUrl)}>
                         {(() => {
                           const isOutline = slide.settings?.buttonStyle === "outline";
                           let bgStyle: any = {};

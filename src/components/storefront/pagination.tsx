@@ -47,7 +47,7 @@ export function StorePagination({
         {/* Previous Button */}
         {currentPage > 1 && (
           <li>
-            <Link 
+            <Link prefetch={false} 
               href={createPageURL(currentPage - 1)} 
               className="flex h-10 w-10 items-center justify-center rounded-md border border-border/50 bg-card text-foreground hover:bg-muted hover:text-primary transition-colors text-lg"
               aria-label={`صفحة ${currentPage - 1}`}
@@ -71,7 +71,7 @@ export function StorePagination({
                 {page}
               </span>
             ) : (
-              <Link 
+              <Link prefetch={false} 
                 href={createPageURL(page)} 
                 className="flex h-10 w-10 items-center justify-center rounded-md border border-border/50 bg-card text-foreground hover:bg-muted hover:text-primary transition-colors font-medium text-lg"
                 aria-label={`صفحة ${page}`}
@@ -85,7 +85,7 @@ export function StorePagination({
         {/* Next Button */}
         {currentPage < totalPages && (
           <li>
-            <Link 
+            <Link prefetch={false} 
               href={createPageURL(currentPage + 1)} 
               className="flex h-10 w-10 items-center justify-center rounded-md border border-border/50 bg-card text-foreground hover:bg-muted hover:text-primary transition-colors text-lg"
               aria-label={`صفحة ${currentPage + 1}`}

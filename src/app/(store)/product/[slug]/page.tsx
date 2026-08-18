@@ -102,12 +102,12 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-12">
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8 overflow-hidden whitespace-nowrap">
-        <Link href="/" className="hover:text-primary transition-colors flex-shrink-0">الرئيسية</Link>
+        <Link prefetch={false} href="/" className="hover:text-primary transition-colors flex-shrink-0">الرئيسية</Link>
         <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
         
         {dept && (
           <>
-            <Link href={`/department/${dept.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
+            <Link prefetch={false} href={`/department/${dept.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
               {dept.name}
             </Link>
             <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
@@ -116,14 +116,14 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
         
         {category.parent && (
           <>
-            <Link href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
+            <Link prefetch={false} href={`/category/${category.parent.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
               {category.parent.name}
             </Link>
             <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
           </>
         )}
 
-        <Link href={`/category/${category.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
+        <Link prefetch={false} href={`/category/${category.slug}`} className="hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px] md:max-w-none">
           {category.name}
         </Link>
         <ChevronRight className="w-4 h-4 rtl-flip flex-shrink-0" />
@@ -172,7 +172,7 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
             {product.brand && (
               <div className="flex items-center gap-1.5">
                 <span className="font-semibold text-foreground">الماركة:</span>
-                <Link href={`/brand/${product.brand.slug}`} className="text-primary font-bold hover:underline">
+                <Link prefetch={false} href={`/brand/${product.brand.slug}`} className="text-primary font-bold hover:underline">
                   {product.brand.name}
                 </Link>
               </div>

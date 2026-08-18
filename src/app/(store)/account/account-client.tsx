@@ -316,7 +316,7 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                       <div key={order.id} className="bg-card border border-border/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-border/50 pb-6 gap-4">
                           <div>
-                            <Link href={`/account/orders/${order.id}`} className="font-bold text-xl hover:text-primary transition-colors flex items-center gap-2">
+                            <Link prefetch={false} href={`/account/orders/${order.id}`} className="font-bold text-xl hover:text-primary transition-colors flex items-center gap-2">
                               طلب #{order.id}
                             </Link>
                             <p className="text-sm text-muted-foreground font-medium mt-2" dir="ltr">
@@ -374,7 +374,7 @@ export function AccountClient({ user, governorates }: { user: any, governorates:
                       <p className="text-foreground font-bold text-xl mb-2">ليس لديك أي طلبات سابقة</p>
                       <p className="text-muted-foreground mb-8">قم بتصفح المتجر وإضافة بعض المنتجات الرائعة لسلتك!</p>
                       <Button asChild className="h-14 rounded-full px-10 gold-gradient text-white shadow-lg hover:shadow-xl transition-shadow text-lg">
-                        <Link href="/products">تصفح المنتجات</Link>
+                        <Link prefetch={false} href="/products">تصفح المنتجات</Link>
                       </Button>
                     </div>
                   )}

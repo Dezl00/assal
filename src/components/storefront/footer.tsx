@@ -9,7 +9,7 @@ export function StorefrontFooter({ menuItems, themeConfig, branches = [] }: { me
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
+            <Link prefetch={false} href="/" className="flex items-center gap-2 mb-4">
               <span className="text-2xl font-bold tracking-tight text-white">{themeConfig?.storeName || "العسال"}</span>
             </Link>
             <p className="text-sm text-secondary-foreground/70 leading-relaxed">
@@ -22,7 +22,7 @@ export function StorefrontFooter({ menuItems, themeConfig, branches = [] }: { me
             <ul className="space-y-3">
               {menuItems.map(item => (
                 <li key={item.id}>
-                  <Link href={item.url} className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors">
+                  <Link prefetch={false} href={item.url} className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors">
                     {item.label}
                   </Link>
                 </li>
@@ -51,8 +51,8 @@ export function StorefrontFooter({ menuItems, themeConfig, branches = [] }: { me
                 </li>
               )) : (
                 <>
-                  <li><Link href="/faq" className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors">الأسئلة الشائعة</Link></li>
-                  <li><Link href="/contact" className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors">تواصل معنا</Link></li>
+                  <li><Link prefetch={false} href="/faq" className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors">الأسئلة الشائعة</Link></li>
+                  <li><Link prefetch={false} href="/contact" className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors">تواصل معنا</Link></li>
                 </>
               )}
             </ul>
@@ -80,32 +80,32 @@ export function StorefrontFooter({ menuItems, themeConfig, branches = [] }: { me
           </p>
           <div className="flex gap-4">
             {themeConfig?.facebookUrl && (
-              <Link href={themeConfig.facebookUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.facebookUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
                 <FaFacebookF className="w-4 h-4" />
               </Link>
             )}
             {themeConfig?.instagramUrl && (
-              <Link href={themeConfig.instagramUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.instagramUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
                 <FaInstagram className="w-4 h-4" />
               </Link>
             )}
             {themeConfig?.twitterUrl && (
-              <Link href={themeConfig.twitterUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.twitterUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
                 <FaXTwitter className="w-4 h-4" />
               </Link>
             )}
             {themeConfig?.whatsappNumber && (
-              <Link href={`https://wa.me/${themeConfig.whatsappNumber}`} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
+              <Link prefetch={false} href={`https://wa.me/${themeConfig.whatsappNumber}`} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
                 <FaWhatsapp className="w-4 h-4" />
               </Link>
             )}
             {themeConfig?.tiktokUrl && (
-              <Link href={themeConfig.tiktokUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.tiktokUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
                 <FaTiktok className="w-4 h-4" />
               </Link>
             )}
             {themeConfig?.snapchatUrl && (
-              <Link href={themeConfig.snapchatUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.snapchatUrl} target="_blank" className="w-8 h-8 rounded-full bg-white/5 hover:bg-primary transition-colors flex items-center justify-center text-white/80 hover:text-white shadow-sm">
                 <FaSnapchat className="w-4 h-4" />
               </Link>
             )}

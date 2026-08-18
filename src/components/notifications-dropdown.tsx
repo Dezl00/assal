@@ -92,7 +92,7 @@ export function NotificationsDropdown({ isAdmin = false }: { isAdmin?: boolean }
           ) : (
             <div className="flex flex-col">
               {data.notifications.map((notif: any) => (
-                <Link
+                <Link prefetch={false}
                   key={notif.id}
                   href={notif.link || "#"}
                   onClick={() => { if (!notif.isRead) markAsRead(notif.id) }}

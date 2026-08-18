@@ -54,7 +54,7 @@ export function MobileBottomNav({ user }: { user?: any }) {
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.name === "حسابي" && pathname.startsWith("/account"))
           return (
-            <Link
+            <Link prefetch={false}
               key={item.name}
               href={item.href}
               onClick={item.onClick}

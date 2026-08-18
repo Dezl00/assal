@@ -23,7 +23,7 @@ export default function FAQPage() {
           
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs sm:text-sm text-primary-foreground/80 bg-black/10 backdrop-blur-sm px-4 py-2 rounded-full">
-            <Link href="/" className="hover:text-white transition-colors">الرئيسية</Link>
+            <Link prefetch={false} href="/" className="hover:text-white transition-colors">الرئيسية</Link>
             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 rtl-flip opacity-50" />
             <span className="text-white font-medium">الأسئلة الشائعة</span>
           </nav>

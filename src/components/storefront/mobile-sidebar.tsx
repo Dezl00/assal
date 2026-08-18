@@ -40,7 +40,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border/50">
-          <Link href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+          <Link prefetch={false} href="/" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
             {themeConfig?.logoUrl ? (
               <img src={themeConfig.logoUrl} alt="Store Logo" className="h-8 w-auto object-contain" />
             ) : (
@@ -77,7 +77,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
           
           {activeTab === 'menu' && (
             <nav className="flex flex-col py-2 animate-in fade-in duration-300">
-              <Link 
+              <Link prefetch={false} 
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
@@ -86,7 +86,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               </Link>
               
-              <Link 
+              <Link prefetch={false} 
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
@@ -96,7 +96,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
               </Link>
               
               {departments.map((dept: any) => (
-                <Link 
+                <Link prefetch={false} 
                   key={dept.id}
                   href={`/department/${dept.slug}`}
                   onClick={() => setMobileMenuOpen(false)}
@@ -107,7 +107,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                 </Link>
               ))}
 
-              <Link 
+              <Link prefetch={false} 
                 href="/blog"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
@@ -116,7 +116,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               </Link>
 
-              <Link 
+              <Link prefetch={false} 
                 href="/brands"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 font-medium text-foreground hover:bg-secondary/50 transition-colors"
@@ -125,7 +125,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                 <ChevronLeft className="w-4 h-4 text-muted-foreground" />
               </Link>
 
-              <Link 
+              <Link prefetch={false} 
                 href="/products?discounted=true"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-between p-4 font-medium text-red-500 hover:bg-red-500/10 transition-colors"
@@ -145,7 +145,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                     <div key={dept.id} className="flex flex-col border-b border-border/50 last:border-0">
                       <div className="flex items-center justify-between p-2">
                         {/* Department Link with Image */}
-                        <Link 
+                        <Link prefetch={false} 
                           href={`/department/${dept.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center gap-3 flex-1 p-2 hover:bg-secondary/30 rounded-xl transition-colors"
@@ -182,7 +182,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                         <div className="flex flex-col gap-1 pr-14 pl-4 pb-2">
                           {deptCategories.map((mainCat: any) => (
                             <div key={mainCat.id} className="flex flex-col mb-1 last:mb-0">
-                              <Link 
+                              <Link prefetch={false} 
                                 href={`/category/${mainCat.slug}`}
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="py-2.5 px-3 text-sm font-medium text-foreground hover:text-primary transition-colors flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary/50"
@@ -192,7 +192,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                               {mainCat.children && mainCat.children.length > 0 && (
                                 <div className="flex flex-col gap-1 pr-4 border-r-2 border-border/30 mr-3 mt-1 mb-2">
                                   {mainCat.children.map((subCat: any) => (
-                                    <Link 
+                                    <Link prefetch={false} 
                                       key={subCat.id} 
                                       href={`/category/${subCat.slug}`}
                                       onClick={() => setMobileMenuOpen(false)}
@@ -215,7 +215,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                   <div key={cat.id} className="flex flex-col border-b border-border/50 last:border-0">
                     <div className="flex items-center justify-between p-2">
                       {/* Category Link with Image */}
-                      <Link 
+                      <Link prefetch={false} 
                         href={`/category/${cat.slug}`}
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center gap-3 flex-1 p-2 hover:bg-secondary/30 rounded-xl transition-colors"
@@ -245,7 +245,7 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
                   {openCategory === cat.id && cat.children && (
                     <div className="flex flex-col pr-12 pl-4 py-2 animate-in slide-in-from-top-2">
                       {cat.children.map((sub: any) => (
-                        <Link 
+                        <Link prefetch={false} 
                           key={sub.id}
                           href={`/category/${sub.slug}`}
                           onClick={() => setMobileMenuOpen(false)}
@@ -267,32 +267,32 @@ export function MobileSidebar({ menuItems, themeConfig, categories = [], departm
         <div className="p-6 border-t border-border/50 bg-muted/30">
           <div className="flex flex-wrap justify-center gap-3 mb-4">
             {themeConfig?.facebookUrl && (
-              <Link href={themeConfig.facebookUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.facebookUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
                 <FaFacebookF className="w-5 h-5" />
               </Link>
             )}
             {themeConfig?.instagramUrl && (
-              <Link href={themeConfig.instagramUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.instagramUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
                 <FaInstagram className="w-5 h-5" />
               </Link>
             )}
             {themeConfig?.twitterUrl && (
-              <Link href={themeConfig.twitterUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.twitterUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
                 <FaXTwitter className="w-5 h-5" />
               </Link>
             )}
             {themeConfig?.whatsappNumber && (
-              <Link href={`https://wa.me/${themeConfig.whatsappNumber}`} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+              <Link prefetch={false} href={`https://wa.me/${themeConfig.whatsappNumber}`} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
                 <FaWhatsapp className="w-5 h-5" />
               </Link>
             )}
             {themeConfig?.tiktokUrl && (
-              <Link href={themeConfig.tiktokUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.tiktokUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
                 <FaTiktok className="w-5 h-5" />
               </Link>
             )}
             {themeConfig?.snapchatUrl && (
-              <Link href={themeConfig.snapchatUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
+              <Link prefetch={false} href={themeConfig.snapchatUrl} target="_blank" className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary transition-colors flex items-center justify-center text-primary hover:text-white shadow-sm">
                 <FaSnapchat className="w-5 h-5" />
               </Link>
             )}

@@ -47,7 +47,7 @@ export function BannerGrid({ widget }: { widget: any }) {
             delay={index * 0.12}
             duration={0.7}
           >
-            <Link 
+            <Link prefetch={false} 
               href={getValidLink(item.buttonUrl)} 
               className="group relative h-[300px] md:h-[400px] overflow-hidden rounded-2xl block"
             >

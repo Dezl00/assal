@@ -65,7 +65,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
             
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="flex items-center gap-2">
+              <Link prefetch={false} href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
                   <img src={themeConfig.logoUrl} alt="Store Logo" className="h-14 w-auto object-contain transition-transform hover:scale-105" />
                 ) : (
@@ -76,8 +76,8 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
 
             {/* Desktop Navigation */}
             <nav className="flex items-center gap-6 lg:gap-8 flex-1 justify-center">
-              <Link href="/" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الرئيسية</Link>
-              <Link href="/products" className="text-sm font-bold text-foreground hover:text-primary transition-colors">المتجر</Link>
+              <Link prefetch={false} href="/" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الرئيسية</Link>
+              <Link prefetch={false} href="/products" className="text-sm font-bold text-foreground hover:text-primary transition-colors">المتجر</Link>
               
               {departments.length > 0 ? (
                 departments.map((dept: any) => {
@@ -87,7 +87,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                       key={dept.id}
                       className="relative py-8 group/deptNav"
                     >
-                      <Link href={`/department/${dept.slug}`} className="flex items-center gap-1 text-sm font-bold text-foreground hover:text-primary transition-colors">
+                      <Link prefetch={false} href={`/department/${dept.slug}`} className="flex items-center gap-1 text-sm font-bold text-foreground hover:text-primary transition-colors">
                         {dept.name} {deptCategories.length > 0 && <ChevronDown className="w-4 h-4" />}
                       </Link>
                       
@@ -95,7 +95,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                         <div className="absolute top-[80px] right-0 w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/deptNav:opacity-100 group-hover/deptNav:visible transition-all duration-200 z-50">
                           {deptCategories.map((cat: any) => (
                             <div key={cat.id} className="relative group/subcat">
-                              <Link 
+                              <Link prefetch={false} 
                                 href={`/category/${cat.slug}`} 
                                 className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground group/sublink"
                               >
@@ -108,7 +108,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                               {cat.children && cat.children.length > 0 && (
                                 <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/subcat:opacity-100 group-hover/subcat:visible transition-all duration-200 z-50">
                                   {cat.children.map((sub: any) => (
-                                    <Link 
+                                    <Link prefetch={false} 
                                       key={sub.id} 
                                       href={`/category/${sub.slug}`} 
                                       className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
@@ -133,7 +133,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                   <div className="absolute top-[80px] right-0 w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/catNav:opacity-100 group-hover/catNav:visible transition-all duration-200 z-50">
                     {categories.filter(c => !c.parentId).map((cat: any) => (
                       <div key={cat.id} className="relative group/subcat">
-                        <Link 
+                        <Link prefetch={false} 
                           href={`/category/${cat.slug}`} 
                           className="flex items-center justify-between px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground group/sublink"
                         >
@@ -145,7 +145,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                         {cat.children && cat.children.length > 0 && (
                           <div className="absolute top-0 right-full w-64 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/subcat:opacity-100 group-hover/subcat:visible transition-all duration-200 z-50">
                             {cat.children.map((sub: any) => (
-                              <Link 
+                              <Link prefetch={false} 
                                 key={sub.id} 
                                 href={`/category/${sub.slug}`} 
                                 className="flex items-center px-4 py-3 hover:bg-primary/5 hover:text-primary transition-colors text-sm font-bold text-foreground"
@@ -161,9 +161,9 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 </div>
               )}
               
-              <Link href="/blog" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الأدلة والنصائح</Link>
-              <Link href="/brands" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الماركات</Link>
-              <Link href="/products?discounted=true" className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors">عروض وخصومات</Link>
+              <Link prefetch={false} href="/blog" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الأدلة والنصائح</Link>
+              <Link prefetch={false} href="/brands" className="text-sm font-bold text-foreground hover:text-primary transition-colors">الماركات</Link>
+              <Link prefetch={false} href="/products?discounted=true" className="text-sm font-bold text-red-500 hover:text-red-600 transition-colors">عروض وخصومات</Link>
             </nav>
 
             {/* Desktop Actions */}
@@ -215,15 +215,15 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                       </a>
                     ) : (
                       <>
-                        <Link href="/account" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
+                        <Link prefetch={false} href="/account" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                           <User className="w-4 h-4" />
                           حسابي
                         </Link>
-                        <Link href="/account?tab=orders" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
+                        <Link prefetch={false} href="/account?tab=orders" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                           <ShoppingCart className="w-4 h-4" />
                           طلباتي
                         </Link>
-                        <Link href="/account?tab=security" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
+                        <Link prefetch={false} href="/account?tab=security" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                           <Settings className="w-4 h-4" />
                           الإعدادات
                         </Link>
@@ -277,7 +277,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
 
             {/* Center: Logo */}
             <div className="flex-shrink-0 flex items-center justify-center absolute left-1/2 -translate-x-1/2">
-              <Link href="/" className="flex items-center gap-2">
+              <Link prefetch={false} href="/" className="flex items-center gap-2">
                 {themeConfig?.logoUrl ? (
                   <img src={themeConfig.logoUrl} alt="Store Logo" className="h-10 w-auto object-contain" />
                 ) : (
@@ -334,7 +334,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 {searchResults.length > 0 ? (
                   <div className="p-2">
                     {searchResults.map(product => (
-                      <Link 
+                      <Link prefetch={false} 
                         key={product.id}
                         href={`/product/${product.slug}`}
                         onClick={() => setIsSearchOpen(false)}
@@ -357,7 +357,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                       </Link>
                     ))}
                     <div className="p-4 border-t border-border mt-2">
-                      <Link 
+                      <Link prefetch={false} 
                         href={`/search?q=${encodeURIComponent(searchQuery)}`}
                         onClick={() => setIsSearchOpen(false)}
                         className="w-full py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary/20 flex items-center justify-center transition-colors"

@@ -86,7 +86,7 @@ export async function EmployeeOfTheMonthWidget({ widget }: { widget: any }) {
           </div>
 
           <div className="mt-6">
-            <Link href="/employees-of-the-month">
+            <Link prefetch={false} href="/employees-of-the-month">
               <Button variant="ghost" className="gap-2 rounded-full text-primary hover:bg-transparent hover:text-primary/80 group text-base font-bold">
                 عرض كل الموظفين
                 <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />

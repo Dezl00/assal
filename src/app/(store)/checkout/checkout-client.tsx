@@ -268,7 +268,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
         </div>
         <h1 className="text-3xl font-bold mb-4">سلة المشتريات فارغة</h1>
         <p className="text-muted-foreground mb-8 text-lg">لم تقم بإضافة أي منتجات للسلة بعد.</p>
-        <Link href="/products">
+        <Link prefetch={false} href="/products">
           <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl px-8 h-14 text-lg">
             تصفح المنتجات
           </Button>
@@ -280,7 +280,7 @@ export default function CheckoutClient({ user, governorates = [], paymentMethods
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-        <Link href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
+        <Link prefetch={false} href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
         <ChevronRight className="w-4 h-4 rtl-flip" />
         <span className="text-foreground font-medium">إتمام الطلب</span>
       </nav>

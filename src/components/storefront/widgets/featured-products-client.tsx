@@ -16,7 +16,7 @@ export function FeaturedProductsClient({ widget, products }: { widget: any, prod
               <h2 className="text-3xl font-semibold tracking-tight text-foreground">{widget.title}</h2>
               {widget.subtitle && <p className="text-muted-foreground mt-2">{widget.subtitle}</p>}
             </div>
-            <Link href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
+            <Link prefetch={false} href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
               عرض الكل
             </Link>
           </div>
@@ -24,7 +24,7 @@ export function FeaturedProductsClient({ widget, products }: { widget: any, prod
       ) : (
         <ScrollReveal variant="fade-up" duration={0.4}>
           <div className="flex justify-end mb-6">
-            <Link href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
+            <Link prefetch={false} href="/products" className="text-primary hover:underline font-medium text-sm hidden sm:block">
               عرض الكل
             </Link>
           </div>

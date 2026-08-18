@@ -63,13 +63,13 @@ export function ArticleActionsClient({ article }: { article: any }) {
           />
         </div>
 
-        <Link href={`/blog/${article.slug}`} target="_blank">
+        <Link prefetch={false} href={`/blog/${article.slug}`} target="_blank">
           <Button variant="ghost" size="icon" className="hover:text-primary" title="معاينة المقال">
             <ExternalLink className="w-4 h-4" />
           </Button>
         </Link>
 
-        <Link href={`/admin/articles/${article.id}`}>
+        <Link prefetch={false} href={`/admin/articles/${article.id}`}>
           <Button variant="ghost" size="icon" className="hover:text-primary">
             <Edit className="w-4 h-4" />
           </Button>
