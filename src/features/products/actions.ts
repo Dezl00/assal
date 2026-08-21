@@ -2,7 +2,7 @@
 
 import { requireAdmin, requirePermission } from "@/lib/auth/require-admin"
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
 
 export async function createProduct(formData: FormData) {
   try {
@@ -79,6 +79,7 @@ export async function createProduct(formData: FormData) {
 
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create product" }
@@ -112,6 +113,7 @@ export async function deleteProduct(id: string) {
 
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete product" }
@@ -134,6 +136,7 @@ export async function bulkDeleteProducts(ids: string[]) {
     })
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete products" }
@@ -201,6 +204,7 @@ export async function updateProduct(id: string, formData: FormData) {
 
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update product" }
@@ -220,6 +224,7 @@ export async function toggleProductStatus(id: string, isActive: boolean) {
     })
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update product status" }
@@ -239,6 +244,7 @@ export async function bulkToggleProductsStatus(ids: string[], isActive: boolean)
     })
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update products status" }
@@ -270,6 +276,7 @@ export async function bulkUpdateProducts(productsData: any[]) {
     )
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("products")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to update products" }
@@ -413,6 +420,7 @@ export async function bulkImportProducts(products: any[], duplicateHandling: 'sk
     }
 
     revalidatePath("/admin/products")
+    updateTag("products")
     return { success: true, createdCount, updatedCount, skippedCount }
   } catch (error: any) {
     console.error("Bulk Import Error:", error);

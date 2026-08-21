@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, updateTag } from "next/cache"
 import { z } from "zod"
 
 const CategorySchema = z.object({
@@ -27,6 +27,7 @@ export async function createCategory(data: z.infer<typeof CategorySchema>) {
     
     revalidatePath("/admin/categories")
     revalidatePath("/")
+    updateTag("brands")
     return { success: true, category }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create category" }
@@ -59,6 +60,7 @@ export async function deleteCategory(id: string) {
     
     revalidatePath("/admin/categories")
     revalidatePath("/")
+    updateTag("brands")
     return { success: true }
   } catch (error: any) {
     return { success: false, error: "Failed to delete category. Ensure it has no products or children." }
@@ -117,6 +119,7 @@ export async function createProduct(data: z.infer<typeof ProductSchema>, imageId
     
     revalidatePath("/admin/products")
     revalidatePath("/")
+    updateTag("brands")
     return { success: true, product }
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to create product" }
