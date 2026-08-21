@@ -9,13 +9,17 @@ import { StorePagination } from "@/components/storefront/pagination"
 import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 
-import { cache } from "react"
+import { unstable_cache } from "next/cache"
 
 export const revalidate = 3600
 
-const getBrand = cache(async (slug: string) => {
+const getBrand = unstable_cache(async (slug: string) => {
   return db.brand.findUnique({ where: { slug } })
-})
+}, ['brand-by-slug'], { tags: ['brands'], revalidate: 3600 })
+
+const getBrandAggregations = unstable_cache(async () => {
+  return db.category.findMany({ select: { id: true, name: true, slug: true } })
+}, ['brand-aggregations'], { tags: ['categories'], revalidate: 3600 })
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -87,7 +91,7 @@ export default async function BrandPage(props: Props) {
   if (sort === "price_asc") orderByClause = { price: "asc" }
   else if (sort === "price_desc") orderByClause = { price: "desc" }
 
-  const [totalProducts, products, categories] = await Promise.all([
+  const [totalProducts, products] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -98,11 +102,10 @@ export default async function BrandPage(props: Props) {
         images: { orderBy: { sortOrder: 'asc' } },
         category: true,
       }
-    }),
-    db.category.findMany({ 
-      select: { id: true, name: true, slug: true } 
-    }),
+    })
   ])
+  
+  const categories = await getBrandAggregations()
 
   const totalPages = Math.ceil(totalProducts / limit)
 

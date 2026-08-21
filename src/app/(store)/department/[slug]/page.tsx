@@ -6,11 +6,11 @@ import { ChevronRight } from "lucide-react"
 
 import type { Metadata } from "next"
 
-import { cache } from "react"
+import { unstable_cache } from "next/cache"
 
 export const revalidate = 3600
 
-const getDepartment = cache(async (slug: string) => {
+const getDepartment = unstable_cache(async (slug: string) => {
   return db.department.findUnique({
     where: { slug },
     include: {
@@ -20,7 +20,7 @@ const getDepartment = cache(async (slug: string) => {
       },
     }
   })
-})
+}, ['department-by-slug'], { tags: ['departments', 'categories'], revalidate: 3600 })
 
 type Props = {
   params: Promise<{ slug: string }>

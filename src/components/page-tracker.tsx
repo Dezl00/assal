@@ -1,24 +1,28 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
-import { logPageVisit } from "@/features/analytics/actions"
+import { usePathname } from "next/navigation"
 
 export function PageTracker() {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const hasLogged = useRef<string | null>(null)
 
   useEffect(() => {
-    // Only log once per path change
     if (pathname && hasLogged.current !== pathname) {
       hasLogged.current = pathname
-      // Ignore admin routes
       if (!pathname.startsWith("/admin")) {
-        logPageVisit(pathname)
+        // Use non-blocking fetch to a new lightweight API route instead of Server Action
+        // Alternatively, use navigator.sendBeacon
+        try {
+          // Send beacon is fire-and-forget and won't block navigation
+          navigator.sendBeacon(`/api/analytics/pageview?path=${encodeURIComponent(pathname)}`)
+        } catch (e) {
+          // fallback
+          fetch(`/api/analytics/pageview?path=${encodeURIComponent(pathname)}`, { keepalive: true }).catch(() => {})
+        }
       }
     }
-  }, [pathname, searchParams])
+  }, [pathname])
 
   return null
 }

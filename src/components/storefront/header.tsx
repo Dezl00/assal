@@ -44,7 +44,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
       const results = await searchProductsLive(searchQuery)
       setSearchResults(results)
       setIsSearching(false)
-    }, 300)
+    }, 600)
 
     return () => clearTimeout(timer)
   }, [searchQuery])

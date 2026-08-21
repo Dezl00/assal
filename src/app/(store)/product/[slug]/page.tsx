@@ -10,13 +10,13 @@ import { ProductTabs } from "@/components/storefront/product-tabs"
 import { ProductFeatures } from "@/components/storefront/product-features"
 import { ProductCard } from "@/components/storefront/product-card"
 import { SimilarProductsCarousel } from "@/components/storefront/product/similar-products-carousel"
+import { ProductTracker } from "@/components/storefront/product/product-tracker"
 
 import type { Metadata } from "next"
-import { logProductView } from "@/features/analytics/actions"
 
-import { cache } from "react"
+import { unstable_cache } from "next/cache"
 
-const getProduct = cache(async (slug: string) => {
+const getProduct = unstable_cache(async (slug: string) => {
   return db.product.findUnique({
     where: { slug, isActive: true },
     include: { 
@@ -30,7 +30,19 @@ const getProduct = cache(async (slug: string) => {
       brand: true,
     }
   })
-})
+}, ['product-by-slug'], { tags: ['products'], revalidate: 3600 })
+
+const getRelatedProducts = unstable_cache(async (categoryId: string, excludeId: string) => {
+  return db.product.findMany({
+    where: { 
+      categoryId: categoryId,
+      id: { not: excludeId },
+      isActive: true
+    },
+    take: 4,
+    include: { images: true, category: true }
+  })
+}, ['product-related'], { tags: ['products'], revalidate: 3600 })
 
 // Generate metadata for SEO
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -78,19 +90,8 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
     notFound()
   }
 
-  // Log product view asynchronously
-  logProductView(product.id)
-
   // Fetch related products
-  const relatedProducts = await db.product.findMany({
-    where: { 
-      categoryId: product.categoryId,
-      id: { not: product.id },
-      isActive: true
-    },
-    take: 4,
-    include: { images: true, category: true }
-  })
+  const relatedProducts = await getRelatedProducts(product.categoryId, product.id)
 
   const finalPrice = product.discountPrice ?? product.price
   const hasDiscount = product.discountPrice !== null && product.discountPrice < product.price
@@ -100,6 +101,7 @@ export default async function ProductDetailsPage(props: { params: Promise<{ slug
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-12">
+      <ProductTracker productId={product.id} />
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8 overflow-hidden whitespace-nowrap">
         <Link prefetch={false} href="/" className="hover:text-primary transition-colors flex-shrink-0">الرئيسية</Link>

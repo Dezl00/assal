@@ -6,8 +6,23 @@ import { ChevronRight } from "lucide-react"
 import { FilterSidebar } from "@/components/storefront/filter-sidebar"
 import { StoreToolbar } from "@/components/storefront/store-toolbar"
 import { StorePagination } from "@/components/storefront/pagination"
+import { unstable_cache } from "next/cache"
 
 export const revalidate = 3600
+
+const getProductsPageAggregations = unstable_cache(async (categorySlug: string) => {
+  return Promise.all([
+    db.category.findMany({ select: { id: true, name: true, slug: true } }),
+    db.brand.findMany({ 
+      where: categorySlug ? { products: { some: { category: { slug: categorySlug } } } } : undefined,
+      select: { id: true, name: true, slug: true } 
+    }),
+    db.product.aggregate({
+      _min: { price: true },
+      _max: { price: true }
+    })
+  ])
+}, ['products-aggregations'], { tags: ['products', 'categories', 'brands'], revalidate: 3600 })
 
 import type { Metadata } from "next"
 
@@ -106,8 +121,7 @@ export default async function AllProductsPage({ searchParams }: Props) {
     orderByClause = { price: "desc" }
   }
 
-  // Fetch count and products
-  const [totalProducts, products, categories, brands, priceAggregates] = await Promise.all([
+  const [totalProducts, products] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -118,20 +132,10 @@ export default async function AllProductsPage({ searchParams }: Props) {
         images: { orderBy: { sortOrder: 'asc' } },
         category: true,
       }
-    }),
-    db.category.findMany({ select: { id: true, name: true, slug: true } }),
-    db.brand.findMany({ 
-      where: categorySlug ? {
-        products: { some: { category: { slug: categorySlug } } }
-      } : undefined,
-      select: { id: true, name: true, slug: true } 
-    }),
-    db.product.aggregate({
-      where: whereClause, // Get min/max price for the current filtered view (or remove whereClause to get global min/max)
-      _min: { price: true },
-      _max: { price: true }
     })
   ])
+  
+  const [categories, brands, priceAggregates] = await getProductsPageAggregations(categorySlug || '')
 
   const globalMinPrice = priceAggregates._min.price || 0
   const globalMaxPrice = priceAggregates._max.price || 10000

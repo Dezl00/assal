@@ -10,11 +10,11 @@ import { StorePagination } from "@/components/storefront/pagination"
 
 import type { Metadata } from "next"
 
-import { cache } from "react"
+import { unstable_cache } from "next/cache"
 
 export const revalidate = 3600
 
-const getCategory = cache(async (slug: string) => {
+const getCategory = unstable_cache(async (slug: string) => {
   return db.category.findUnique({
     where: { slug },
     include: {
@@ -23,7 +23,21 @@ const getCategory = cache(async (slug: string) => {
       children: { orderBy: { createdAt: "asc" } },
     }
   })
-})
+}, ['category-by-slug'], { tags: ['categories'], revalidate: 3600 })
+
+const getCategoryAggregations = unstable_cache(async (categoryId: string) => {
+  return Promise.all([
+    db.brand.findMany({ 
+      where: { products: { some: { categoryId: categoryId } } },
+      select: { id: true, name: true, slug: true } 
+    }),
+    db.product.aggregate({
+      where: { categoryId: categoryId },
+      _min: { price: true },
+      _max: { price: true }
+    })
+  ])
+}, ['category-aggregations'], { tags: ['products', 'brands'], revalidate: 3600 })
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -100,7 +114,7 @@ export default async function CategoryPage(props: Props) {
   if (sort === "price_asc") orderByClause = { price: "asc" }
   else if (sort === "price_desc") orderByClause = { price: "desc" }
 
-  const [totalProducts, products, brands, priceAggregates] = await Promise.all([
+  const [totalProducts, products] = await Promise.all([
     db.product.count({ where: whereClause }),
     db.product.findMany({
       where: whereClause,
@@ -111,17 +125,10 @@ export default async function CategoryPage(props: Props) {
         images: { orderBy: { sortOrder: 'asc' } },
         category: true,
       }
-    }),
-    db.brand.findMany({ 
-      where: { products: { some: { categoryId: category.id } } },
-      select: { id: true, name: true, slug: true } 
-    }),
-    db.product.aggregate({
-      where: { categoryId: category.id },
-      _min: { price: true },
-      _max: { price: true }
     })
   ])
+
+  const [brands, priceAggregates] = await getCategoryAggregations(category.id)
 
   const globalMinPrice = priceAggregates._min.price || 0
   const globalMaxPrice = priceAggregates._max.price || 10000
