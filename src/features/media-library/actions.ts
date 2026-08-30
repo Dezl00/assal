@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache"
 export async function uploadMediaAction(formData: FormData) {
   try {
     try {
-      await requirePermission("media.upload")
+      await requirePermission("products.add")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
@@ -57,7 +57,7 @@ export async function uploadMediaAction(formData: FormData) {
 export async function deleteMediaAction(id: string) {
   try {
     try {
-      await requirePermission("media.delete")
+      await requirePermission("products.delete")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

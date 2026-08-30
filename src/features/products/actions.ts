@@ -7,7 +7,7 @@ import { revalidatePath, updateTag } from "next/cache"
 export async function createProduct(formData: FormData) {
   try {
     try {
-      await requirePermission("products.create")
+      await requirePermission("products.add")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

@@ -8,7 +8,7 @@ import { auth } from "@/lib/auth"
 export async function createCategory(formData: FormData) {
   try {
     try {
-      await requirePermission("categories.create")
+      await requirePermission("categories.add")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }

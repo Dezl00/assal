@@ -7,7 +7,7 @@ import { revalidatePath, updateTag } from "next/cache"
 export async function createDepartment(formData: FormData) {
   try {
     try {
-      await requirePermission("departments.create")
+      await requirePermission("departments.add")
     } catch (e: any) {
       return { success: false, error: e.message || 'Unauthorized' }
     }
