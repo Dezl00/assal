@@ -44,5 +44,9 @@ export async function GET() {
     ]
   }
 
-  return NextResponse.json(manifest)
+  return NextResponse.json(manifest, {
+    headers: {
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
+    },
+  })
 }

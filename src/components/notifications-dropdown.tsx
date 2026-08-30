@@ -13,7 +13,10 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function NotificationsDropdown({ isAdmin = false }: { isAdmin?: boolean }) {
   const { data, mutate } = useSWR("/api/notifications", fetcher, {
-    refreshInterval: 10000, // Poll every 10 seconds
+    refreshInterval: 60000, // Poll every 60 seconds instead of 10
+    revalidateOnFocus: true, // Revalidate when user returns to tab
+    dedupingInterval: 30000, // Dedupe requests within 30 seconds
+    revalidateOnReconnect: true,
   });
 
   const prevUnreadRef = useRef(0);

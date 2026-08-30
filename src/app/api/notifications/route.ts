@@ -24,7 +24,11 @@ export async function GET(req: Request) {
       where: isAdmin ? { userId: null, isRead: false } : { userId, isRead: false },
     });
 
-    return NextResponse.json({ notifications, unreadCount });
+    return NextResponse.json({ notifications, unreadCount }, {
+      headers: {
+        "Cache-Control": "private, max-age=10",
+      },
+    });
   } catch (error) {
     return NextResponse.json({ error: "Internal Error" }, { status: 500 });
   }

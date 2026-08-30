@@ -34,8 +34,13 @@ export function GlobalOrderListener() {
   useEffect(() => {
     // Check initially after a short delay
     const initialTimeout = setTimeout(checkForNewOrders, 2000)
-    // Poll every 60 seconds instead of 15 seconds to save network/DB usage
-    const interval = setInterval(checkForNewOrders, 60000)
+    // Poll every 2 minutes instead of 60 seconds to save network/DB usage
+    const interval = setInterval(() => {
+      // Skip polling when tab is not visible
+      if (!document.hidden) {
+        checkForNewOrders()
+      }
+    }, 120000)
     return () => {
       clearTimeout(initialTimeout)
       clearInterval(interval)
