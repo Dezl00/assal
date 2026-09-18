@@ -3,9 +3,22 @@ import { IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { db } from "@/lib/db";
+import { unstable_cache } from "next/cache";
 import NextTopLoader from 'nextjs-toploader';
 import { PageTracker } from "@/components/page-tracker";
 import { Suspense } from "react";
+
+const getCachedThemeConfig = unstable_cache(
+  async () => {
+    try {
+      return await db.themeConfig.findUnique({ where: { id: "default" } });
+    } catch (e) {
+      return null;
+    }
+  },
+  ['root-theme-config'],
+  { revalidate: 3600, tags: ['theme-config'] }
+);
 
 const fallbackFont = IBM_Plex_Sans_Arabic({
   subsets: ["arabic"],
@@ -15,12 +28,7 @@ const fallbackFont = IBM_Plex_Sans_Arabic({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  let theme = null;
-  try {
-    theme = await db.themeConfig.findUnique({ where: { id: "default" } });
-  } catch (e) {
-    // Ignore DB error during build/metadata generation if Neon is asleep
-  }
+  const theme = await getCachedThemeConfig();
   
   const storeName = theme?.storeName || "العسال";
   const storeDescription = theme?.storeDescription || "أفضل المنتجات وأعلاها جودة";
@@ -83,12 +91,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let theme = null;
-  try {
-    theme = await db.themeConfig.findUnique({ where: { id: "default" } });
-  } catch (e) {
-    // Ignore DB error for root layout if Neon is asleep
-  }
+  const theme = await getCachedThemeConfig();
 
   return (
     <html lang="ar" dir="rtl" className={fallbackFont.variable} suppressHydrationWarning>

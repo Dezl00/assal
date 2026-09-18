@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 
 const articlesData = [
   {
@@ -256,21 +257,29 @@ const articlesData = [
 ];
 
 export async function GET() {
+  const session = await auth()
+  if (!session || session.user?.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const allArticles = await db.article.findMany();
-    let updatedCount = 0;
+    const allArticles = await db.article.findMany({
+      select: { id: true, title: true }
+    });
     
-    for (const newArt of articlesData) {
-      const articleToUpdate = allArticles.find((a: any) => a.title.includes(newArt.slugFilter));
-      
-      if (articleToUpdate) {
-        await db.article.update({
+    const updates = articlesData
+      .map(newArt => {
+        const articleToUpdate = allArticles.find((a: any) => a.title.includes(newArt.slugFilter));
+        if (!articleToUpdate) return null;
+        return db.article.update({
           where: { id: articleToUpdate.id },
           data: { content: newArt.content }
         });
-        updatedCount++;
-      }
-    }
+      })
+      .filter(Boolean) as any[];
+    
+    const results = await db.$transaction(updates);
+    const updatedCount = results.length;
     
     return NextResponse.json({ success: true, updatedCount });
   } catch (error: any) {

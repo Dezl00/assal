@@ -14,27 +14,89 @@ export const getCachedLayoutData = unstable_cache(
     ] = await Promise.all([
       db.menu.findFirst({
         where: { name: { contains: "header", mode: "insensitive" } },
-        include: { items: { orderBy: { sortOrder: 'asc' } } }
+        select: {
+          items: {
+            orderBy: { sortOrder: 'asc' },
+            select: { id: true, label: true, url: true }
+          }
+        }
       }),
       db.menu.findFirst({
         where: { name: { contains: "footer", mode: "insensitive" } },
-        include: { items: { orderBy: { sortOrder: 'asc' } } }
+        select: {
+          items: {
+            orderBy: { sortOrder: 'asc' },
+            select: { id: true, label: true, url: true }
+          }
+        }
       }),
       db.menu.findFirst({
-        include: { items: { orderBy: { sortOrder: 'asc' } } }
+        select: {
+          items: {
+            orderBy: { sortOrder: 'asc' },
+            select: { id: true, label: true, url: true }
+          }
+        }
       }),
       db.themeConfig.findUnique({
-        where: { id: "default" }
+        where: { id: "default" },
+        select: {
+          logoUrl: true,
+          storeName: true,
+          storeDescription: true,
+          whatsappEnabled: true,
+          whatsappNumber: true,
+          facebookUrl: true,
+          instagramUrl: true,
+          twitterUrl: true,
+          tiktokUrl: true,
+          snapchatUrl: true,
+          promoPopupEnabled: true,
+          promoPopupDelay: true,
+          promoPopupTitle: true,
+          promoPopupDescription: true,
+          promoPopupCode: true,
+        }
       }),
       db.category.findMany({
-        include: { children: true }
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          departmentId: true,
+          parentId: true,
+          imageUrl: true,
+          children: {
+            where: { isActive: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            }
+          }
+        }
       }),
       db.branch.findMany({
         where: { isActive: true },
-        orderBy: { sortOrder: 'asc' }
+        orderBy: { sortOrder: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          phone: true,
+        }
       }),
+      // NOTE: Removed `include: { categories: true }` — components filter
+      // the main `categories` array by `departmentId`, not dept.categories
       db.department.findMany({
-        include: { categories: true }
+        where: { isActive: true },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          imageUrl: true,
+        }
       })
     ])
 
@@ -54,3 +116,4 @@ export const getCachedLayoutData = unstable_cache(
     tags: ['layout-data']
   }
 )
+

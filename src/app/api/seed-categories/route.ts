@@ -190,22 +190,6 @@ const data = [
   }
 ];
 
-async function generateUniqueSlug(baseName: string) {
-  let slug = generateSlug(baseName);
-  let count = 1;
-  let uniqueSlug = slug;
-  
-  while (true) {
-    const existing = await prisma.category.findUnique({
-      where: { slug: uniqueSlug }
-    });
-    if (!existing) break;
-    uniqueSlug = `${slug}-${count}`;
-    count++;
-  }
-  return uniqueSlug;
-}
-
 export async function GET() {
   const session = await auth();
   
@@ -214,47 +198,65 @@ export async function GET() {
   }
 
   try {
-    let results = [];
+    // 1. Fetch all existing categories and slugs upfront (2 queries instead of N)
+    const existingCategories = await prisma.category.findMany({
+      select: { id: true, name: true, slug: true, parentId: true }
+    });
+    const existingSlugs = new Set(existingCategories.map(c => c.slug));
+    
+    function getUniqueSlug(baseName: string): string {
+      let slug = generateSlug(baseName);
+      let uniqueSlug = slug;
+      let count = 1;
+      while (existingSlugs.has(uniqueSlug)) {
+        uniqueSlug = `${slug}-${count}`;
+        count++;
+      }
+      existingSlugs.add(uniqueSlug); // Reserve it for subsequent calls
+      return uniqueSlug;
+    }
+
+    let results: string[] = [];
     
     for (const mainCat of data) {
-      const mainSlug = await generateUniqueSlug(mainCat.name);
-      
-      // check if it exists by name first to avoid duplicates if run multiple times
-      let createdMainCat = await prisma.category.findFirst({
-        where: { name: mainCat.name, parentId: null }
-      });
+      // Check if main category exists
+      let createdMainCat = existingCategories.find(
+        c => c.name === mainCat.name && c.parentId === null
+      );
       
       if (!createdMainCat) {
+        const mainSlug = getUniqueSlug(mainCat.name);
         createdMainCat = await prisma.category.create({
-          data: {
-            name: mainCat.name,
-            slug: mainSlug,
-          }
+          data: { name: mainCat.name, slug: mainSlug }
         });
+        existingCategories.push({ ...createdMainCat, parentId: null });
         results.push(`Created Main: ${createdMainCat.name}`);
       } else {
         results.push(`Skipped Main (Already exists): ${createdMainCat.name}`);
       }
 
-      for (const subCat of mainCat.sub) {
-        let existingSub = await prisma.category.findFirst({
-          where: { name: subCat, parentId: createdMainCat.id }
-        });
-        
-        if (!existingSub) {
-          const subSlug = await generateUniqueSlug(subCat);
-          await prisma.category.create({
-            data: {
-              name: subCat,
-              slug: subSlug,
-              parentId: createdMainCat.id
-            }
-          });
-          results.push(`Created Sub: ${subCat}`);
-        } else {
-          results.push(`Skipped Sub (Already exists): ${subCat}`);
-        }
+      // 2. Batch sub-categories with createMany
+      const existingSubs = existingCategories.filter(
+        c => c.parentId === createdMainCat!.id
+      );
+      const existingSubNames = new Set(existingSubs.map(c => c.name));
+      
+      const newSubs = mainCat.sub
+        .filter(subName => !existingSubNames.has(subName))
+        .map(subName => ({
+          name: subName,
+          slug: getUniqueSlug(subName),
+          parentId: createdMainCat!.id
+        }));
+
+      if (newSubs.length > 0) {
+        await prisma.category.createMany({ data: newSubs });
+        newSubs.forEach(s => results.push(`Created Sub: ${s.name}`));
       }
+      
+      mainCat.sub
+        .filter(subName => existingSubNames.has(subName))
+        .forEach(subName => results.push(`Skipped Sub (Already exists): ${subName}`));
     }
 
     return NextResponse.json({ success: true, message: "Category seeding completed", details: results });

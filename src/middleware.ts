@@ -2,16 +2,25 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { auth } from "@/lib/auth"
 
-// List of aggressive AI bots to block at the Edge
+// List of aggressive AI bots and scrapers to block at the Edge
 const BLOCKED_BOTS = [
-  "gptbot",
-  "chatgpt-user",
-  "oai-searchbot",
-  "anthropic",
-  "claude",
-  "bytespider",
+  // AI Crawlers
+  "gptbot", "chatgpt-user", "oai-searchbot",
+  "anthropic", "claude", "claude-web",
+  "cohere-ai", "cohere",
+  "google-extended",
+  "meta-externalagent", "facebookexternalhit",
+  "perplexitybot",
+  // Aggressive scrapers
+  "bytespider", "bytedance",
   "ccbot",
   "amazonbot",
+  "semrushbot", "ahrefsbot", "mj12bot", "dotbot",
+  "petalbot", "sogou", "yisouspider",
+  "dataforseo", "blexbot",
+  // Generic scrapers
+  "scrapy", "python-requests", "httpx", "curl/", "wget/",
+  "go-http-client", "java/",
 ]
 
 export default async function proxy(request: NextRequest) {
