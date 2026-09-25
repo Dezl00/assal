@@ -15,6 +15,7 @@ import { ProductTracker } from "@/components/storefront/product/product-tracker"
 import type { Metadata } from "next"
 
 import { unstable_cache } from "next/cache"
+import { getCachedThemeConfig } from "@/lib/cached-theme"
 
 const getProduct = unstable_cache(async (slug: string) => {
   return db.product.findUnique({
@@ -40,7 +41,10 @@ const getRelatedProducts = unstable_cache(async (categoryId: string, excludeId: 
       isActive: true
     },
     take: 4,
-    include: { images: true, category: true }
+    include: {
+      images: { orderBy: { sortOrder: 'asc' } },
+      category: { select: { id: true, name: true, slug: true } }
+    }
   })
 }, ['product-related'], { tags: ['products'], revalidate: 3600 })
 
@@ -49,7 +53,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const params = await props.params;
   const [product, theme] = await Promise.all([
     getProduct(decodeURIComponent(params.slug)),
-    db.themeConfig.findUnique({ where: { id: "default" } })
+    getCachedThemeConfig()
   ])
   
   if (!product) return { title: "المنتج غير موجود" }

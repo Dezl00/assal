@@ -33,11 +33,13 @@ export default async function AdminCustomersPage({
       skip,
       take: limit,
       include: {
-        orders: {
-          orderBy: { createdAt: "desc" }
-        },
         _count: {
           select: { orders: true }
+        },
+        orders: {
+          take: 1,
+          orderBy: { createdAt: "desc" },
+          select: { id: true, createdAt: true, totalAmount: true, status: true }
         }
       }
     }),

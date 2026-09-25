@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next'
 import { db } from '@/lib/db'
 
+export const revalidate = 86400 // 24 hours — prevent DB query on every crawler visit
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://assal1.vercel.app'
 

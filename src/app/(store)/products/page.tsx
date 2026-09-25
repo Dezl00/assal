@@ -7,6 +7,7 @@ import { FilterSidebar } from "@/components/storefront/filter-sidebar"
 import { StoreToolbar } from "@/components/storefront/store-toolbar"
 import { StorePagination } from "@/components/storefront/pagination"
 import { unstable_cache } from "next/cache"
+import { getCachedThemeConfig } from "@/lib/cached-theme"
 
 export const revalidate = 3600
 
@@ -32,7 +33,7 @@ type Props = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const resolvedParams = await searchParams;
-  const theme = await db.themeConfig.findUnique({ where: { id: "default" } });
+  const theme = await getCachedThemeConfig();
   const storeName = theme?.storeName || "العسال";
   const logo = theme?.logoUrl || "/favicon.ico";
   

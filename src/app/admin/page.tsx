@@ -21,6 +21,7 @@ export default async function AdminDashboardPage() {
     db.productView.groupBy({
       by: ['productId'],
       _count: { productId: true },
+      where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
       orderBy: { _count: { productId: 'desc' } },
       take: 5
     }),

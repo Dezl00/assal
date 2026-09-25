@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react"
 import Link from "next/link"
 import { Search, ShoppingBag, User, Menu as MenuIcon, X, Loader2, ChevronDown, LogOut, Settings, LayoutDashboard, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { useCartStore } from "@/store/cart-store"
 import { useUIStore } from "@/store/ui-store"
 import { useRouter } from "next/navigation"
@@ -16,6 +16,8 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
   const [mounted, setMounted] = useState(false)
   const { setAuthModalOpen, setMobileMenuOpen } = useUIStore()
   const router = useRouter()
+  const { data: session } = useSession()
+  const currentUser = user || session?.user || null
 
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -180,9 +182,9 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
               <div className="h-8 w-px bg-border mx-1"></div>
               
               {/* Notifications */}
-              {user && (
+              {currentUser && (
                 <div className="flex items-center justify-center border border-border bg-background rounded-full w-11 h-11 shadow-sm">
-                  <NotificationsDropdown isAdmin={user.role === 'ADMIN' || user.role === 'MANAGER'} />
+                  <NotificationsDropdown isAdmin={currentUser.role === 'ADMIN' || currentUser.role === 'MANAGER'} />
                 </div>
               )}
               
@@ -191,7 +193,7 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                 <button 
                   className="flex items-center gap-2"
                   onClick={() => {
-                    if (!user) setAuthModalOpen(true)
+                    if (!currentUser) setAuthModalOpen(true)
                   }}
                 >
                   <div className="w-11 h-11 rounded-full bg-background border border-border flex items-center justify-center shadow-sm">
@@ -200,15 +202,15 @@ export function StorefrontHeader({ menuItems, themeConfig, user, categories = []
                   <div className="flex flex-col items-start hidden xl:flex">
                     <span className="text-xs text-muted-foreground">مرحباً بك</span>
                     <div className="flex items-center gap-1 text-sm font-bold">
-                      {user ? (user.name?.split(' ')[0] || 'حسابي') : 'تسجيل الدخول'}
-                      {user && <ChevronDown className="w-3 h-3 text-muted-foreground" />}
+                      {currentUser ? (currentUser.name?.split(' ')[0] || 'حسابي') : 'تسجيل الدخول'}
+                      {currentUser && <ChevronDown className="w-3 h-3 text-muted-foreground" />}
                     </div>
                   </div>
                 </button>
                 
-                {user && (
+                {currentUser && (
                   <div className="absolute top-full left-0 w-48 bg-card border border-border shadow-xl rounded-2xl py-2 flex flex-col opacity-0 invisible group-hover/user:opacity-100 group-hover/user:visible transition-all duration-200 z-50 mt-2">
-                    {(user.role === 'ADMIN' || user.role === 'MANAGER') ? (
+                    {(currentUser.role === 'ADMIN' || currentUser.role === 'MANAGER') ? (
                       <a href="/admin" className="flex items-center gap-2 px-4 py-2 hover:bg-primary/5 hover:text-primary text-sm font-bold transition-colors">
                         <LayoutDashboard className="w-4 h-4" />
                         لوحة التحكم

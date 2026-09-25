@@ -15,9 +15,6 @@ import { ScrollToTop } from "@/components/scroll-to-top"
 export const revalidate = 3600
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth()
-  const user = session?.user || null
-
   const {
     headerMenu,
     footerMenu,
@@ -34,7 +31,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen flex flex-col font-sans pb-16 md:pb-0 selection:bg-primary/20">
       <ScrollToTop />
-      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={user} categories={categories} departments={departments} />
+      <StorefrontHeader menuItems={topNavItems} themeConfig={themeConfig} user={null} categories={categories} departments={departments} />
       <MobileSidebar menuItems={topNavItems} themeConfig={themeConfig} categories={categories} departments={departments} />
       <CartDrawer />
       <AuthModal themeConfig={themeConfig} />
@@ -42,11 +39,25 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         {children}
       </main>
       <StorefrontFooter menuItems={footerItems} themeConfig={themeConfig} branches={branches} />
-      <MobileBottomNav user={user} />
+      
+      <React.Suspense fallback={null}>
+        <AuthAwareContent />
+      </React.Suspense>
+      
       {themeConfig?.whatsappEnabled && themeConfig?.whatsappNumber && (
         <FloatingWhatsApp number={themeConfig.whatsappNumber} />
       )}
       <PromoPopup settings={themeConfig} />
+    </div>
+  )
+}
+
+async function AuthAwareContent() {
+  const session = await auth()
+  const user = session?.user || null
+  return (
+    <>
+      <MobileBottomNav user={user} />
       {user && (
         <PushNotificationPrompt 
           title="تفعيل إشعارات الطلبات"
@@ -54,6 +65,6 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           isAdmin={false}
         />
       )}
-    </div>
+    </>
   )
 }

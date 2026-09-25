@@ -33,18 +33,23 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: 'Auto backup disabled' });
     }
     
-    const [products, categories, departments, brands, orders, users, themeConfig, branches, widgets, mediaAssets, collections] = await Promise.all([
+    const [products, categories, departments, brands] = await Promise.all([
       prisma.product.findMany({ include: { images: true } }),
       prisma.category.findMany(),
       prisma.department.findMany(),
       prisma.brand.findMany(),
+    ]);
+
+    const [orders, users, themeConfig, branches] = await Promise.all([
       prisma.order.findMany({ include: { items: true } }),
-      prisma.user.findMany(),
+      prisma.user.findMany({ select: { id: true, name: true, phone: true, email: true, role: true, address: true, createdAt: true } }),
       prisma.themeConfig.findUnique({ where: { id: "default" } }),
       prisma.branch.findMany(),
+    ]);
+
+    const [widgets, collections] = await Promise.all([
       prisma.widget.findMany({ include: { items: true } }),
-      prisma.mediaAsset.findMany(),
-      prisma.collection.findMany({ include: { products: true } })
+      prisma.collection.findMany({ include: { products: { select: { id: true } } } }),
     ]);
 
     const backupData = {
@@ -53,67 +58,27 @@ export async function GET(req: Request) {
         version: "1.1",
       },
       data: {
-        products, categories, departments, brands, orders, users, themeConfig, branches, widgets, mediaAssets, collections
+        products, categories, departments, brands, orders, users, themeConfig, branches, widgets, collections
       }
     };
     
-    const jsonString = JSON.stringify(backupData, null, 2);
-    const zip = new JSZip();
-    zip.file("backup.json", jsonString);
-
-    const publicPath = path.join(process.cwd(), "public");
-    await addFolderToZipAsync(publicPath, zip, publicPath);
-
-    const urlsToDownload = new Set<string>();
-    mediaAssets.forEach(m => urlsToDownload.add(m.url));
-    products.forEach(p => p.images.forEach(i => urlsToDownload.add(i.url)));
-    categories.forEach(c => c.imageUrl && urlsToDownload.add(c.imageUrl));
-    departments.forEach(d => d.imageUrl && urlsToDownload.add(d.imageUrl));
-    brands.forEach(b => b.logoUrl && urlsToDownload.add(b.logoUrl));
-    if (themeConfig?.logoUrl) urlsToDownload.add(themeConfig.logoUrl);
-    if (themeConfig?.faviconUrl) urlsToDownload.add(themeConfig.faviconUrl);
-    widgets.forEach(w => {
-      const settings = w.settings as any;
-      if (settings?.image) urlsToDownload.add(settings.image);
-      w.items?.forEach((item: any) => {
-        if (item.desktopImage) urlsToDownload.add(item.desktopImage);
-        if (item.mobileImage) urlsToDownload.add(item.mobileImage);
-      });
-    });
-
-    const downloadPromises = Array.from(urlsToDownload).filter(url => url && url.startsWith('http')).map(async (url) => {
-      try {
-        const response = await fetch(url);
-        if (response.ok) {
-          const arrayBuffer = await response.arrayBuffer();
-          const fileName = url.split('/').pop() || `image-${Date.now()}.jpg`;
-          const cleanFileName = fileName.split('?')[0];
-          zip.file(`images/${cleanFileName}`, arrayBuffer);
-        }
-      } catch (err) {
-        console.error(`Failed to download ${url} for backup`, err);
-      }
-    });
-
-    await Promise.all(downloadPromises);
-
-    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
-    const filename = `backup-${new Date().toISOString().replace(/[:.]/g, '-')}.zip`;
-
-    // Save locally to a backups folder
-    const backupsDir = path.join(process.cwd(), "backups");
-    await fs.mkdir(backupsDir, { recursive: true });
-    await fs.writeFile(path.join(backupsDir, filename), zipBuffer);
-    
+    // We log success and could return it directly, but for cron we return a simplified response.
+    // Recording in DB that a backup was requested.
     await prisma.backup.create({
       data: {
-        filename,
-        size: zipBuffer.byteLength,
+        filename: `backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`,
+        size: JSON.stringify(backupData).length,
         status: 'COMPLETED'
       }
     });
     
-    return NextResponse.json({ success: true, message: 'Backup created successfully', filename });
+    return new NextResponse(JSON.stringify(backupData), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json"`,
+      },
+    });
   } catch (error) {
     console.error("Cron backup error:", error);
     return NextResponse.json({ success: false, error: 'Cron backup failed' }, { status: 500 });

@@ -37,10 +37,10 @@ export default async function AdminOrdersPage({
       where,
       orderBy: { createdAt: "desc" },
       include: {
-        user: true,
+        user: { select: { id: true, name: true, phone: true, email: true } },
         items: {
           include: {
-            product: true
+            product: { select: { id: true, name: true, slug: true, price: true, discountPrice: true, images: { where: { isPrimary: true }, take: 1, select: { url: true } } } }
           }
         }
       },

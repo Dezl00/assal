@@ -1,13 +1,11 @@
 import { getWidgets } from "@/features/widget-builder/actions"
 import { WidgetRenderer } from "@/components/storefront/widget-renderer"
-import { db } from "@/lib/db"
+import { getCachedThemeConfig } from "@/lib/cached-theme"
 
 export const revalidate = 3600
 
 export async function generateMetadata() {
-  const themeConfig = await db.themeConfig.findUnique({
-    where: { id: "default" }
-  })
+  const themeConfig = await getCachedThemeConfig()
   
   const logo = themeConfig?.logoUrl || "/logo.png" // Fallback to a default logo if none exists
   

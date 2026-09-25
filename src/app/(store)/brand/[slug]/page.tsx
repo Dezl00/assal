@@ -10,6 +10,7 @@ import { ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 import { unstable_cache } from "next/cache"
+import { getCachedThemeConfig } from "@/lib/cached-theme"
 
 export const revalidate = 3600
 
@@ -30,7 +31,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const brandSlug = decodeURIComponent(params.slug);
   const brand = await getBrand(brandSlug)
-  const theme = await db.themeConfig.findUnique({ where: { id: "default" } })
+  const theme = await getCachedThemeConfig()
   
   if (!brand) return { title: "الماركة غير موجودة" }
   

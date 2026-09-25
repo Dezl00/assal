@@ -11,14 +11,20 @@ export function PageTracker() {
     if (pathname && hasLogged.current !== pathname) {
       hasLogged.current = pathname
       if (!pathname.startsWith("/admin")) {
-        // Use non-blocking fetch to a new lightweight API route instead of Server Action
-        // Alternatively, use navigator.sendBeacon
         try {
-          // Send beacon is fire-and-forget and won't block navigation
-          navigator.sendBeacon(`/api/analytics/pageview?path=${encodeURIComponent(pathname)}`)
+          const trackedPages = JSON.parse(sessionStorage.getItem('trackedPages') || '[]')
+          if (!trackedPages.includes(pathname)) {
+            trackedPages.push(pathname)
+            sessionStorage.setItem('trackedPages', JSON.stringify(trackedPages))
+
+            try {
+              navigator.sendBeacon(`/api/analytics/pageview?path=${encodeURIComponent(pathname)}`)
+            } catch (e) {
+              fetch(`/api/analytics/pageview?path=${encodeURIComponent(pathname)}`, { keepalive: true }).catch(() => {})
+            }
+          }
         } catch (e) {
-          // fallback
-          fetch(`/api/analytics/pageview?path=${encodeURIComponent(pathname)}`, { keepalive: true }).catch(() => {})
+          // Fallback if sessionStorage is not available
         }
       }
     }

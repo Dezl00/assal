@@ -3,7 +3,7 @@ import { AnalyticsClient } from './analytics-client'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 export default async function AnalyticsPage() {
   const session = await auth()
@@ -14,33 +14,99 @@ export default async function AnalyticsPage() {
   const yesterdayStart = new Date(new Date().setHours(0, 0, 0, 0))
   yesterdayStart.setDate(yesterdayStart.getDate() - 1)
 
-  // We will filter out US visits in JS or DB. DB is better.
-  const pageVisits = await prisma.pageVisit.findMany({
-    where: { 
-      createdAt: { gte: thirtyDaysAgo },
-      country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] }
-    },
-    select: { createdAt: true, country: true, city: true, path: true }
+  const [visitsByDayRaw, todayVisitsCount, yesterdayVisitsCount, topCountriesRaw, topCitiesRaw, topPathsRaw, totalVisits] = await Promise.all([
+    prisma.$queryRaw`
+      SELECT DATE("createdAt") as date, COUNT(*)::int as count 
+      FROM "PageVisit" 
+      WHERE "createdAt" >= ${thirtyDaysAgo}
+      AND "country" NOT IN ('US', 'USA', 'United States', 'United States of America', 'us')
+      GROUP BY DATE("createdAt") 
+      ORDER BY date
+    ` as Promise<{ date: Date, count: number }[]>,
+    prisma.pageVisit.count({
+      where: { createdAt: { gte: todayStart }, country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] } }
+    }),
+    prisma.pageVisit.count({
+      where: { createdAt: { gte: yesterdayStart, lt: todayStart }, country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] } }
+    }),
+    prisma.pageVisit.groupBy({
+      by: ['country'],
+      where: { createdAt: { gte: thirtyDaysAgo }, country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] } },
+      _count: { country: true },
+      orderBy: { _count: { country: 'desc' } },
+      take: 10,
+    }),
+    prisma.pageVisit.groupBy({
+      by: ['city'],
+      where: { createdAt: { gte: thirtyDaysAgo }, country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] } },
+      _count: { city: true },
+      orderBy: { _count: { city: 'desc' } },
+      take: 10,
+    }),
+    prisma.pageVisit.groupBy({
+      by: ['path'],
+      where: { createdAt: { gte: thirtyDaysAgo }, country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] } },
+      _count: { path: true },
+      orderBy: { _count: { path: 'desc' } },
+      take: 10,
+    }),
+    prisma.pageVisit.count({
+      where: { createdAt: { gte: thirtyDaysAgo }, country: { notIn: ['US', 'USA', 'United States', 'United States of America', 'us'] } }
+    })
+  ])
+
+  const [viewsByDayRaw, todayViewsCount, yesterdayViewsCount, topProductViewsRaw, totalViews] = await Promise.all([
+    prisma.$queryRaw`
+      SELECT DATE("createdAt") as date, COUNT(*)::int as count 
+      FROM "ProductView" 
+      WHERE "createdAt" >= ${thirtyDaysAgo}
+      GROUP BY DATE("createdAt") 
+      ORDER BY date
+    ` as Promise<{ date: Date, count: number }[]>,
+    prisma.productView.count({
+      where: { createdAt: { gte: todayStart } }
+    }),
+    prisma.productView.count({
+      where: { createdAt: { gte: yesterdayStart, lt: todayStart } }
+    }),
+    prisma.productView.groupBy({
+      by: ['productId'],
+      where: { createdAt: { gte: thirtyDaysAgo } },
+      _count: { productId: true },
+      orderBy: { _count: { productId: 'desc' } },
+      take: 10,
+    }),
+    prisma.productView.count({
+      where: { createdAt: { gte: thirtyDaysAgo } }
+    })
+  ])
+
+  const productIds = topProductViewsRaw.map(v => v.productId)
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, name: true, images: { take: 1, select: { url: true } } }
   })
   
-  const productViews = await prisma.productView.findMany({
-    where: { 
-      createdAt: { gte: thirtyDaysAgo },
-      // Optional: if product views had country, we'd filter here too, but they don't
-    },
-    include: { product: { select: { id: true, name: true, images: { take: 1, select: { url: true } } } } }
+  const productMap = new Map(products.map(p => [p.id, p]))
+  const topProducts = topProductViewsRaw.map(v => {
+    const p = productMap.get(v.productId)
+    return {
+      count: v._count.productId,
+      name: p?.name || 'منتج محذوف',
+      image: p?.images?.[0]?.url || null
+    }
   })
 
   // Group by day for charts
-  const visitsByDay = pageVisits.reduce((acc: any, v) => {
-    const d = v.createdAt.toISOString().split('T')[0]
-    acc[d] = (acc[d] || 0) + 1
+  const visitsByDay = visitsByDayRaw.reduce((acc: any, v) => {
+    const d = v.date.toISOString().split('T')[0]
+    acc[d] = Number(v.count)
     return acc
   }, {})
 
-  const viewsByDay = productViews.reduce((acc: any, v) => {
-    const d = v.createdAt.toISOString().split('T')[0]
-    acc[d] = (acc[d] || 0) + 1
+  const viewsByDay = viewsByDayRaw.reduce((acc: any, v) => {
+    const d = v.date.toISOString().split('T')[0]
+    acc[d] = Number(v.count)
     return acc
   }, {})
 
@@ -50,25 +116,6 @@ export default async function AnalyticsPage() {
     visits: visitsByDay[date] || 0,
     views: viewsByDay[date] || 0
   }))
-
-  // Today and Yesterday Comparison
-  const todayVisitsCount = pageVisits.filter(v => new Date(v.createdAt) >= todayStart).length
-  const yesterdayVisitsCount = pageVisits.filter(v => new Date(v.createdAt) >= yesterdayStart && new Date(v.createdAt) < todayStart).length
-  
-  const todayViewsCount = productViews.filter(v => new Date(v.createdAt) >= todayStart).length
-  const yesterdayViewsCount = productViews.filter(v => new Date(v.createdAt) >= yesterdayStart && new Date(v.createdAt) < todayStart).length
-
-  // Top Products
-  const productViewCounts = productViews.reduce((acc: any, v) => {
-    const id = v.productId
-    if (!acc[id]) acc[id] = { count: 0, name: v.product?.name || 'منتج محذوف', image: v.product?.images?.[0]?.url || null }
-    acc[id].count += 1
-    return acc
-  }, {})
-
-  const topProducts = Object.values(productViewCounts)
-    .sort((a: any, b: any) => b.count - a.count)
-    .slice(0, 10)
 
   // Translation helpers
   const translateCountry = (c: string) => {
@@ -107,7 +154,7 @@ export default async function AnalyticsPage() {
       'Tanta': 'طنطا', 'Mansoura': 'المنصورة', 'Suez': 'السويس', 'Port Said': 'بورسعيد',
       'Ismailia': 'الإسماعيلية', 'Aswan': 'أسوان', 'Asyut': 'أسيوط', 'Sohag': 'سوهاج',
       'Minya': 'المنيا', 'Qena': 'قنا', 'Fayoum': 'الفيوم', 'Banha': 'بنها',
-      'Damanhur': 'دمنهور', 'Zagazig': 'الزقازيق', 'Ash Sharqiyah': 'الشرقية',
+      'Damanhur': 'دمنهور', 'Zagazig': 'الالزقازيق', 'Ash Sharqiyah': 'الشرقية',
       'Dakahlia': 'الدقهلية', 'Gharbia': 'الغربية', 'Monufia': 'المنوفية',
       'Damietta': 'دمياط', 'Kafr El Sheikh': 'كفر الشيخ', 'Beni Suef': 'بني سويف',
       'Hurghada': 'الغردقة', 'Sharm El Sheikh': 'شرم الشيخ', 'Luxor': 'الأقصر',
@@ -116,15 +163,11 @@ export default async function AnalyticsPage() {
       'Jizan': 'جازان', 'Al Qassim': 'القصيم', 'Hail': 'حائل', 'Jubail': 'الجبيل',
       'unknown': 'غير محدد', 'Unknown': 'غير محدد', '(not set)': 'غير محدد',
     }
-    // Check if the city contains any of these
     for (const [en, ar] of Object.entries(map)) {
       if (c.toLowerCase() === en.toLowerCase()) return ar as string
     }
-    // If not found, try to see if it's already arabic (contains arabic letters)
     const arabicRegex = /[\u0600-\u06FF]/;
     if (arabicRegex.test(c)) return c;
-    
-    // Return original if no translation found (maybe it's a small city)
     return map[c] || c
   }
 
@@ -141,47 +184,26 @@ export default async function AnalyticsPage() {
     return p
   }
 
-  // Countries and Cities (using PageVisits as base)
-  const countryCounts = pageVisits.reduce((acc: any, v) => {
-    const c = translateCountry(v.country || 'غير محدد')
-    acc[c] = (acc[c] || 0) + 1
-    return acc
-  }, {})
-  
-  const cityCounts = pageVisits.reduce((acc: any, v) => {
-    const c = translateCity(v.city || 'غير محدد')
-    acc[c] = (acc[c] || 0) + 1
-    return acc
-  }, {})
+  const topCountries = topCountriesRaw.map(c => ({
+    name: translateCountry(c.country || 'غير محدد'),
+    count: c._count.country
+  }))
 
-  const topCountries = Object.entries(countryCounts)
-    .map(([name, count]) => ({ name, count: count as number }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
+  const topCities = topCitiesRaw.map(c => ({
+    name: translateCity(c.city || 'غير محدد'),
+    count: c._count.city
+  }))
 
-  const topCities = Object.entries(cityCounts)
-    .map(([name, count]) => ({ name, count: count as number }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
-
-  const pathCounts = pageVisits.reduce((acc: any, v) => {
-    if (v.path) {
-      const name = getPageName(v.path)
-      acc[name] = (acc[name] || 0) + 1
-    }
-    return acc
-  }, {})
-
-  const topPages = Object.entries(pathCounts)
-    .map(([path, count]) => ({ path, count: count as number }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 10)
+  const topPages = topPathsRaw.map(p => ({
+    path: getPageName(p.path || '/'),
+    count: p._count.path
+  }))
 
   return (
     <AnalyticsClient 
       chartData={chartData} 
-      totalVisits={pageVisits.length} 
-      totalViews={productViews.length}
+      totalVisits={totalVisits} 
+      totalViews={totalViews}
       todayVisits={todayVisitsCount}
       yesterdayVisits={yesterdayVisitsCount}
       todayViews={todayViewsCount}

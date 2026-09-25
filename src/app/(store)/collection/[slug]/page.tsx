@@ -14,10 +14,11 @@ export default async function CollectionPage({ params }: { params: Promise<{ slu
     where: { slug: slug },
     include: {
       products: {
+        where: { isActive: true },
         include: {
-          category: true,
-          brand: true,
-          images: true,
+          category: { select: { id: true, name: true, slug: true } },
+          brand: { select: { id: true, name: true, slug: true } },
+          images: { orderBy: { sortOrder: 'asc' } },
         }
       }
     }

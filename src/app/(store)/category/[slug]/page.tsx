@@ -11,6 +11,7 @@ import { StorePagination } from "@/components/storefront/pagination"
 import type { Metadata } from "next"
 
 import { unstable_cache } from "next/cache"
+import { getCachedThemeConfig } from "@/lib/cached-theme"
 
 export const revalidate = 3600
 
@@ -48,7 +49,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const [category, theme] = await Promise.all([
     getCategory(decodeURIComponent(params.slug)),
-    db.themeConfig.findUnique({ where: { id: "default" } })
+    getCachedThemeConfig()
   ])
   
   if (!category) return { title: "القسم غير موجود" }

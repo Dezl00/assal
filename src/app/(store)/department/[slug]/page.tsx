@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react"
 import type { Metadata } from "next"
 
 import { unstable_cache } from "next/cache"
+import { getCachedThemeConfig } from "@/lib/cached-theme"
 
 export const revalidate = 3600
 
@@ -31,7 +32,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params;
   const [department, theme] = await Promise.all([
     getDepartment(decodeURIComponent(params.slug)),
-    db.themeConfig.findUnique({ where: { id: "default" } })
+    getCachedThemeConfig()
   ])
   
   if (!department) return { title: "المجال غير موجود" }
