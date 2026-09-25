@@ -7,6 +7,7 @@ import { unstable_cache } from "next/cache";
 import NextTopLoader from 'nextjs-toploader';
 import { PageTracker } from "@/components/page-tracker";
 import { Suspense } from "react";
+import { SessionProvider } from "@/components/session-provider";
 
 const getCachedThemeConfig = unstable_cache(
   async () => {
@@ -116,10 +117,12 @@ export default async function RootLayout({
           speed={200}
           shadow="0 0 10px var(--color-primary, #b79045),0 0 5px var(--color-primary, #b79045)"
         />
-        <Suspense fallback={null}>
-          <PageTracker />
-        </Suspense>
-        {children}
+        <SessionProvider>
+          <Suspense fallback={null}>
+            <PageTracker />
+          </Suspense>
+          {children}
+        </SessionProvider>
         <Toaster 
           position="top-center" 
           richColors 
